@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ShieldCheck,
   TrendingUp,
@@ -7,13 +7,38 @@ import {
   Layers,
   CheckCircle2,
   AlertTriangle,
+  RefreshCw,
+  Server,
 } from 'lucide-react'
+import { checkBackendHealth, type HealthResponse, API_BASE_URL } from './services/api'
 
 export const App: React.FC = () => {
+  const [backendHealth, setBackendHealth] = useState<HealthResponse | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const verifyConnection = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await checkBackendHealth()
+      setBackendHealth(data)
+    } catch (err: unknown) {
+      setBackendHealth(null)
+      setError(err instanceof Error ? err.message : 'Unable to connect to backend')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    verifyConnection()
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6 md:p-12 font-sans selection:bg-blue-600 selection:text-white">
       {/* Header */}
-      <header className="max-w-6xl w-full mx-auto flex items-center justify-between pb-8 border-b border-slate-800/80">
+      <header className="max-w-6xl w-full mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between pb-8 border-b border-slate-800/80 gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <TrendingUp className="h-5 w-5 text-white" />
@@ -25,11 +50,29 @@ export const App: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* Live Backend Connection Indicator */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-3 py-1 rounded-full font-medium">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Core Stack Initialized
-          </span>
+          {loading ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+              <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
+              Pinging Backend...
+            </span>
+          ) : backendHealth?.status === 'ok' ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-3 py-1 rounded-full font-medium shadow-sm shadow-emerald-900/30">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Backend Connected ({backendHealth.app} • :8000)
+            </span>
+          ) : (
+            <button
+              onClick={verifyConnection}
+              className="inline-flex items-center gap-1.5 text-xs text-amber-300 bg-amber-950/60 border border-amber-800/50 hover:bg-amber-900/50 px-3 py-1 rounded-full font-medium transition cursor-pointer"
+              title={error ?? 'Click to retry connecting to FastAPI backend'}
+            >
+              <Server className="h-3 w-3 text-amber-400" />
+              Backend Offline • Click to Reconnect
+            </button>
+          )}
         </div>
       </header>
 
@@ -43,7 +86,7 @@ export const App: React.FC = () => {
             </span>
           </h1>
           <p className="text-lg text-slate-400 leading-relaxed">
-            The foundation for StockIQ is successfully configured. Ready for structured, step-by-step feature development across frontend, backend, and database layers.
+            The foundation for StockIQ is running. You can now launch both servers locally to verify communication between the React frontend and FastAPI backend.
           </p>
         </div>
 
@@ -69,7 +112,7 @@ export const App: React.FC = () => {
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Design tokens & reusable UI slots</span>
+                <span>Local server on port 5173</span>
               </li>
             </ul>
           </div>
@@ -94,7 +137,7 @@ export const App: React.FC = () => {
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Replaceable integration adapters</span>
+                <span>Target API: {API_BASE_URL}</span>
               </li>
             </ul>
           </div>
@@ -142,7 +185,7 @@ export const App: React.FC = () => {
           <span>StockIQ Foundation • Clean Architecture</span>
         </div>
         <div>
-          <span>Branch: <code>main</code> • Ready for feature branching</span>
+          <span>Targeting API: <code>{API_BASE_URL}/api/v1/health</code></span>
         </div>
       </footer>
     </div>
