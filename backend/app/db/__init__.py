@@ -1,5 +1,6 @@
 """Database package."""
 
-from app.db.session import Base, SessionLocal, engine, get_db
+from app.db.base import Base
+from app.db.session import engine, SessionLocal, get_db, check_db_connection
 
-__all__ = ["Base", "SessionLocal", "engine", "get_db"]
+__all__ = ["Base", "engine", "SessionLocal", "get_db", "check_db_connection"]

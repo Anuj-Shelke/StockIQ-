@@ -1,4 +1,4 @@
-"""SQLAlchemy models for PostgreSQL and StockIQ."""
+"""SQLAlchemy ORM models for PostgreSQL and StockIQ architecture."""
 
 from app.models.user import User, InvestorProfile
 from app.models.market import Stock, PriceHistory

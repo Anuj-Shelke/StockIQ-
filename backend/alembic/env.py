@@ -10,19 +10,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.core.config import settings
 from app.db.base import Base
+import app.models  # noqa: F401 - ensure all models are imported for metadata detection
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set the SQLAlchemy URL dynamically from application settings
+# Set DB URL dynamically from Settings
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-# Model metadata for autogenerate support
 target_metadata = Base.metadata
 
 
@@ -33,9 +30,6 @@ def run_migrations_offline() -> None:
     and not an Engine, though an Engine is acceptable
     here as well. By skipping the Engine creation
     we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
