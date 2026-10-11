@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 16 database with pgvector extension
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: stockiq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-stockiq}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-stockiq}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stockiq-network
+
+  # FastAPI Backend service for containerized development
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stockiq-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-true}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-stockiq}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stockiq}
+      ASYNC_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stockiq}
+      SECRET_KEY: ${SECRET_KEY:-default-insecure-development-secret-key-change-in-env}
+      ALGORITHM: ${ALGORITHM:-HS256}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    networks:
+      - stockiq-network
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
+    name: stockiq_postgres_data
+
+networks:
+  stockiq-network:
+    name: stockiq_network

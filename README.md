@@ -283,6 +283,19 @@ Any future functionality involving personalised investment advice would require 
 
 ## 💻 Local Development Quickstart
 
+### 🗄️ Database (PostgreSQL 16 + pgvector)
+
+```bash
+# 1. Start PostgreSQL 16 with pgvector extension in the background
+docker compose up -d db
+
+# 2. Run database migrations from the backend directory
+cd backend
+alembic upgrade head
+```
+
+For full database architecture, table descriptions, and testing instructions, see [Database Setup Guide](docs/database/DATABASE_SETUP.md).
+
 ### Frontend (React + Vite + TypeScript)
 
 ```bash
