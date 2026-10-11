@@ -1,7 +1,75 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/fraunces";
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+
+  --color-ink-950: #03060d;
+  --color-ink-900: #060b16;
+  --color-ink-800: #0b1424;
+  --color-ink-700: #12203a;
+  --color-ink-600: #1b2f52;
+  --color-mist: #cfdcf0;
+  --color-gold-300: #f1d98a;
+  --color-gold-400: #e4c366;
+  --color-gold-500: #c9a24a;
+  --color-gold-600: #a67f2e;
+}
+
 @layer base {
+  html {
+    color-scheme: dark;
+  }
   body {
-    @apply antialiased bg-slate-950 text-slate-100 min-h-screen font-sans;
+    @apply antialiased bg-ink-950 text-slate-100 min-h-screen font-sans;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgb(201 162 74 / 0.35);
+  }
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(145deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.025));
+    border: 1px solid rgb(255 255 255 / 0.12);
+    box-shadow: 0 24px 80px -24px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.12);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
+  }
+  .btn-gold {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-ink-950 transition duration-200;
+    background: linear-gradient(180deg, var(--color-gold-300), var(--color-gold-500));
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 8px 0 -4px var(--color-gold-600), 0 18px 30px -12px rgb(201 162 74 / 0.55);
+  }
+  .btn-gold:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 10px 0 -4px var(--color-gold-600), 0 24px 36px -12px rgb(201 162 74 / 0.65);
+  }
+  .btn-gold:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.4) inset, 0 3px 0 -2px var(--color-gold-600);
+  }
+  .btn-gold:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition;
+  }
+  .field:focus {
+    border-color: rgb(228 195 102 / 0.7);
+    box-shadow: 0 0 0 3px rgb(228 195 102 / 0.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
