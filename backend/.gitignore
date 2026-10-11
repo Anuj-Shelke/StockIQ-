@@ -9,6 +9,11 @@ venv/
 .venv/
 ENV/
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Environment secrets
 .env
 .env.*

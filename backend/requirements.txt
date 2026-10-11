@@ -5,6 +5,12 @@ pydantic>=2.10.0
 pydantic-settings>=2.7.0
 python-dotenv>=1.0.1
 httpx>=0.28.1
+pyjwt>=2.8.0
+
+# Database & ORM
+SQLAlchemy>=2.0.0
+alembic>=1.13.0
+psycopg[binary]>=3.1.0
 
 # Data analysis & Scientific computing
 pandas>=2.2.3
