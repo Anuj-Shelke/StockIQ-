@@ -30,3 +30,9 @@ def root():
         "version": settings.VERSION,
         "docs_url": "/docs",
     }
+
+
+@app.get("/health")
+def root_health():
+    return {"status": "ok", "app": "StockIQ"}
+
