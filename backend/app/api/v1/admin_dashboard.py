@@ -1,5 +1,22 @@
-from fastapi import APIRouter
+"""Administrative Dashboard & Operational Telemetry API Endpoints."""
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.core.dependencies import get_current_user
+from app.db.session import get_db
+from app.models.user import User
+from app.schemas.admin_review import AdminSystemMetrics
+from app.services.data_quality_service import DataQualityService
+
 
 router = APIRouter()
 
-# Admin dashboard metrics and reporting endpoints will be implemented in future tasks
+
+@router.get("/metrics", response_model=AdminSystemMetrics, summary="Get operational admin telemetry")
+def get_admin_metrics(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> AdminSystemMetrics:
+    """Retrieve system operational metrics: active users, analysis volume, data latency, and ticket counts."""
+    return DataQualityService.get_system_metrics(db=db)
