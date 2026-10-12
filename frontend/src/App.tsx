@@ -11,6 +11,7 @@ import { ExplainabilityVisualizer } from '@/features/explainability/Explainabili
 import { EducationHub } from '@/features/education/EducationHub'
 import { HistoryView } from '@/features/analysis-history/HistoryView'
 import { ReviewRequestView } from '@/features/review-requests/ReviewRequestView'
+import { SebiRagChatbot } from '@/features/sebi-guidelines/SebiRagChatbot'
 import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/CustomerDashboardLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
 
@@ -41,6 +42,7 @@ export const App = () => (
           <Route path="explainability" element={<ExplainabilityVisualizer />} />
           <Route path="education" element={<EducationHub />} />
           <Route path="history" element={<HistoryView />} />
+          <Route path="sebi-rules" element={<SebiRagChatbot />} />
           <Route path="review-request" element={<ReviewRequestView />} />
         </Route>
       </Route>

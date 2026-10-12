@@ -23,6 +23,7 @@ from app.api.v1 import (
     notifications,
     recommendations,
     opening_predictions,
+    sebi_rag,
 )
 
 api_router = APIRouter()
@@ -58,3 +59,4 @@ api_router.include_router(data_quality.router, prefix="/data-quality", tags=["Da
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["Personalized ML Recommendations"])
 api_router.include_router(opening_predictions.router, prefix="/predictions/next-day-open", tags=["Next-Day Opening Predictions"])
+api_router.include_router(sebi_rag.router, prefix="/sebi", tags=["SEBI Regulations RAG"])
