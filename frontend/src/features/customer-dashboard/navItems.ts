@@ -18,5 +18,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard/explainability', label: 'Explainability', icon: Sparkles, blurb: 'See the reasoning and sources behind every analysis.' },
   { to: '/dashboard/education', label: 'Financial Education', icon: GraduationCap, blurb: 'Plain-language, source-backed explanations of financial concepts.' },
   { to: '/dashboard/history', label: 'Analysis History', icon: History, blurb: 'Revisit and compare your earlier analyses and snapshots.' },
+  { to: '/dashboard/sebi-rules', label: 'SEBI Regulations', icon: Scale, blurb: 'RAG-grounded AI assistant trained on statutory SEBI guidelines, investor rights, and compliance.' },
   { to: '/dashboard/review-request', label: 'Review Request', icon: ClipboardCheck, blurb: 'Ask an authorised reviewer to look over an analysis.' },
 ]
