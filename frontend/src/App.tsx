@@ -2,8 +2,13 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { SplashScreen } from '@/components/ui/SplashScreen'
 import { DashboardOverview } from '@/features/customer-dashboard/DashboardOverview'
-import { FeaturePlaceholder } from '@/features/customer-dashboard/FeaturePlaceholder'
-import { NAV_ITEMS } from '@/features/customer-dashboard/navItems'
+import { PortfolioManager } from '@/features/portfolio/PortfolioManager'
+import { RiskRealityCheck } from '@/features/risk-check/RiskRealityCheck'
+import { AssetComparison } from '@/features/asset-comparison/AssetComparison'
+import { ExplainabilityVisualizer } from '@/features/explainability/ExplainabilityVisualizer'
+import { EducationHub } from '@/features/education/EducationHub'
+import { HistoryView } from '@/features/analysis-history/HistoryView'
+import { ReviewRequestView } from '@/features/review-requests/ReviewRequestView'
 import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/CustomerDashboardLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
 
@@ -26,9 +31,13 @@ export const App = () => (
       <Route path="/dashboard" element={<ProtectedRoute />}>
         <Route element={<CustomerDashboardLayout />}>
           <Route index element={<DashboardOverview />} />
-          {NAV_ITEMS.filter((n) => !n.end).map((n) => (
-            <Route key={n.to} path={n.to.replace('/dashboard/', '')} element={<FeaturePlaceholder title={n.label} blurb={n.blurb} />} />
-          ))}
+          <Route path="portfolio" element={<PortfolioManager />} />
+          <Route path="risk-check" element={<RiskRealityCheck />} />
+          <Route path="compare" element={<AssetComparison />} />
+          <Route path="explainability" element={<ExplainabilityVisualizer />} />
+          <Route path="education" element={<EducationHub />} />
+          <Route path="history" element={<HistoryView />} />
+          <Route path="review-request" element={<ReviewRequestView />} />
         </Route>
       </Route>
 

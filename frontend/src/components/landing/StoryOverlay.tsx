@@ -72,13 +72,27 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
-      {/* top bar — sign-in button removed; users must scroll to reach the auth card */}
+      {/* top bar */}
       <header className="pointer-events-auto absolute inset-x-0 top-0 flex items-center justify-between px-5 py-5 md:px-10">
         <Link to="/" className="flex items-center gap-2" aria-label="StockIQ home">
           <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold-400/50 bg-gold-500/10 font-display text-lg text-gold-300">₹</span>
           <span className="font-display text-xl tracking-tight text-white">StockIQ</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link
+            to="/login"
+            className="rounded-full border border-white/20 bg-ink-950/60 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-sm transition hover:border-gold-300 hover:text-gold-300"
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/signup"
+            className="rounded-full bg-gold-400 px-4 py-1.5 text-xs font-semibold text-ink-950 transition hover:bg-gold-300"
+          >
+            Get Started
+          </Link>
+        </div>
       </header>
 
       {/* 01 MONEY: hierarchy is wordmark, then tagline, then supporting line (the card sits below) */}
@@ -91,6 +105,20 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
           Money talks. <span className="text-gold-300">Learn the language.</span>
         </h1>
         <p className="mx-auto mt-4 max-w-md text-sm font-medium text-slate-100 md:text-base">Understand the risk. Explore the data. Know the reasoning.</p>
+        <div className="pointer-events-auto mt-5 flex items-center justify-center gap-3">
+          <Link
+            to="/login"
+            className="rounded-xl bg-gold-500 px-5 py-2 text-xs font-semibold text-ink-950 shadow-lg shadow-gold-500/20 transition hover:bg-gold-400"
+          >
+            Sign in to StockIQ
+          </Link>
+          <Link
+            to="/signup"
+            className="rounded-xl border border-white/20 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md transition hover:border-gold-400/50 hover:bg-white/10"
+          >
+            Create Free Account
+          </Link>
+        </div>
       </Stage>
 
       {/* 02 GROWTH */}

@@ -225,7 +225,7 @@ export function AuthPanel({ variant, revealed }: Props) {
             <motion.div variants={item}>
               <button type="submit" className="btn-gold w-full" disabled={busy}>
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                {signup ? 'Create account' : 'Continue'}
+                {signup ? 'Create account' : 'Sign in'}
               </button>
             </motion.div>
           </form>
