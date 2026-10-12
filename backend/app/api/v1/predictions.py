@@ -1,68 +1,60 @@
-from datetime import datetime, timezone
-import uuid
-from typing import List
+"""Stock Price Forecasting & Explainable AI (SHAP) API Endpoints."""
+
+from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_active_user
 from app.db.session import get_db
-from app.models.prediction import Prediction, ShapExplanation
 from app.models.user import User
 from app.schemas.prediction import (
     PredictionRequest,
     PredictionResponse,
-    ShapFactor,
     SimulationRequest,
     SimulationResponse,
 )
+from app.services.prediction_service import PredictionService
+
 
 router = APIRouter()
 
 
-@router.post("", response_model=PredictionResponse)
-@router.post("/", response_model=PredictionResponse)
+@router.post("", response_model=PredictionResponse, summary="Generate stock price prediction with SHAP factors")
+@router.post("/", response_model=PredictionResponse, summary="Generate stock price prediction with SHAP factors")
 def generate_prediction(
     request: PredictionRequest,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
-):
-    """Generate a stock price prediction snapshot with Explainable AI SHAP factors."""
-    symbol = request.stock_symbol.upper()
-    now = datetime.now(timezone.utc)
-
-    # Base price estimate
-    current_price = 2500.0
-    predicted_price = round(current_price * 1.054, 2)
-    confidence = 0.84
-
-    factors = [
-        ShapFactor(feature_name="Quarterly Revenue Growth", importance_score=0.42, direction="positive"),
-        ShapFactor(feature_name="Sector Momentum (30-day)", importance_score=0.28, direction="positive"),
-        ShapFactor(feature_name="Market Volatility (VIX)", importance_score=-0.14, direction="negative"),
-        ShapFactor(feature_name="Institutional Inflow", importance_score=0.16, direction="positive"),
-    ]
-
-    prediction_id = str(uuid.uuid4())
-
-    return PredictionResponse(
-        id=prediction_id,
-        stock_symbol=symbol,
-        model_name="StockIQ_LightGBM_Ensemble_v1",
-        target_horizon=request.target_horizon,
-        current_price=current_price,
-        predicted_price=predicted_price,
-        confidence_score=confidence,
-        summary=f"Positive trend expected for {symbol} driven primarily by quarterly revenue growth and strong institutional inflows.",
-        factors=factors,
-        created_at=now,
+) -> PredictionResponse:
+    """Generate directional 30-day price target and exact SHAP feature attributions."""
+    return PredictionService.generate_prediction(
+        request=request,
+        db=db,
+        user_id=str(current_user.id),
     )
 
 
-@router.post("/simulate", response_model=SimulationResponse)
+@router.get("/{symbol}", response_model=PredictionResponse, summary="Get prediction and explainability for stock")
+def get_prediction_for_stock(
+    symbol: str,
+    target_horizon: str = Query("30d", pattern="^(7d|14d|30d|90d|1y)$"),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+) -> PredictionResponse:
+    """Retrieve machine learning prediction and SHAP waterfall metrics for a specific stock ticker."""
+    request = PredictionRequest(stock_symbol=symbol, target_horizon=target_horizon)
+    return PredictionService.generate_prediction(
+        request=request,
+        db=db,
+        user_id=str(current_user.id),
+    )
+
+
+@router.post("/simulate", response_model=SimulationResponse, summary="Simulate historical crash scenario")
 def simulate_stress_scenario(
     request: SimulationRequest,
     current_user: User = Depends(get_current_active_user),
-):
+) -> SimulationResponse:
     """Simulate historical crash scenario impact on portfolio capital."""
     scenarios = {
         "covid_crash": {
