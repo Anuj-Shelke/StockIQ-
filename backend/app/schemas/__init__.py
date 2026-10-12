@@ -68,6 +68,12 @@ from app.schemas.admin_review import (
     AdminSystemMetrics,
     DataQualityReport,
 )
+from app.schemas.snapshot import (
+    AnalysisSnapshotCreate,
+    AnalysisSnapshot,
+    AppNotification,
+    NotificationSendRequest,
+)
 from app.schemas.dashboard import (
     MetricCard,
     PortfolioPerformanceItem,
@@ -169,4 +175,8 @@ __all__ = [
     "ReviewRequestItem",
     "AdminSystemMetrics",
     "DataQualityReport",
+    "AnalysisSnapshotCreate",
+    "AnalysisSnapshot",
+    "AppNotification",
+    "NotificationSendRequest",
 ]
