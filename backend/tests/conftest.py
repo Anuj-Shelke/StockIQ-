@@ -51,6 +51,7 @@ TEST_DATABASE_URL = "sqlite:///:memory:"
 test_engine_instance = sa.create_engine(
     TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},
+    poolclass=sa.pool.StaticPool,
 )
 TestingSessionLocal = sessionmaker(
     autocommit=False,
@@ -64,6 +65,7 @@ Base.metadata.create_all(bind=test_engine_instance)
 
 def override_get_db():
     """Override get_db dependency for tests with isolated SQLite session."""
+    Base.metadata.create_all(bind=test_engine_instance)
     db = TestingSessionLocal()
     try:
         yield db
@@ -113,7 +115,8 @@ def db_session(test_engine):
     finally:
         session.rollback()
         session.close()
-        Base.metadata.drop_all(bind=connection)
+        if test_engine.dialect.name != "sqlite":
+            Base.metadata.drop_all(bind=connection)
         connection.close()
 
 
