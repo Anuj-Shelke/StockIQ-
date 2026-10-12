@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion, useTransform, type MotionValue } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Disclaimer } from './Disclaimer'
 
 type Win = [number, number, number, number]
@@ -77,12 +78,15 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
           <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold-400/50 bg-gold-500/10 font-display text-lg text-gold-300">₹</span>
           <span className="font-display text-xl tracking-tight text-white">StockIQ</span>
         </Link>
-        <Link
-          to="/login"
-          className="rounded-full border border-white/25 bg-ink-950/60 px-4 py-1.5 text-xs font-semibold text-white transition hover:border-gold-300 hover:text-gold-300"
-        >
-          Sign in
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link
+            to="/login"
+            className="rounded-full border border-white/25 bg-ink-950/60 px-4 py-1.5 text-xs font-semibold text-white transition hover:border-gold-300 hover:text-gold-300"
+          >
+            Sign in
+          </Link>
+        </div>
       </header>
 
       {/* 01 MONEY: hierarchy is wordmark, then tagline, then supporting line (the card sits below) */}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LogOut, Menu, X } from 'lucide-react'
 import { BackendStatus } from '@/components/ui/BackendStatus'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Disclaimer } from '@/components/landing/Disclaimer'
 import { NAV_ITEMS } from '@/features/customer-dashboard/navItems'
 import { useAuth } from '@/hooks/useAuth'
@@ -65,6 +66,7 @@ export function CustomerDashboardLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="ml-auto flex items-center gap-3">
+            <ThemeToggle />
             <BackendStatus />
             <span className="hidden max-w-[12rem] truncate text-xs text-slate-400 sm:block">{user?.email}</span>
             <button onClick={signOut} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition hover:border-gold-500/40 hover:text-white">
