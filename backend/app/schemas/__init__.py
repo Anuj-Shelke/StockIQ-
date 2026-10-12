@@ -40,6 +40,7 @@ from app.schemas.portfolio import (
 )
 from app.schemas.prediction import (
     ShapFactor,
+    PredictionDetail,
     PredictionRequest,
     PredictionResponse,
     SimulationRequest,
@@ -112,6 +113,7 @@ __all__ = [
     "PortfolioResponse",
     "PortfolioAllocationItem",
     "ShapFactor",
+    "PredictionDetail",
     "PredictionRequest",
     "PredictionResponse",
     "SimulationRequest",
