@@ -61,6 +61,13 @@ from app.schemas.education import (
     CalculatorResponse,
     GlossaryItem,
 )
+from app.schemas.admin_review import (
+    ReviewRequestCreate,
+    ReviewUpdatePayload,
+    ReviewRequestItem,
+    AdminSystemMetrics,
+    DataQualityReport,
+)
 from app.schemas.dashboard import (
     MetricCard,
     PortfolioPerformanceItem,
@@ -157,4 +164,9 @@ __all__ = [
     "CalculationResult",
     "CalculatorResponse",
     "GlossaryItem",
+    "ReviewRequestCreate",
+    "ReviewUpdatePayload",
+    "ReviewRequestItem",
+    "AdminSystemMetrics",
+    "DataQualityReport",
 ]
