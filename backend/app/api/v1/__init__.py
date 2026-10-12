@@ -22,6 +22,7 @@ from app.api.v1 import (
     data_quality,
     notifications,
     recommendations,
+    opening_predictions,
 )
 
 api_router = APIRouter()
@@ -56,3 +57,4 @@ api_router.include_router(review_requests.router, prefix="/review-requests", tag
 api_router.include_router(data_quality.router, prefix="/data-quality", tags=["Data Quality"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["Personalized ML Recommendations"])
+api_router.include_router(opening_predictions.router, prefix="/predictions/next-day-open", tags=["Next-Day Opening Predictions"])
