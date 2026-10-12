@@ -21,6 +21,7 @@ from app.api.v1 import (
     review_requests,
     data_quality,
     notifications,
+    recommendations,
 )
 
 api_router = APIRouter()
@@ -54,3 +55,4 @@ api_router.include_router(education.router, prefix="/education", tags=["Educatio
 api_router.include_router(review_requests.router, prefix="/review-requests", tags=["Review Requests"])
 api_router.include_router(data_quality.router, prefix="/data-quality", tags=["Data Quality"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(recommendations.router, prefix="/recommendations", tags=["Personalized ML Recommendations"])
