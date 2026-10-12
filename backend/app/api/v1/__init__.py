@@ -6,6 +6,7 @@ from app.api.v1 import (
     users,
     profile,
     stocks,
+    market,
     dashboard,
     predictions,
     portfolios,
@@ -33,6 +34,7 @@ api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(profile.router, prefix="/profile", tags=["Profile"])
 
 # Financial Assets & Research
+api_router.include_router(market.router, prefix="/market", tags=["Market Data & Indices"])
 api_router.include_router(stocks.router, prefix="/stocks", tags=["Stocks"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(predictions.router, prefix="/predictions", tags=["Predictions & Explanations"])
