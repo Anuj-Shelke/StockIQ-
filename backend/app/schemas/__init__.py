@@ -64,6 +64,16 @@ from app.schemas.market import (
     IntradayChartResponse,
     MarketStatusInfo,
 )
+from app.schemas.analysis import (
+    QuantitativeRiskMetrics,
+    StressScenarioImpact,
+    StressScenario,
+    DrawdownDataPoint,
+    AssetDrawdownContribution,
+    RiskToleranceProfile,
+    StressTestRequest,
+    RiskRealityCheckResponse,
+)
 
 __all__ = [
     "APIBaseModel",
@@ -113,4 +123,12 @@ __all__ = [
     "IntradayChartPoint",
     "IntradayChartResponse",
     "MarketStatusInfo",
+    "QuantitativeRiskMetrics",
+    "StressScenarioImpact",
+    "StressScenario",
+    "DrawdownDataPoint",
+    "AssetDrawdownContribution",
+    "RiskToleranceProfile",
+    "StressTestRequest",
+    "RiskRealityCheckResponse",
 ]
