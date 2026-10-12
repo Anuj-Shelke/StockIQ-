@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle, ArrowUpRight, Info, Minus, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react'
 import { TiltCard } from '@/components/ui/TiltCard'
+import { NiftyLiveWidget } from '@/components/dashboard/NiftyLiveWidget'
 import { useAuth } from '@/hooks/useAuth'
 import type { MetricCard } from '@/types/auth'
 import { NAV_ITEMS } from './navItems'
@@ -34,6 +35,11 @@ export function DashboardOverview() {
         <h1 className="mt-2 font-display text-3xl text-white md:text-4xl">{name ? `Welcome, ${name}` : 'Welcome to StockIQ'}</h1>
         <p className="mt-2 text-sm text-slate-400">Understand the risk. Explore the data. Know the reasoning.</p>
       </header>
+
+      {/* Live NIFTY & Major Indian Benchmark Indices */}
+      <section aria-label="Live Market Feeds">
+        <NiftyLiveWidget />
+      </section>
 
       {profileError && (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">

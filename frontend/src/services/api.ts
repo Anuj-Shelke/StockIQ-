@@ -1,7 +1,7 @@
 import type { TokenResponse } from '@/types/auth'
 
 /**
- * Base API Client configuration
+ * Base API Client configuration & Market Data Services
  */
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 export const API_V1 = `${API_BASE_URL}/api/v1`
@@ -19,6 +19,50 @@ export interface HealthResponse {
   status: string
   app: string
   version?: string
+}
+
+export interface MarketStatusInfo {
+  status: 'OPEN' | 'CLOSED' | 'PRE_MARKET' | string;
+  is_open: boolean;
+  session_label: string;
+  current_time_ist: string;
+  trading_hours: string;
+}
+
+export interface IndexQuote {
+  symbol: string;
+  name: string;
+  current_price: number;
+  previous_close: number;
+  change: number;
+  change_percent: number;
+  open_price: number | null;
+  day_high: number | null;
+  day_low: number | null;
+  year_high: number | null;
+  year_low: number | null;
+  currency: string;
+  updated_at: string;
+  market_status: MarketStatusInfo;
+}
+
+export interface IndicesOverviewResponse {
+  indices: IndexQuote[];
+  market_status: MarketStatusInfo;
+}
+
+export interface IntradayChartPoint {
+  time: string;
+  price: number;
+  volume?: number;
+}
+
+export interface IntradayChartResponse {
+  symbol: string;
+  name: string;
+  interval: string;
+  currency: string;
+  points: IntradayChartPoint[];
 }
 
 export async function checkBackendHealth(): Promise<HealthResponse> {
@@ -210,4 +254,33 @@ export async function apiFetch<T>(path: string, opts: RequestOptions = {}): Prom
     res = await rawRequest(path, opts)
   }
   return parse<T>(res)
+}
+
+export async function fetchNiftyQuote(): Promise<IndexQuote> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/market/nifty`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch NIFTY 50 data: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchMarketIndices(): Promise<IndicesOverviewResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/market/indices`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch market indices: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchIntradayChart(
+  symbol: string = '^NSEI',
+  interval: string = '5m',
+  period: string = '1d'
+): Promise<IntradayChartResponse> {
+  const params = new URLSearchParams({ symbol, interval, period });
+  const response = await fetch(`${API_BASE_URL}/api/v1/market/chart?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch intraday chart: ${response.statusText}`);
+  }
+  return response.json();
 }

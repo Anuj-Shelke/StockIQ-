@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_active_user
 from app.db.session import get_db
+from app.integrations.market_data.market_service import MarketDataService
 from app.models.portfolio import Portfolio
 from app.models.user import User
 from app.schemas.dashboard import DashboardResponse, MetricCard, PortfolioPerformanceItem
@@ -49,6 +50,19 @@ def get_dashboard(
         ]
         total_val = 245000.0
 
+    # Fetch dynamic real-time NIFTY 50 Benchmark
+    try:
+        nifty = MarketDataService.get_quote("^NSEI")
+        nifty_val = f"{nifty.current_price:,.2f}"
+        nifty_change = nifty.change_percent
+        nifty_trend = "up" if nifty.change >= 0 else "down"
+        nifty_desc = f"NSE benchmark • {nifty.market_status.session_label}"
+    except Exception:
+        nifty_val = "22,363.35"
+        nifty_change = -0.70
+        nifty_trend = "down"
+        nifty_desc = "NSE benchmark index"
+
     metrics = [
         MetricCard(
             title="Portfolio Value",
@@ -59,10 +73,10 @@ def get_dashboard(
         ),
         MetricCard(
             title="NIFTY 50 Benchmark",
-            value="24,964.35",
-            change_percent=0.78,
-            trend="up",
-            description="NSE benchmark index 1-day movement",
+            value=nifty_val,
+            change_percent=nifty_change,
+            trend=nifty_trend,
+            description=nifty_desc,
         ),
         MetricCard(
             title="Gold (10g 24K)",

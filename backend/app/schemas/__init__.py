@@ -54,6 +54,13 @@ from app.schemas.dashboard import (
     PortfolioPerformanceItem,
     DashboardResponse,
 )
+from app.schemas.market import (
+    IndexQuote,
+    IndicesOverviewResponse,
+    IntradayChartPoint,
+    IntradayChartResponse,
+    MarketStatusInfo,
+)
 
 __all__ = [
     "APIBaseModel",
@@ -95,4 +102,9 @@ __all__ = [
     "MetricCard",
     "PortfolioPerformanceItem",
     "DashboardResponse",
+    "IndexQuote",
+    "IndicesOverviewResponse",
+    "IntradayChartPoint",
+    "IntradayChartResponse",
+    "MarketStatusInfo",
 ]
