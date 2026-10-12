@@ -1,3 +1,5 @@
+"""Financial Education Chatbot API Endpoints backed by RAG Retrieval Engine."""
+
 from datetime import datetime, timezone
 import uuid
 from typing import List, Optional
@@ -14,80 +16,31 @@ from app.schemas.chatbot import (
     ChatSessionResponse,
     ChatSourceItem,
 )
+from app.services.rag_service import RAGService
+
 
 router = APIRouter()
 
 
-@router.post("/query", response_model=ChatQueryResponse)
+@router.post("/query", response_model=ChatQueryResponse, summary="Query financial education chatbot")
 def query_chatbot(
     request: ChatQueryRequest,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
-):
-    """Ask an educational financial question backed by RAG knowledge base."""
-    session_id = request.session_id or str(uuid.uuid4())
-    now = datetime.now(timezone.utc)
-
-    query_lower = request.query.lower()
-
-    if "drawdown" in query_lower:
-        answer = (
-            "Maximum Drawdown (MDD) is an indicator of downside risk over a specified time period. "
-            "It measures the largest single drop from peak to trough before a new peak is achieved. "
-            "For example, during the 2020 COVID shock, Indian equity indices experienced a drawdown of ~38%."
-        )
-        sources = [
-            ChatSourceItem(
-                title="SEBI Investor Education: Understanding Risk & Drawdown",
-                reference="SEBI-IE-2023-Vol-2",
-                source_url="https://investor.sebi.gov.in",
-            ),
-            ChatSourceItem(
-                title="NSE Historical Volatility & Drawdown Handbook",
-                reference="NSE-EDU-402",
-                source_url="https://nseindia.com",
-            ),
-        ]
-    elif "cagr" in query_lower:
-        answer = (
-            "Compound Annual Growth Rate (CAGR) represents the annualized rate of return earned by an investment "
-            "over a multi-year period assuming profits were reinvested at the end of each year. "
-            "Formula: CAGR = (Final Value / Beginning Value)^(1 / Years) - 1."
-        )
-        sources = [
-            ChatSourceItem(
-                title="Basics of Financial Math & Compounding",
-                reference="AMFI-Guide-101",
-                source_url="https://amfiindia.com",
-            )
-        ]
-    else:
-        answer = (
-            "StockIQ educational intelligence: Asset allocation across equities, gold, and fixed income "
-            "balances risk-adjusted return. Historical stress tests illustrate that holding uncorrelated assets "
-            "substantially mitigates drawdown severity during market corrections."
-        )
-        sources = [
-            ChatSourceItem(
-                title="StockIQ Financial Knowledge Base",
-                reference="STOCKIQ-KB-CORE",
-                source_url=None,
-            )
-        ]
-
-    return ChatQueryResponse(
-        session_id=session_id,
+) -> ChatQueryResponse:
+    """Ask an educational financial question backed by RAG vector knowledge base."""
+    return RAGService.generate_grounded_answer(
         query=request.query,
-        answer=answer,
-        sources=sources,
-        created_at=now,
+        session_id=request.session_id,
+        user_id=str(current_user.id),
+        db=db,
     )
 
 
-@router.get("/history", response_model=List[ChatMessageResponse])
+@router.get("/history", response_model=List[ChatMessageResponse], summary="Get chat session history")
 def get_chat_history(
     current_user: User = Depends(get_current_active_user),
-):
+) -> List[ChatMessageResponse]:
     """Retrieve chat session history for current user."""
     now = datetime.now(timezone.utc)
     return [

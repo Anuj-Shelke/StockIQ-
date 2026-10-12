@@ -53,6 +53,14 @@ from app.schemas.chatbot import (
     ChatQueryResponse,
     ChatSessionResponse,
 )
+from app.schemas.education import (
+    SourceCitation,
+    ChatMessage,
+    CalculatorRequest,
+    CalculationResult,
+    CalculatorResponse,
+    GlossaryItem,
+)
 from app.schemas.dashboard import (
     MetricCard,
     PortfolioPerformanceItem,
@@ -143,4 +151,10 @@ __all__ = [
     "ComparisonDataPoint",
     "AssetSummaryMetric",
     "AssetComparisonResponse",
+    "SourceCitation",
+    "ChatMessage",
+    "CalculatorRequest",
+    "CalculationResult",
+    "CalculatorResponse",
+    "GlossaryItem",
 ]
