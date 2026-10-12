@@ -49,6 +49,12 @@ def get_current_user(
             is_active=True,
             is_superuser=(role == "admin"),
         )
+        try:
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        except Exception:
+            db.rollback()
 
     return user
 

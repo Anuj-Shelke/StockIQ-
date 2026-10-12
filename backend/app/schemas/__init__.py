@@ -31,9 +31,12 @@ from app.schemas.stock import (
 )
 from app.schemas.portfolio import (
     HoldingCreate,
+    HoldingUpdate,
     HoldingResponse,
     PortfolioCreate,
+    PortfolioUpdate,
     PortfolioResponse,
+    PortfolioAllocationItem,
 )
 from app.schemas.prediction import (
     ShapFactor,
@@ -86,9 +89,12 @@ __all__ = [
     "StockDetailResponse",
     "PriceHistoryPoint",
     "HoldingCreate",
+    "HoldingUpdate",
     "HoldingResponse",
     "PortfolioCreate",
+    "PortfolioUpdate",
     "PortfolioResponse",
+    "PortfolioAllocationItem",
     "ShapFactor",
     "PredictionRequest",
     "PredictionResponse",
