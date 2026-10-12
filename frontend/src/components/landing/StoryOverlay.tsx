@@ -72,21 +72,13 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
-      {/* top bar */}
+      {/* top bar — sign-in button removed; users must scroll to reach the auth card */}
       <header className="pointer-events-auto absolute inset-x-0 top-0 flex items-center justify-between px-5 py-5 md:px-10">
         <Link to="/" className="flex items-center gap-2" aria-label="StockIQ home">
           <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold-400/50 bg-gold-500/10 font-display text-lg text-gold-300">₹</span>
           <span className="font-display text-xl tracking-tight text-white">StockIQ</span>
         </Link>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <Link
-            to="/login"
-            className="rounded-full border border-white/25 bg-ink-950/60 px-4 py-1.5 text-xs font-semibold text-white transition hover:border-gold-300 hover:text-gold-300"
-          >
-            Sign in
-          </Link>
-        </div>
+        <ThemeToggle />
       </header>
 
       {/* 01 MONEY: hierarchy is wordmark, then tagline, then supporting line (the card sits below) */}

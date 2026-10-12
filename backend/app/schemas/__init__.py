@@ -31,12 +31,16 @@ from app.schemas.stock import (
 )
 from app.schemas.portfolio import (
     HoldingCreate,
+    HoldingUpdate,
     HoldingResponse,
     PortfolioCreate,
+    PortfolioUpdate,
     PortfolioResponse,
+    PortfolioAllocationItem,
 )
 from app.schemas.prediction import (
     ShapFactor,
+    PredictionDetail,
     PredictionRequest,
     PredictionResponse,
     SimulationRequest,
@@ -49,6 +53,27 @@ from app.schemas.chatbot import (
     ChatQueryResponse,
     ChatSessionResponse,
 )
+from app.schemas.education import (
+    SourceCitation,
+    ChatMessage,
+    CalculatorRequest,
+    CalculationResult,
+    CalculatorResponse,
+    GlossaryItem,
+)
+from app.schemas.admin_review import (
+    ReviewRequestCreate,
+    ReviewUpdatePayload,
+    ReviewRequestItem,
+    AdminSystemMetrics,
+    DataQualityReport,
+)
+from app.schemas.snapshot import (
+    AnalysisSnapshotCreate,
+    AnalysisSnapshot,
+    AppNotification,
+    NotificationSendRequest,
+)
 from app.schemas.dashboard import (
     MetricCard,
     PortfolioPerformanceItem,
@@ -60,6 +85,22 @@ from app.schemas.market import (
     IntradayChartPoint,
     IntradayChartResponse,
     MarketStatusInfo,
+)
+from app.schemas.analysis import (
+    QuantitativeRiskMetrics,
+    StressScenarioImpact,
+    StressScenario,
+    DrawdownDataPoint,
+    AssetDrawdownContribution,
+    RiskToleranceProfile,
+    StressTestRequest,
+    RiskRealityCheckResponse,
+)
+from app.schemas.asset_comparison import (
+    AssetComparisonParams,
+    ComparisonDataPoint,
+    AssetSummaryMetric,
+    AssetComparisonResponse,
 )
 
 __all__ = [
@@ -86,10 +127,14 @@ __all__ = [
     "StockDetailResponse",
     "PriceHistoryPoint",
     "HoldingCreate",
+    "HoldingUpdate",
     "HoldingResponse",
     "PortfolioCreate",
+    "PortfolioUpdate",
     "PortfolioResponse",
+    "PortfolioAllocationItem",
     "ShapFactor",
+    "PredictionDetail",
     "PredictionRequest",
     "PredictionResponse",
     "SimulationRequest",
@@ -107,4 +152,31 @@ __all__ = [
     "IntradayChartPoint",
     "IntradayChartResponse",
     "MarketStatusInfo",
+    "QuantitativeRiskMetrics",
+    "StressScenarioImpact",
+    "StressScenario",
+    "DrawdownDataPoint",
+    "AssetDrawdownContribution",
+    "RiskToleranceProfile",
+    "StressTestRequest",
+    "RiskRealityCheckResponse",
+    "AssetComparisonParams",
+    "ComparisonDataPoint",
+    "AssetSummaryMetric",
+    "AssetComparisonResponse",
+    "SourceCitation",
+    "ChatMessage",
+    "CalculatorRequest",
+    "CalculationResult",
+    "CalculatorResponse",
+    "GlossaryItem",
+    "ReviewRequestCreate",
+    "ReviewUpdatePayload",
+    "ReviewRequestItem",
+    "AdminSystemMetrics",
+    "DataQualityReport",
+    "AnalysisSnapshotCreate",
+    "AnalysisSnapshot",
+    "AppNotification",
+    "NotificationSendRequest",
 ]

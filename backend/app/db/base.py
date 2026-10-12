@@ -34,14 +34,23 @@ class GUID(TypeDecorator):
         else:
             if isinstance(value, uuid.UUID):
                 return str(value)
-            return str(uuid.UUID(str(value)))
+            try:
+                return str(uuid.UUID(str(value)))
+            except Exception:
+                return str(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return value
-        if isinstance(value, uuid.UUID):
-            return value
-        return uuid.UUID(str(value))
+        if dialect.name == "postgresql":
+            if isinstance(value, uuid.UUID):
+                return value
+            try:
+                return uuid.UUID(str(value))
+            except Exception:
+                return str(value)
+        else:
+            return str(value)
 
 
 class Base(DeclarativeBase):

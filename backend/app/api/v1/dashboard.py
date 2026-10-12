@@ -27,16 +27,16 @@ def get_dashboard(
     if user_portfolios:
         portfolio_items = [
             PortfolioPerformanceItem(
-                portfolio_id=p.id,
+                portfolio_id=str(p.id),
                 portfolio_name=p.name,
-                current_value=p.total_value,
-                invested_value=round(p.total_value * 0.88, 2),
-                total_gain_loss=round(p.total_value * 0.12, 2),
+                current_value=float(p.total_value),
+                invested_value=round(float(p.total_value) * 0.88, 2),
+                total_gain_loss=round(float(p.total_value) * 0.12, 2),
                 return_percentage=13.6,
             )
             for p in user_portfolios
         ]
-        total_val = sum(p.total_value for p in user_portfolios)
+        total_val = sum(float(p.total_value) for p in user_portfolios)
     else:
         portfolio_items = [
             PortfolioPerformanceItem(

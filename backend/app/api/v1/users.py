@@ -17,7 +17,7 @@ def get_user_me(
     """Retrieve details of the currently authenticated user."""
     created_at = getattr(current_user, "created_at", None) or datetime.now(timezone.utc)
     return UserResponse(
-        id=current_user.id,
+        id=str(current_user.id),
         email=current_user.email,
         full_name=current_user.full_name,
         role=current_user.role,
@@ -43,7 +43,7 @@ def update_user_me(
 
     created_at = getattr(current_user, "created_at", None) or datetime.now(timezone.utc)
     return UserResponse(
-        id=current_user.id,
+        id=str(current_user.id),
         email=current_user.email,
         full_name=current_user.full_name,
         role=current_user.role,
