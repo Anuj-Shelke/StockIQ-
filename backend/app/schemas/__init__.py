@@ -74,6 +74,12 @@ from app.schemas.analysis import (
     StressTestRequest,
     RiskRealityCheckResponse,
 )
+from app.schemas.asset_comparison import (
+    AssetComparisonParams,
+    ComparisonDataPoint,
+    AssetSummaryMetric,
+    AssetComparisonResponse,
+)
 
 __all__ = [
     "APIBaseModel",
@@ -131,4 +137,8 @@ __all__ = [
     "RiskToleranceProfile",
     "StressTestRequest",
     "RiskRealityCheckResponse",
+    "AssetComparisonParams",
+    "ComparisonDataPoint",
+    "AssetSummaryMetric",
+    "AssetComparisonResponse",
 ]
