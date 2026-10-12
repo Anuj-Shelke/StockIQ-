@@ -69,17 +69,32 @@ export function SceneBackdrop({ mode, progress, onReveal }: Props) {
   const [ready, setReady] = useState(false)
   const markReady = useCallback(() => setReady(true), [])
 
-  // Safety net: never leave the scene hidden if the "ready" signal does not arrive.
+  // Safety net: never leave the scene hidden if the "ready" signal does not arrive quickly.
   useEffect(() => {
-    const id = window.setTimeout(markReady, 4000)
+    const id = window.setTimeout(markReady, 1200)
     return () => window.clearTimeout(id)
   }, [markReady])
 
   return (
-    <div className="absolute inset-0 bg-ink-950">
-      <img src={POSTER} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-40" />
+    <div className="absolute inset-0 bg-ink-950 overflow-hidden">
+      {/* Ambient background glows for instant premium atmosphere */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[650px] rounded-full bg-gold-500/10 blur-[130px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-20 right-10 h-[380px] w-[380px] rounded-full bg-sky-950/20 blur-[100px]"
+      />
+
+      <img
+        src={POSTER}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover opacity-60 transition-opacity duration-700"
+      />
       {/* The scene renders (and compiles its shaders) invisibly, then fades in over the poster: no pop, no half-built frames. */}
-      <div className="absolute inset-0 transition-opacity duration-1000 ease-out" style={{ opacity: ready ? 1 : 0 }}>
+      <div className="absolute inset-0 transition-opacity duration-700 ease-out" style={{ opacity: ready ? 1 : 0 }}>
         <SceneBoundary
           fallback={
             <>
@@ -97,7 +112,7 @@ export function SceneBackdrop({ mode, progress, onReveal }: Props) {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 35%, rgb(3 6 13 / 0.55) 80%, rgb(3 6 13 / 0.9) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 30%, rgb(3 6 13 / 0.6) 75%, rgb(3 6 13 / 0.95) 100%)' }}
       />
     </div>
   )
