@@ -62,11 +62,11 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
         _in_memory_users[request.email] = new_user
 
     claims = {"email": new_user.email, "role": new_user.role, "full_name": new_user.full_name}
-    access_token = create_access_token(subject=new_user.id, claims=claims)
-    refresh_token = create_refresh_token(subject=new_user.id)
+    access_token = create_access_token(subject=str(new_user.id), claims=claims)
+    refresh_token = create_refresh_token(subject=str(new_user.id))
 
     return AuthSuccessResponse(
-        user_id=new_user.id,
+        user_id=str(new_user.id),
         email=new_user.email,
         full_name=new_user.full_name,
         role=new_user.role,
@@ -98,11 +98,11 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
         raise AuthenticationError("User account is disabled")
 
     claims = {"email": user.email, "role": user.role, "full_name": user.full_name}
-    access_token = create_access_token(subject=user.id, claims=claims)
-    refresh_token = create_refresh_token(subject=user.id)
+    access_token = create_access_token(subject=str(user.id), claims=claims)
+    refresh_token = create_refresh_token(subject=str(user.id))
 
     return AuthSuccessResponse(
-        user_id=user.id,
+        user_id=str(user.id),
         email=user.email,
         full_name=user.full_name,
         role=user.role,
