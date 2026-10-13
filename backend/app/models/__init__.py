@@ -7,6 +7,7 @@ from app.models.prediction import Prediction, ShapExplanation, Recommendation
 from app.models.chat import ChatSession, ChatMessage
 from app.models.knowledge_base import KBDocument, KBChunk
 from app.models.system import AuditLog, LLMUsage, AssetRate, FeatureFlag
+from app.models.review import ReviewRequest
 
 __all__ = [
     "User",
@@ -27,4 +28,5 @@ __all__ = [
     "LLMUsage",
     "AssetRate",
     "FeatureFlag",
+    "ReviewRequest",
 ]

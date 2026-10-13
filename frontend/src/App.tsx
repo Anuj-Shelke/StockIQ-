@@ -12,6 +12,7 @@ import { EducationHub } from '@/features/education/EducationHub'
 import { HistoryView } from '@/features/analysis-history/HistoryView'
 import { ReviewRequestView } from '@/features/review-requests/ReviewRequestView'
 import { SebiRagChatbot } from '@/features/sebi-guidelines/SebiRagChatbot'
+import { AdminOverview } from '@/features/admin-dashboard/AdminOverview'
 import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/CustomerDashboardLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
 
@@ -44,6 +45,7 @@ export const App = () => (
           <Route path="history" element={<HistoryView />} />
           <Route path="sebi-rules" element={<SebiRagChatbot />} />
           <Route path="review-request" element={<ReviewRequestView />} />
+          <Route path="admin" element={<AdminOverview />} />
         </Route>
       </Route>
 

@@ -25,18 +25,20 @@ def list_admin_reviews(
     status: Optional[str] = Query(None, description="Filter by status (PENDING, IN_REVIEW, RESOLVED, REJECTED)"),
     severity: Optional[str] = Query(None, description="Filter by severity (LOW, MEDIUM, HIGH, CRITICAL)"),
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> List[ReviewRequestItem]:
     """Retrieve all submitted review tickets with optional filtering."""
-    return ReviewService.list_review_requests(status=status, severity=severity)
+    return ReviewService.list_review_requests(status=status, severity=severity, db=db)
 
 
 @router.get("/{ticket_id}", response_model=ReviewRequestItem, summary="Get review ticket detail")
 def get_admin_review(
     ticket_id: str,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> ReviewRequestItem:
     """Retrieve full audit details and analysis snapshot data for a specific review ticket."""
-    return ReviewService.get_review_request(ticket_id=ticket_id)
+    return ReviewService.get_review_request(ticket_id=ticket_id, db=db)
 
 
 @router.put("/{ticket_id}", response_model=ReviewRequestItem, summary="Update review ticket status")

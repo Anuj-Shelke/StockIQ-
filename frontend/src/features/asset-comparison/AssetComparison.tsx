@@ -12,6 +12,7 @@ export function AssetComparison() {
   const [initialInvestment, setInitialInvestment] = useState<number>(100000)
   const [monthlySip, setMonthlySip] = useState<number>(10000)
   const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>('5Y')
+  const [goldCagrOverride, setGoldCagrOverride] = useState<number>(10.8)
   const [fdRateOverride, setFdRateOverride] = useState<number>(7.1)
   const [inflationAdjusted, setInflationAdjusted] = useState<boolean>(false)
 
@@ -19,7 +20,7 @@ export function AssetComparison() {
 
   // Nominal historical CAGR expectations in Indian markets
   const equityCagrNominal = 0.135 // ~13.5%
-  const goldCagrNominal = 0.108   // ~10.8%
+  const goldCagrNominal = goldCagrOverride / 100   // Configurable Gold CAGR
   const fdRateNominal = fdRateOverride / 100
   const inflationRate = inflationAdjusted ? 0.06 : 0.00 // 6% CPI inflation adjustment
 
@@ -60,7 +61,7 @@ export function AssetComparison() {
       }
     }
     return points
-  }, [initialInvestment, monthlySip, years, fdRateNominal, inflationRate])
+  }, [initialInvestment, monthlySip, years, goldCagrNominal, fdRateNominal, inflationRate])
 
   const totalInvestedCash = initialInvestment + monthlySip * 12 * years
   const lastPoint = comparisonData[comparisonData.length - 1]
@@ -145,7 +146,7 @@ export function AssetComparison() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Initial Lump Sum (₹)
@@ -174,6 +175,19 @@ export function AssetComparison() {
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              Gold CAGR (% p.a.)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={goldCagrOverride}
+              onChange={(e) => setGoldCagrOverride(Number(e.target.value))}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono focus:border-gold-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Bank FD Rate (% p.a.)
             </label>
             <input
@@ -193,7 +207,7 @@ export function AssetComparison() {
                 onChange={(e) => setInflationAdjusted(e.target.checked)}
                 className="rounded border-white/20 text-gold-500 focus:ring-0"
               />
-              <span className="text-xs">Adjust 6% Inflation (Real Return)</span>
+              <span className="text-xs">Adjust 6% Inflation</span>
             </label>
           </div>
         </div>
@@ -204,6 +218,39 @@ export function AssetComparison() {
 
       {/* Comparative Summary Cards */}
       <ComparisonMatrix metrics={summaryMetrics} />
+
+      {/* Curated Explainability Note: Gold vs Equities vs FDs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-gold-400 font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-gold-400" />
+            <span>Why Hold Gold vs Equity SIP?</span>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Gold acts as an essential macroeconomic volatility shock-absorber. While equities create wealth via earnings expansion, gold has zero counterparty risk and preserves purchasing power through currency devaluation and geopolitical crises.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-blue-400 font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            <span>Equity Compounding Engine</span>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Equity SIPs benefit from rupee-cost averaging, purchasing more units during market drawdowns. Over 10-year horizons in India, NIFTY 50 nominal CAGR (~13.5%) strongly outpaces both inflation (6%) and fixed deposits (7.1%).
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>Tax Arbitrage & SGB Rules</span>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Under Finance Act 2024, physical gold and equity LTCG are standardized at 12.5%. However, Sovereign Gold Bonds (SGB) held to maturity are 100% exempt from capital gains tax, yielding an additional 2.5% semi-annual coupon.
+          </p>
+        </div>
+      </div>
 
       {/* Assumptions & Footnotes */}
       <div className="rounded-xl border border-white/5 bg-ink-950/40 p-4 text-xs text-slate-400 space-y-2">
@@ -216,7 +263,7 @@ export function AssetComparison() {
             <strong>Equities (NIFTY 50 TRI):</strong> Projected at 13.5% nominal historical CAGR with recurring monthly compounding. Historical drawdown reflects COVID-19 (-38.4%).
           </li>
           <li>
-            <strong>Physical Gold (24K / 10g):</strong> Projected at 10.8% nominal historical INR CAGR based on 20-year domestic returns.
+            <strong>Physical Gold (24K / 10g):</strong> Projected at {goldCagrOverride}% nominal historical INR CAGR based on long-term domestic returns.
           </li>
           <li>
             <strong>Bank Fixed Deposit:</strong> Compounded quarterly at {fdRateOverride}% p.a. Capital is insured up to ₹5,00,000 by DICGC.

@@ -91,3 +91,43 @@ def test_admin_and_review_endpoints(client, auth_headers):
     quality_res = client.get("/api/v1/data-quality/reports", headers=auth_headers)
     assert quality_res.status_code == 200
     assert len(quality_res.json()) >= 3
+
+
+def test_review_service_db_persistence(db_session):
+    """Verify review requests are persisted to database tables and queryable via ORM."""
+    from app.models.review import ReviewRequest
+
+    req = ReviewRequestCreate(
+        symbol="WIPRO.NS",
+        reason="Model Target Divergence",
+        user_notes="Investigating variance in predicted opening price.",
+        severity="MEDIUM",
+    )
+    ticket = ReviewService.create_review_request(
+        user_id="usr-db-001",
+        user_email="investor.db@stockiq.ai",
+        request=req,
+        db=db_session,
+    )
+    assert ticket.id.startswith("REV-")
+
+    # Assert record exists in database
+    row = db_session.query(ReviewRequest).filter(ReviewRequest.id == ticket.id).first()
+    assert row is not None
+    assert row.symbol == "WIPRO.NS"
+    assert row.user_email == "investor.db@stockiq.ai"
+    assert row.status == "PENDING"
+
+    # Advance status in DB
+    updated = ReviewService.update_review_request(
+        ticket_id=ticket.id,
+        payload=ReviewUpdatePayload(status="IN_REVIEW", resolution_notes="Assigned auditor for deep dive."),
+        reviewer_email="compliance@stockiq.ai",
+        db=db_session,
+    )
+    assert updated.status == "IN_REVIEW"
+
+    # Query DB row to ensure update committed
+    row_updated = db_session.query(ReviewRequest).filter(ReviewRequest.id == ticket.id).first()
+    assert row_updated.status == "IN_REVIEW"
+    assert row_updated.resolution_notes == "Assigned auditor for deep dive."
