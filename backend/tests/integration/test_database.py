@@ -3,6 +3,7 @@
 import contextlib
 from datetime import date
 import io
+from pathlib import Path
 import uuid
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -61,7 +62,11 @@ def test_schema_metadata_all_tables_registered():
 
 def test_alembic_migration_upgrade_and_downgrade_sql():
     """Verify that Alembic can compile both upgrade head and rollback downgrade to SQL."""
-    alembic_cfg = Config("alembic.ini")
+    alembic_ini = Path(__file__).resolve().parent.parent.parent / "alembic.ini"
+    alembic_cfg = Config(str(alembic_ini) if alembic_ini.exists() else "alembic.ini")
+    if alembic_ini.exists():
+        alembic_cfg.set_main_option("script_location", str(alembic_ini.parent / "alembic"))
+        alembic_cfg.set_main_option("version_locations", str(alembic_ini.parent / "alembic" / "versions"))
 
     # Capture upgrade SQL output
     upgrade_buf = io.StringIO()
