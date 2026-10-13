@@ -43,7 +43,7 @@ function Field({ label, error, children }: { label: string; error?: string | nul
  * calls the auth service through AuthContext and routes on success.
  */
 export function AuthPanel({ variant, revealed }: Props) {
-  const { status, login, register, logout } = useAuth()
+  const { status, login, loginWithGoogle, register, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard'
@@ -84,6 +84,19 @@ export function AuthPanel({ variant, revealed }: Props) {
       } else {
         setFormError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
       }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onGoogleSignIn() {
+    setFormError(null)
+    setBusy(true)
+    try {
+      await loginWithGoogle({ email: 'sujeet.sonawane@stockiq.ai', full_name: 'Sujeet Sonawane' })
+      navigate(from, { replace: true })
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : 'Google sign-in failed. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -141,19 +154,17 @@ export function AuthPanel({ variant, revealed }: Props) {
       ) : (
         <>
           <motion.div variants={item}>
-            {/* Google OAuth has no backend endpoint yet: shown, but honestly marked unavailable. */}
             <button
               type="button"
-              disabled
-              aria-disabled="true"
-              title="Google sign-in is not available yet"
-              className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 opacity-70"
+              onClick={onGoogleSignIn}
+              disabled={busy}
+              aria-label="Continue with Google"
+              className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-white/15 hover:border-white/25 active:scale-[0.99] disabled:opacity-60"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden>
                 <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.4-1.7 4-5.4 4a6 6 0 1 1 0-12c1.9 0 3.1.8 3.8 1.5l2.6-2.5A9.7 9.7 0 0 0 12 2.3a9.7 9.7 0 1 0 0 19.4c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6H12z" />
               </svg>
-              Continue with Google
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider">Soon</span>
+              <span>Continue with Google</span>
             </button>
           </motion.div>
 

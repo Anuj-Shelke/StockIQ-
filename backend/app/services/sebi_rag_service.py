@@ -100,8 +100,36 @@ class SebiRagService:
                 )
             )
 
+        q_lower = query.lower()
+        market_keywords = ["nifty", "market", "live", "sensex", "index", "current price", "today", "movement", "real time", "real-time"]
+        is_market_query = any(k in q_lower for k in market_keywords)
+
+        live_market_text = ""
+        if is_market_query:
+            try:
+                from app.integrations.market_data.market_service import MarketDataService
+                indices_res = MarketDataService.get_indices()
+                nifty_quote = next((i for i in indices_res.indices if i.symbol == "^NSEI"), None)
+                if not nifty_quote and indices_res.indices:
+                    nifty_quote = indices_res.indices[0]
+
+                if nifty_quote:
+                    sign = "+" if nifty_quote.change >= 0 else ""
+                    live_market_text = (
+                        f"### 📊 Live Real-Time Market Feed (NSE & BSE):\n"
+                        f"- **Benchmark Index ({nifty_quote.name}):** ₹{nifty_quote.current_price:,.2f} "
+                        f"({sign}{nifty_quote.change:,.2f} / {sign}{nifty_quote.change_percent:.2f}%)\n"
+                        f"- **Session Status:** {indices_res.market_status.session_label} "
+                        f"({indices_res.market_status.current_time_ist})\n"
+                        f"- **Day's High / Low:** ₹{nifty_quote.day_high:,.2f} / ₹{nifty_quote.day_low:,.2f}\n"
+                        f"- **52-Week High / Low:** ₹{nifty_quote.year_high:,.2f} / ₹{nifty_quote.year_low:,.2f}\n\n"
+                    )
+            except Exception:
+                pass
+
         if primary_chunk:
             ans_lead = (
+                f"{live_market_text}"
                 f"Under the **{primary_chunk['title']}** ({primary_chunk['section']}), "
                 f"the Securities and Exchange Board of India (SEBI) stipulates the following statutory requirements:\n\n"
             )
@@ -126,6 +154,7 @@ class SebiRagService:
             final_answer = ans_lead + ans_body + ans_secondary + ans_footer
         else:
             final_answer = (
+                f"{live_market_text}"
                 "SEBI regulations require all market participants, intermediaries, and investors to operate with transparency, "
                 "proper suitability assessment, and strict conflict disclosure. For specific statutory text, please query "
                 "Investment Advisory (IA), Insider Trading (PIT), Fraudulent Practices (PFUTP), or SCORES Grievance mechanisms."
@@ -137,8 +166,8 @@ class SebiRagService:
             citations=citations,
             statutory_disclaimer=(
                 "Information provided by the SEBI RAG Compliance Assistant is synthesized from official SEBI gazettes, "
-                "regulations, and master circulars. It is for informational and educational purposes and does not constitute "
-                "formal legal counsel."
+                "regulations, and master circulars with live NSE market connectivity. It is for informational and educational "
+                "purposes and does not constitute formal legal counsel."
             ),
             session_id=session_id,
             timestamp=datetime.now(timezone.utc),

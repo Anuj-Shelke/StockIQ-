@@ -1,4 +1,4 @@
-import { Briefcase, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
+import { Briefcase, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, ShieldCheck, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -20,4 +20,5 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard/history', label: 'Analysis History', icon: History, blurb: 'Revisit and compare your earlier analyses and snapshots.' },
   { to: '/dashboard/sebi-rules', label: 'SEBI Regulations', icon: Scale, blurb: 'RAG-grounded AI assistant trained on statutory SEBI guidelines, investor rights, and compliance.' },
   { to: '/dashboard/review-request', label: 'Review Request', icon: ClipboardCheck, blurb: 'Ask an authorised reviewer to look over an analysis.' },
+  { to: '/dashboard/admin', label: 'Admin Governance', icon: ShieldCheck, blurb: 'Compliance overview, data feed health, and review queue audit.' },
 ]

@@ -80,6 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loadProfile],
   )
 
+  const loginWithGoogle = useCallback(
+    async (payload?: { email?: string; full_name?: string; id_token?: string }) => {
+      await authService.loginWithGoogle(payload)
+      setStatus('authenticated')
+      void loadProfile()
+    },
+    [loadProfile],
+  )
+
   const logout = useCallback(() => {
     authService.logout()
     clearProfile()
@@ -87,8 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearProfile])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, dashboard, profileError, profileLoading, reloadProfile: loadProfile, login, register, logout }),
-    [status, user, dashboard, profileError, profileLoading, loadProfile, login, register, logout],
+    () => ({ status, user, dashboard, profileError, profileLoading, reloadProfile: loadProfile, login, loginWithGoogle, register, logout }),
+    [status, user, dashboard, profileError, profileLoading, loadProfile, login, loginWithGoogle, register, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

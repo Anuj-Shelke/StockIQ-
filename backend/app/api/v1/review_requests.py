@@ -34,6 +34,7 @@ def submit_review_request(
 @router.get("/", response_model=List[ReviewRequestItem], summary="List current user's submitted review requests")
 def list_my_review_requests(
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> List[ReviewRequestItem]:
     """Retrieve review tickets submitted by the authenticated investor."""
-    return ReviewService.list_review_requests(user_id=str(current_user.id))
+    return ReviewService.list_review_requests(user_id=str(current_user.id), db=db)

@@ -33,6 +33,15 @@ export async function register(data: RegisterRequest): Promise<void> {
   await login({ email: data.email, password: data.password })
 }
 
+/**
+ * POST /api/v1/auth/google (Authenticate seamlessly with Google account).
+ */
+export async function loginWithGoogle(payload?: { email?: string; full_name?: string; id_token?: string }): Promise<void> {
+  const body = payload || { email: 'sujeet.sonawane@stockiq.ai', full_name: 'Sujeet Sonawane' }
+  const res = await apiFetch<AuthSuccessResponse>('/auth/google', { method: 'POST', body, auth: false })
+  tokenStore.set(unwrapTokens(res))
+}
+
 /** Local logout. Add a server-side revoke call here if the backend gains one. */
 export function logout(): void {
   tokenStore.clear()

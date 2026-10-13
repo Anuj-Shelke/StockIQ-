@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiFetch } from '@/services/api'
 import {
   Send,
   User,
@@ -131,7 +132,7 @@ export function SebiRagChatbot() {
     },
   ])
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const q = (textToSend || inputQuery).trim()
     if (!q) return
 
@@ -146,7 +147,50 @@ export function SebiRagChatbot() {
     if (!textToSend) setInputQuery('')
     setIsTyping(true)
 
-    // Simulate RAG pipeline latency & grounded retrieval
+    // First attempt to query live FastAPI backend RAG service
+    try {
+      const data = await apiFetch<{
+        answer: string
+        citations: Array<{
+          doc_id: string
+          title: string
+          section: string
+          circular_no: string
+          official_url: string
+          excerpt: string
+          relevance_score: number
+        }>
+      }>('/sebi-rag/chat', {
+        method: 'POST',
+        body: { query: q },
+        auth: false,
+      })
+
+      if (data && data.answer) {
+        const botMsg: ChatMessage = {
+          id: `bot-${Date.now()}`,
+          sender: 'bot',
+          text: data.answer,
+          citations: (data.citations || []).map((c) => ({
+            docId: c.doc_id,
+            title: c.title,
+            section: c.section,
+            circularNo: c.circular_no,
+            officialUrl: c.official_url,
+            excerpt: c.excerpt,
+            relevanceScore: c.relevance_score,
+          })),
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }
+        setMessages((prev) => [...prev, botMsg])
+        setIsTyping(false)
+        return
+      }
+    } catch (err) {
+      console.warn('Backend SEBI RAG unreachable, using grounded offline regulations:', err)
+    }
+
+    // Graceful offline fallback
     setTimeout(() => {
       let botResponse = ''
       let citations: SebiCitation[] = []
@@ -250,7 +294,7 @@ export function SebiRagChatbot() {
 
       setMessages((prev) => [...prev, botMsg])
       setIsTyping(false)
-    }, 600)
+    }, 400)
   }
 
   return (

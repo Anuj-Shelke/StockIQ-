@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, FileCheck2, ClipboardList, Activity, ShieldCheck, Database } from 'lucide-react'
+import { apiFetch } from '@/services/api'
 import { ReviewQueue } from '@/features/review-management/ReviewQueue'
 import { ReviewDetailModal } from '@/features/review-management/ReviewDetailModal'
 import type { ReviewRequestItem, AdminSystemMetrics, ReviewStatus } from '@/types/adminReview'
@@ -75,17 +76,93 @@ const SAMPLE_REQUESTS: ReviewRequestItem[] = [
 ]
 
 export function AdminOverview() {
-  const [metrics] = useState<AdminSystemMetrics>(SAMPLE_METRICS)
+  const [metrics, setMetrics] = useState<AdminSystemMetrics>(SAMPLE_METRICS)
   const [requests, setRequests] = useState<ReviewRequestItem[]>(SAMPLE_REQUESTS)
   const [selectedRequest, setSelectedRequest] = useState<ReviewRequestItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    async function fetchAdminData() {
+      try {
+        const liveItems = await apiFetch<Array<{
+          id: string
+          user_id?: string
+          user_email: string
+          symbol: string
+          analysis_snapshot_id?: string
+          reason: string
+          user_notes: string
+          status: ReviewStatus
+          severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+          created_at: string
+          assigned_reviewer?: string
+          resolution_notes?: string
+          snapshot_data?: Record<string, unknown>
+        }>>('/admin/reviews')
+
+        if (Array.isArray(liveItems) && liveItems.length > 0) {
+          const mapped: ReviewRequestItem[] = liveItems.map((r) => ({
+            id: r.id,
+            userId: r.user_id || 'usr-anon',
+            userEmail: r.user_email,
+            symbol: r.symbol,
+            analysisSnapshotId: r.analysis_snapshot_id || '',
+            reason: r.reason,
+            userNotes: r.user_notes,
+            status: r.status,
+            severity: r.severity,
+            createdAt: r.created_at,
+            assignedReviewer: r.assigned_reviewer,
+            resolutionNotes: r.resolution_notes,
+            snapshotData: r.snapshot_data
+              ? {
+                  currentPrice: Number(r.snapshot_data.currentPrice ?? 2500),
+                  predictedTarget: Number(r.snapshot_data.predictedTarget ?? 2650),
+                  modelConfidence: Number(r.snapshot_data.modelConfidence ?? 82),
+                  timeHorizon: String(r.snapshot_data.timeHorizon ?? '30-Day'),
+                }
+              : undefined,
+          }))
+          setRequests(mapped)
+        }
+      } catch (err) {
+        console.warn('Could not load live admin reviews from backend, using baseline queue:', err)
+      }
+
+      try {
+        const liveMetrics = await apiFetch<{
+          total_users?: number
+          total_analyses?: number
+          active_review_requests?: number
+          data_quality_status?: 'HEALTHY' | 'DEGRADED' | 'OUTAGE'
+          nse_feed_latency_ms?: number
+          rag_vector_coverage_percent?: number
+        }>('/admin/dashboard/metrics')
+
+        if (liveMetrics) {
+          setMetrics({
+            totalUsers: liveMetrics.total_users ?? SAMPLE_METRICS.totalUsers,
+            totalAnalyses: liveMetrics.total_analyses ?? SAMPLE_METRICS.totalAnalyses,
+            activeReviewRequests: liveMetrics.active_review_requests ?? SAMPLE_METRICS.activeReviewRequests,
+            dataQualityStatus: liveMetrics.data_quality_status ?? SAMPLE_METRICS.dataQualityStatus,
+            nseFeedLatencyMs: liveMetrics.nse_feed_latency_ms ?? SAMPLE_METRICS.nseFeedLatencyMs,
+            ragVectorCoveragePercent: liveMetrics.rag_vector_coverage_percent ?? SAMPLE_METRICS.ragVectorCoveragePercent,
+          })
+        }
+      } catch {
+        // keep baseline metrics
+      }
+    }
+
+    void fetchAdminData()
+  }, [])
 
   const handleAuditRequest = (item: ReviewRequestItem) => {
     setSelectedRequest(item)
     setIsModalOpen(true)
   }
 
-  const handleUpdateStatus = (id: string, newStatus: ReviewStatus, notes: string) => {
+  const handleUpdateStatus = async (id: string, newStatus: ReviewStatus, notes: string) => {
     setRequests((prev) =>
       prev.map((r) =>
         r.id === id
@@ -98,6 +175,15 @@ export function AdminOverview() {
           : r
       )
     )
+
+    try {
+      await apiFetch(`/admin/reviews/${id}`, {
+        method: 'PATCH',
+        body: { status: newStatus, resolution_notes: notes },
+      })
+    } catch (err) {
+      console.warn('Backend update error, optimistic status retained:', err)
+    }
   }
 
   return (

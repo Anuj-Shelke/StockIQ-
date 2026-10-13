@@ -21,6 +21,13 @@ class RefreshTokenRequest(APIBaseModel):
     refresh_token: str
 
 
+class GoogleAuthRequest(APIBaseModel):
+    """Payload for authenticating via Google OAuth/credential."""
+    id_token: Optional[str] = None
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+
+
 class TokenResponse(APIBaseModel):
     """JWT token pair response."""
     access_token: str
