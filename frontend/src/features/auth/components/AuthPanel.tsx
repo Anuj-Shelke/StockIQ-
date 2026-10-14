@@ -5,7 +5,6 @@ import { ArrowLeft, Eye, EyeOff, Loader2, UserRound, ShieldCheck } from 'lucide-
 import { useAuth } from '@/hooks/useAuth'
 import { ApiError } from '@/services/api'
 import { validateEmail, validatePassword } from '@/services/auth'
-import { requestGoogleAccessToken } from '@/services/googleIdentity'
 
 export type AuthVariant = 'login' | 'signup' | 'forgot'
 
@@ -43,7 +42,7 @@ function Field({ label, error, children }: { label: string; error?: string | nul
  * Emerges once the bubble has burst.
  */
 export function AuthPanel({ variant, revealed }: Props) {
-  const { status, login, loginWithGoogle, register, logout } = useAuth()
+  const { status, login, register, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard'
@@ -86,22 +85,6 @@ export function AuthPanel({ variant, revealed }: Props) {
       } else {
         setFormError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
       }
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onGoogleSignIn() {
-    setFormError(null)
-    setBusy(true)
-    try {
-      const access_token = await requestGoogleAccessToken()
-      await loginWithGoogle({ access_token })
-      navigate('/dashboard', { replace: true })
-    } catch (err) {
-      setFormError(err instanceof ApiError
-        ? err.message
-        : err instanceof Error ? err.message : 'Google sign-in could not be completed. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -248,25 +231,6 @@ export function AuthPanel({ variant, revealed }: Props) {
               </button>
             </motion.div>
           </form>
-
-          {(signup || portal === 'user') && (
-            <motion.div variants={item} className="mt-4">
-              <div className="mb-3 flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-text-muted">
-                <span className="h-px flex-1 bg-white/10" />
-                <span>Or continue with</span>
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-              <button
-                type="button"
-                onClick={() => void onGoogleSignIn()}
-                disabled={busy}
-                className="card-surface flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-text-primary transition hover:border-gold/40 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
-              >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span aria-hidden="true" className="grid h-5 w-5 place-items-center rounded-full bg-white font-display font-bold text-[#4285F4]">G</span>}
-                Continue with Google
-              </button>
-            </motion.div>
-          )}
 
           <motion.div variants={item} className="mt-4 flex flex-col items-center gap-1.5 text-xs text-text-muted">
             {!signup && (
