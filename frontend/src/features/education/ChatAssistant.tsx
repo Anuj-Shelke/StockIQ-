@@ -106,27 +106,27 @@ export function ChatAssistant() {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm flex flex-col h-[520px]">
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+    <div className="card-surface p-5 flex flex-col h-[520px]">
+      <div className="flex items-center justify-between border-b border-theme-subtle pb-3">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-gold-400" />
-          <h3 className="font-semibold text-white">AI Financial Education Assistant</h3>
+          <Bot className="h-5 w-5 text-gold" />
+          <h3 className="font-semibold text-text-primary text-sm uppercase tracking-tight">Financial Intelligence Assistant</h3>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-          <Sparkles className="h-3.5 w-3.5 text-gold-400" />
-          <span>RAG-Backed Knowledge</span>
+        <div className="flex items-center gap-1.5 text-xs text-text-muted font-mono">
+          <Sparkles className="h-3.5 w-3.5 text-gold" />
+          <span>RAG-Audited Knowledge</span>
         </div>
       </div>
 
       {/* Suggested Starter Prompts */}
-      <div className="py-2.5 flex flex-wrap gap-2 border-b border-white/5">
+      <div className="py-2.5 flex flex-wrap gap-2 border-b border-theme-subtle">
         {STARTER_PROMPTS.map((prompt) => (
           <button
             key={prompt}
             onClick={() => handleSend(prompt)}
-            className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300 hover:border-gold-500/40 hover:text-white transition"
+            className="flex items-center gap-1.5 rounded-full border border-theme-subtle bg-surface-elevated px-3 py-1 text-[11px] text-text-muted hover:border-gold hover:text-gold transition font-mono"
           >
-            <HelpCircle className="h-3 w-3 text-gold-400/80" />
+            <HelpCircle className="h-3 w-3 text-gold/80" />
             {prompt}
           </button>
         ))}
@@ -144,8 +144,8 @@ export function ChatAssistant() {
               <div
                 className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-semibold ${
                   isBot
-                    ? 'border border-gold-500/30 bg-gold-500/10 text-gold-400'
-                    : 'bg-white/10 text-slate-200'
+                    ? 'border border-gold/30 bg-gold/10 text-gold'
+                    : 'border border-theme-subtle bg-surface-elevated text-text-secondary'
                 }`}
               >
                 {isBot ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -154,16 +154,16 @@ export function ChatAssistant() {
               <div
                 className={`max-w-xl rounded-xl p-3.5 text-xs leading-relaxed ${
                   isBot
-                    ? 'border border-white/10 bg-ink-900/90 text-slate-200'
-                    : 'bg-gold-500 text-ink-950 font-medium'
+                    ? 'border border-theme-subtle bg-surface-elevated text-text-primary shadow-sm'
+                    : 'bg-gold text-canvas font-medium shadow-md'
                 }`}
               >
                 <div className="whitespace-pre-line">{msg.content}</div>
 
                 {/* Citations Badges */}
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-white/10">
-                    <p className="text-[10px] uppercase font-mono text-slate-400 mb-1.5">
+                  <div className="mt-3 pt-2.5 border-t border-theme-subtle">
+                    <p className="text-[10px] uppercase font-mono text-text-muted mb-1.5">
                       Verified Sources:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -176,7 +176,7 @@ export function ChatAssistant() {
 
                 <div
                   className={`mt-1.5 text-[10px] font-mono text-right ${
-                    isBot ? 'text-slate-500' : 'text-ink-900/70'
+                    isBot ? 'text-text-muted' : 'text-canvas/70'
                   }`}
                 >
                   {msg.timestamp}
@@ -187,8 +187,8 @@ export function ChatAssistant() {
         })}
 
         {isTyping && (
-          <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-            <Bot className="h-4 w-4 text-gold-400 animate-spin" />
+          <div className="flex items-center gap-2 text-xs text-text-muted font-mono">
+            <Bot className="h-4 w-4 text-gold animate-spin" />
             <span>Consulting financial knowledge base...</span>
           </div>
         )}
@@ -200,18 +200,18 @@ export function ChatAssistant() {
           e.preventDefault()
           handleSend()
         }}
-        className="pt-3 border-t border-white/10 flex gap-2"
+        className="pt-3 border-t border-theme-subtle flex gap-2"
       >
         <input
           type="text"
-          placeholder="Ask a question about financial concepts, CAGR, drawdowns..."
+          placeholder="Ask a question about financial concepts, CAGR, drawdowns, tax..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white placeholder-slate-500 focus:border-gold-500 focus:outline-none"
+          className="input-default flex-1 text-xs py-2"
         />
         <button
           type="submit"
-          className="flex items-center gap-1.5 rounded-lg bg-gold-500 px-4 py-2 text-xs font-semibold text-ink-950 transition hover:bg-gold-400"
+          className="btn-gold flex items-center gap-1.5 text-xs py-2 px-4"
         >
           <Send className="h-3.5 w-3.5" />
           Ask

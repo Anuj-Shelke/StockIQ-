@@ -32,6 +32,6 @@ export interface RiskToleranceProfile {
   statedLevel: 'Conservative' | 'Moderate' | 'Aggressive'
   statedScore: number // 1 - 100
   historicalRealityScore: number // 1 - 100
-  historicalRealityLevel: 'Fragile' | 'Moderate' | 'Bulletproof'
+  historicalRealityLevel: 'Fragile' | 'Moderate' | 'Bulletproof' | 'Fragile (Elevated Exposure)'
   gapDescription: string
 }

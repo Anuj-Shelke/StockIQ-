@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import DatabaseUnavailableError, NotFoundError
 from app.models.portfolio import Portfolio
 from app.models.profile import InvestorProfile
 from app.schemas.analysis import (
@@ -30,7 +30,7 @@ from app.schemas.analysis import (
     StressScenarioImpact,
 )
 from app.services.metrics_service import MetricsService
-from app.services.portfolio_service import PortfolioService, _in_memory_portfolios
+from app.services.portfolio_service import PortfolioService
 from app.services.stock_analysis_service import StockAnalysisService
 
 
@@ -262,19 +262,22 @@ class StressTestService:
     ) -> RiskRealityCheckResponse:
         """Assemble full risk reality check assessment for a portfolio."""
         holdings_data: List[Dict] = []
-        portfolio_name = "Default Investment Portfolio"
-        total_val = initial_capital or 100000.0
+        portfolio_name = ""
+        total_val = initial_capital or 0.0
 
+        if not portfolio_id:
+            raise NotFoundError("Add a holding to your portfolio before running this analysis.")
         if portfolio_id:
             clean_pid = str(portfolio_id).strip()
             # Retrieve portfolio
             p_obj = None
             try:
-                p_obj = db.query(Portfolio).filter(Portfolio.id == clean_pid).first()
-            except Exception:
-                pass
-            if not p_obj:
-                p_obj = _in_memory_portfolios.get(clean_pid)
+                p_obj = db.query(Portfolio).filter(
+                    Portfolio.id == clean_pid,
+                    Portfolio.user_id == str(user_id),
+                ).first()
+            except Exception as exc:
+                raise DatabaseUnavailableError() from exc
 
             if p_obj:
                 portfolio_name = p_obj.name
@@ -288,15 +291,13 @@ class StressTestService:
                         "quantity": float(h.quantity),
                         "current_price": float(h.current_price or h.avg_buy_price),
                     })
+            else:
+                raise NotFoundError("Portfolio not found")
 
+        if not p_obj:
+            raise NotFoundError("Portfolio not found")
         if not holdings_data:
-            # Calibrated sample holdings for demonstration
-            holdings_data = [
-                {"symbol": "RELIANCE.NS", "asset_type": "stock", "quantity": 25.0, "current_price": 2980.0},
-                {"symbol": "TCS.NS", "asset_type": "stock", "quantity": 12.0, "current_price": 4120.0},
-                {"symbol": "GOLD", "asset_type": "gold", "quantity": 5.0, "current_price": 7540.0},
-            ]
-            total_val = sum(h["quantity"] * h["current_price"] for h in holdings_data)
+            raise NotFoundError("Add a holding to your portfolio before running this analysis.")
 
         # Aggregate portfolio beta and volatility
         weighted_beta = 0.0

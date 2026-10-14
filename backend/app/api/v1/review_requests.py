@@ -1,7 +1,7 @@
 """Review Requests API for Investors (Reporting Disputed Predictions/Analyses)."""
 
 from typing import List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
@@ -9,6 +9,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.admin_review import ReviewRequestCreate, ReviewRequestItem
 from app.services.review_service import ReviewService
+from app.services.notification_service import NotificationService
 
 
 router = APIRouter()
@@ -18,16 +19,19 @@ router = APIRouter()
 @router.post("/", response_model=ReviewRequestItem, status_code=201, summary="Submit a review request")
 def submit_review_request(
     request: ReviewRequestCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ReviewRequestItem:
     """Submit an analysis discrepancy ticket for review by compliance and quantitative analysts."""
-    return ReviewService.create_review_request(
+    item = ReviewService.create_review_request(
         user_id=str(current_user.id),
         user_email=getattr(current_user, "email", f"{current_user.id}@example.com"),
         request=request,
         db=db,
     )
+    background_tasks.add_task(NotificationService.notify_admin_review_request, item)
+    return item
 
 
 @router.get("", response_model=List[ReviewRequestItem], summary="List current user's submitted review requests")

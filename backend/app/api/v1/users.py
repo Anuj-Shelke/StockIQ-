@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_active_user
+from app.core.exceptions import DatabaseUnavailableError
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdateRequest
@@ -38,8 +39,9 @@ def update_user_me(
         try:
             db.commit()
             db.refresh(current_user)
-        except Exception:
-            pass
+        except Exception as exc:
+            db.rollback()
+            raise DatabaseUnavailableError() from exc
 
     created_at = getattr(current_user, "created_at", None) or datetime.now(timezone.utc)
     return UserResponse(

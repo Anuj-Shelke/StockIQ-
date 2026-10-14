@@ -7,6 +7,8 @@ from app.integrations.market_data.market_service import MarketDataService
 from app.models.portfolio import Portfolio
 from app.models.user import User
 from app.schemas.dashboard import DashboardResponse, MetricCard, PortfolioPerformanceItem
+from app.services.portfolio_service import PortfolioService
+from app.core.exceptions import DatabaseUnavailableError
 
 router = APIRouter()
 
@@ -21,34 +23,23 @@ def get_dashboard(
     user_portfolios = []
     try:
         user_portfolios = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
-    except Exception:
-        pass
+    except Exception as exc:
+        raise DatabaseUnavailableError() from exc
 
     if user_portfolios:
-        portfolio_items = [
-            PortfolioPerformanceItem(
-                portfolio_id=str(p.id),
-                portfolio_name=p.name,
-                current_value=float(p.total_value),
-                invested_value=round(float(p.total_value) * 0.88, 2),
-                total_gain_loss=round(float(p.total_value) * 0.12, 2),
-                return_percentage=13.6,
-            )
-            for p in user_portfolios
-        ]
-        total_val = sum(float(p.total_value) for p in user_portfolios)
+        responses = [PortfolioService._build_portfolio_response(db, p) for p in user_portfolios]
+        portfolio_items = [PortfolioPerformanceItem(
+            portfolio_id=p.id,
+            portfolio_name=p.name,
+            current_value=p.total_value,
+            invested_value=p.total_invested,
+            total_gain_loss=p.total_gain_loss,
+            return_percentage=p.return_percentage,
+        ) for p in responses]
+        total_val = sum(p.total_value for p in responses)
     else:
-        portfolio_items = [
-            PortfolioPerformanceItem(
-                portfolio_id="sample-demo-portfolio-1",
-                portfolio_name="Primary Equity Growth",
-                current_value=245000.0,
-                invested_value=210000.0,
-                total_gain_loss=35000.0,
-                return_percentage=16.67,
-            )
-        ]
-        total_val = 245000.0
+        portfolio_items = []
+        total_val = 0.0
 
     # Fetch dynamic real-time NIFTY 50 Benchmark
     try:
@@ -58,17 +49,17 @@ def get_dashboard(
         nifty_trend = "up" if nifty.change >= 0 else "down"
         nifty_desc = f"NSE benchmark • {nifty.market_status.session_label}"
     except Exception:
-        nifty_val = "22,363.35"
-        nifty_change = -0.70
-        nifty_trend = "down"
-        nifty_desc = "NSE benchmark index"
+        nifty_val = "Unavailable"
+        nifty_change = None
+        nifty_trend = "neutral"
+        nifty_desc = "Benchmark data is temporarily unavailable"
 
     metrics = [
         MetricCard(
             title="Portfolio Value",
             value=f"₹{total_val:,.2f}",
-            change_percent=2.45,
-            trend="up",
+            change_percent=None,
+            trend="neutral",
             description="Overall portfolio valuation across all held assets",
         ),
         MetricCard(
@@ -80,25 +71,21 @@ def get_dashboard(
         ),
         MetricCard(
             title="Gold (10g 24K)",
-            value="₹75,400.00",
-            change_percent=-0.32,
-            trend="down",
-            description="Current domestic physical gold benchmark",
+            value="Unavailable",
+            change_percent=None,
+            trend="neutral",
+            description="Market data is temporarily unavailable",
         ),
         MetricCard(
             title="Portfolio Risk Score",
-            value="Moderate",
+            value="Unavailable",
             change_percent=None,
             trend="neutral",
             description="Derived from asset volatility and sector concentration",
         ),
     ]
 
-    recent_activity = [
-        "Risk reality check simulated for COVID-19 crash scenario",
-        "Portfolio asset allocation compared with Gold and Bank FD",
-        "Explanation generated for TCS.NS 30-day forecast",
-    ]
+    recent_activity = []
 
     return DashboardResponse(
         metrics=metrics,

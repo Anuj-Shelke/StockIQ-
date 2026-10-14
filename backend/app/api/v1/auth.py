@@ -1,10 +1,12 @@
 from datetime import timedelta
 import uuid
 from fastapi import APIRouter, Depends, status
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.exceptions import AuthenticationError, ConflictError
+from app.core.exceptions import AuthenticationError, ConflictError, DatabaseUnavailableError, PermissionDeniedError, ServiceUnavailableError
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -25,22 +27,17 @@ from app.schemas.auth import (
 
 router = APIRouter()
 
-# In-memory store fallback for development/testing when PostgreSQL is offline
-_in_memory_users = {}
-
-
 @router.post("/register", response_model=AuthSuccessResponse, status_code=status.HTTP_201_CREATED)
 def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
     """Register a new investor user account."""
-    existing_user = None
     try:
         existing_user = db.query(User).filter(User.email == request.email).first()
-    except Exception:
-        # Fallback to in-memory check
-        existing_user = _in_memory_users.get(request.email)
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     if existing_user:
-        raise ConflictError(f"A user with email '{request.email}' already exists")
+        raise ConflictError("An account with this email already exists.")
 
     user_id = str(uuid.uuid4())
     hashed_pwd = get_password_hash(request.password)
@@ -58,9 +55,12 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-    except Exception:
-        # Store in-memory fallback
-        _in_memory_users[request.email] = new_user
+    except IntegrityError as exc:
+        db.rollback()
+        raise ConflictError("An account with this email already exists.") from exc
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     claims = {"email": new_user.email, "role": new_user.role, "full_name": new_user.full_name}
     access_token = create_access_token(subject=str(new_user.id), claims=claims)
@@ -86,17 +86,24 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
     user = None
     try:
         user = db.query(User).filter(User.email == request.email).first()
-    except Exception:
-        pass
-
-    if not user:
-        user = _in_memory_users.get(request.email)
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     if not user or not verify_password(request.password, user.hashed_password):
-        raise AuthenticationError("Invalid email or password")
+        raise AuthenticationError("Invalid email or password.")
 
     if not user.is_active:
-        raise AuthenticationError("User account is disabled")
+        raise AuthenticationError("Invalid email or password.")
+
+    expected_role = "admin" if request.portal == "admin" else "investor"
+    if user.role != expected_role:
+        message = (
+            "These credentials do not have administrator access."
+            if request.portal == "admin"
+            else "This is an administrator account. Please continue as Admin."
+        )
+        raise PermissionDeniedError(message)
 
     claims = {"email": user.email, "role": user.role, "full_name": user.full_name}
     access_token = create_access_token(subject=str(user.id), claims=claims)
@@ -130,11 +137,15 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
     user = None
     try:
         user = db.query(User).filter(User.id == user_id).first()
-    except Exception:
-        pass
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
-    email = user.email if user else f"{user_id}@example.com"
-    role = user.role if user else "investor"
+    if not user or not user.is_active:
+        raise AuthenticationError("Please log in to continue.")
+
+    email = user.email
+    role = user.role
 
     claims = {"email": email, "role": role}
     new_access_token = create_access_token(subject=user_id, claims=claims)
@@ -150,30 +161,47 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
 
 @router.post("/google", response_model=AuthSuccessResponse)
 def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
-    """Authenticate or register user seamlessly via Google Account."""
-    email = str(request.email or "sujeet.sonawane@stockiq.ai").strip().lower()
-    full_name = request.full_name or "Sujeet Sonawane"
-
-    # In production with actual Google ID tokens, optionally verify via tokeninfo
-    if request.id_token and not request.email:
-        try:
-            import httpx
-            resp = httpx.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={request.id_token}", timeout=4.0)
-            if resp.status_code == 200:
-                data = resp.json()
-                email = data.get("email", email)
-                full_name = data.get("name", full_name)
-        except Exception:
-            pass
-
-    user = None
+    """Exchange a verified Google identity for the normal StockIQ investor session."""
+    google_client_id = (settings.GOOGLE_CLIENT_ID or "").strip()
+    if not google_client_id:
+        raise ServiceUnavailableError("Google sign-in is not configured. Please use email and password.")
+    if bool(request.id_token) == bool(request.access_token):
+        raise AuthenticationError("Google sign-in could not be verified.")
     try:
-        user = db.query(User).filter(User.email == email).first()
-    except Exception:
-        pass
+        import httpx
+        params = {"id_token": request.id_token} if request.id_token else {"access_token": request.access_token}
+        token_response = httpx.get("https://oauth2.googleapis.com/tokeninfo", params=params, timeout=5.0)
+        if token_response.status_code != 200:
+            raise AuthenticationError("Google sign-in could not be verified.")
+        token_data = token_response.json()
+        audience = token_data.get("aud") or token_data.get("issued_to")
+        if audience != google_client_id or (token_data.get("azp") and token_data["azp"] != google_client_id):
+            raise AuthenticationError("Google sign-in could not be verified.")
 
-    if not user:
-        user = _in_memory_users.get(email)
+        if request.access_token:
+            identity_response = httpx.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {request.access_token}"}, timeout=5.0,
+            )
+            if identity_response.status_code != 200:
+                raise AuthenticationError("Google sign-in could not be verified.")
+            identity = identity_response.json()
+        else:
+            identity = token_data
+        if identity.get("email_verified") not in (True, "true") or not identity.get("email"):
+            raise AuthenticationError("Google sign-in requires a verified email address.")
+        email = str(identity["email"]).strip().lower()
+        full_name = identity.get("name") or request.full_name
+    except AuthenticationError:
+        raise
+    except Exception as exc:
+        raise ServiceUnavailableError("Google sign-in is temporarily unavailable. Please try again.") from exc
+
+    try:
+        user = db.query(User).filter(func.lower(User.email) == email).first()
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     if not user:
         user_id = str(uuid.uuid4())
@@ -190,15 +218,23 @@ def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
         except Exception:
-            _in_memory_users[email] = user
+            db.rollback()
+            raise DatabaseUnavailableError()
     else:
+        if user.role == "admin":
+            raise PermissionDeniedError("Administrator accounts must sign in with their admin password.")
+        if user.role != "investor":
+            raise PermissionDeniedError("This account cannot sign in with Google.")
+        if not user.is_active:
+            raise PermissionDeniedError("This account is inactive. Please contact StockIQ support.")
         # Update user name if missing
         if full_name and not user.full_name:
             user.full_name = full_name
             try:
                 db.commit()
-            except Exception:
-                pass
+            except Exception as exc:
+                db.rollback()
+                raise DatabaseUnavailableError() from exc
 
     claims = {"email": user.email, "role": user.role, "full_name": user.full_name}
     access_token = create_access_token(subject=str(user.id), claims=claims)

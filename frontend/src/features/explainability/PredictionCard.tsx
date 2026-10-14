@@ -15,70 +15,75 @@ export function PredictionCard({
   const isUp = prediction.predictedChange >= 0
 
   return (
-    <div className="rounded-xl border border-white/10 bg-ink-950/60 p-6 backdrop-blur-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-5">
+    <div className="card-surface p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-theme-subtle pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white font-display">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-xl font-bold text-text-primary font-display font-mono">
               {prediction.symbol}
             </h2>
-            <span className="rounded bg-white/10 px-2 py-0.5 text-xs text-slate-300">
-              {prediction.name}
+            <span className="badge-verified">
+              Verified NSE Feed
             </span>
-            <span className="rounded border border-gold-500/30 bg-gold-500/10 px-2.5 py-0.5 text-xs font-mono font-semibold text-gold-400">
-              {prediction.forecastHorizon} Forecast
+            <span className="badge-ai font-mono">
+              AI {prediction.forecastHorizon}
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-400">
-            Powered by Gradient Boosted Ensemble (XGBoost) with probabilistic interval bounds.
+          <p className="mt-1 text-xs text-text-muted">
+            {prediction.name} • Deterministic XGBoost regressor with calibrated 90% confidence bands.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenReasoning}
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+            className="btn-gold flex items-center gap-1.5 text-xs py-2"
           >
-            <HelpCircle className="h-4 w-4 text-gold-400" />
-            Understand Reasoning
+            <HelpCircle className="h-4 w-4" />
+            Inspect Why
           </button>
           <button
             onClick={onReportIssue}
-            className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20"
-            title="Submit dispute request to human review portal"
+            className="btn-secondary flex items-center gap-1.5 text-xs py-2 text-text-muted hover:text-loss"
+            title="Request clarification or expert oversight for this analysis"
           >
             <Flag className="h-4 w-4" />
-            Report Issue
+            Request Human Review
           </button>
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Current Price */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Current Price
-          </span>
-          <div className="mt-2 text-2xl font-bold font-mono text-white">
+        <div className="rounded-xl border border-theme-subtle bg-surface-elevated/40 p-4">
+          <div className="flex items-center justify-between text-text-muted">
+            <span className="text-xs font-semibold uppercase tracking-wider font-mono">
+              Spot Price
+            </span>
+            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-surface-hover text-text-muted">
+              Live NSE
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-bold font-mono text-text-primary tracking-tight">
             ₹{prediction.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-slate-500">Live Spot / NSE Feed</span>
+          <span className="text-[11px] text-text-muted font-mono">Real-time exchange mark</span>
         </div>
 
         {/* Model Forecast Target */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Target Prediction
+        <div className="rounded-xl border border-theme-subtle bg-surface-elevated/40 p-4">
+          <div className="flex items-center justify-between text-text-muted">
+            <span className="text-xs font-semibold uppercase tracking-wider font-mono">
+              Fair Value Target
             </span>
-            <Target className="h-4 w-4 text-gold-400" />
+            <Target className="h-4 w-4 text-gold" />
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono text-white">
+          <div className="mt-2 text-2xl font-bold font-mono text-text-primary tracking-tight">
             ₹{prediction.targetPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </div>
           <div
             className={`mt-1 flex items-center gap-1 text-xs font-mono font-medium ${
-              isUp ? 'text-emerald-400' : 'text-rose-400'
+              isUp ? 'text-gain' : 'text-loss'
             }`}
           >
             {isUp ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
@@ -90,39 +95,39 @@ export function PredictionCard({
         </div>
 
         {/* Confidence Interval */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl border border-theme-subtle bg-surface-elevated/40 p-4">
+          <span className="text-xs font-semibold uppercase tracking-wider font-mono text-text-muted">
             90% Confidence Interval
           </span>
-          <div className="mt-2 text-sm font-bold font-mono text-slate-200">
+          <div className="mt-2 text-sm font-bold font-mono text-text-primary">
             ₹{prediction.lowerBound.toLocaleString('en-IN')} - ₹{prediction.upperBound.toLocaleString('en-IN')}
           </div>
-          <div className="mt-2 h-1.5 w-full rounded-full bg-white/10">
+          <div className="mt-2.5 h-1.5 w-full rounded-full bg-surface-hover overflow-hidden">
             <div
-              className="h-full rounded-full bg-gold-400"
+              className="h-full rounded-full bg-gold"
               style={{ width: `${prediction.confidenceScore}%` }}
             />
           </div>
-          <div className="mt-1 flex justify-between text-[10px] text-slate-500 font-mono">
-            <span>Lower</span>
-            <span>Confidence: {prediction.confidenceScore}%</span>
-            <span>Upper</span>
+          <div className="mt-1.5 flex justify-between text-[10px] text-text-muted font-mono">
+            <span>Downside ₹{prediction.lowerBound.toFixed(0)}</span>
+            <span className="text-gold font-medium">{prediction.confidenceScore}%</span>
+            <span>Upside ₹{prediction.upperBound.toFixed(0)}</span>
           </div>
         </div>
 
         {/* Confidence Reliability */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Signal Quality
+        <div className="rounded-xl border border-theme-subtle bg-surface-elevated/40 p-4">
+          <div className="flex items-center justify-between text-text-muted">
+            <span className="text-xs font-semibold uppercase tracking-wider font-mono">
+              Empirical Reliability
             </span>
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <ShieldCheck className="h-4 w-4 text-gain" />
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono text-emerald-400">
+          <div className="mt-2 text-2xl font-bold font-mono text-gain tracking-tight">
             High Confidence
           </div>
-          <span className="text-[11px] text-slate-500">
-            Cross-validated on 500+ days
+          <span className="text-[11px] text-text-muted font-mono">
+            Backtested across 500+ daily bars
           </span>
         </div>
       </div>

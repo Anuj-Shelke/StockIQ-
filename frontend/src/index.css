@@ -2,112 +2,340 @@
 @import "@fontsource-variable/fraunces";
 @import "tailwindcss";
 
+/* ====================================================================
+   StockIQ Centralized Design System: CSS Custom Properties
+   ==================================================================== */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces & Backgrounds */
+  --bg-canvas: #070B14;
+  --bg-surface: #0D1424;
+  --bg-elevated: #131C30;
+  --bg-hover: #18233B;
+  --bg-card-black: #060912;
+
+  /* Borders & Hairlines */
+  --border-subtle: #151E33;
+  --border-default: #1F2A44;
+  --border-focus: #D4A84B;
+  --hairline-gold: rgba(212, 168, 75, 0.45);
+  --hairline-blue: rgba(91, 141, 239, 0.4);
+
+  /* Typography */
+  --text-primary: #E8ECF4;
+  --text-secondary: #A8B2C7;
+  --text-muted: #6F7A93;
+
+  /* Accent & Intelligence Colors */
+  --gold-primary: #D4A84B;
+  --gold-hover: #E4C366;
+  --gold-soft: rgba(212, 168, 75, 0.14);
+  --blue-primary: #5B8DEF;
+  --blue-soft: rgba(91, 141, 239, 0.14);
+
+  /* Semantic Feedback */
+  --color-success: #34B58A;
+  --color-success-soft: rgba(52, 181, 138, 0.14);
+  --color-warning: #E3A23B;
+  --color-warning-soft: rgba(227, 162, 59, 0.14);
+  --color-danger: #E5584F;
+  --color-danger-soft: rgba(229, 88, 79, 0.14);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 36px -4px rgba(0, 0, 0, 0.65);
+  --shadow-card-black: 0 8px 32px -8px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(212, 168, 75, 0.25);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces & Backgrounds: Warm Editorial Ivory */
+  --bg-canvas: #F7F3EA;
+  --bg-surface: #FCFBF8;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #F1ECE0;
+  --bg-card-black: #111726;
+
+  /* Borders & Hairlines */
+  --border-subtle: #EEE8DA;
+  --border-default: #E4DDCC;
+  --border-focus: #A87B1F;
+  --hairline-gold: rgba(168, 123, 31, 0.45);
+  --hairline-blue: rgba(47, 95, 196, 0.35);
+
+  /* Typography */
+  --text-primary: #101828;
+  --text-secondary: #3B4660;
+  --text-muted: #6B7488;
+
+  /* Accent & Intelligence Colors */
+  --gold-primary: #A87B1F;
+  --gold-hover: #8F6715;
+  --gold-soft: rgba(168, 123, 31, 0.12);
+  --blue-primary: #2F5FC4;
+  --blue-soft: rgba(47, 95, 196, 0.12);
+
+  /* Semantic Feedback */
+  --color-success: #0F8A63;
+  --color-success-soft: rgba(15, 138, 99, 0.12);
+  --color-warning: #B5730F;
+  --color-warning-soft: rgba(181, 115, 15, 0.12);
+  --color-danger: #C23B33;
+  --color-danger-soft: rgba(194, 59, 51, 0.12);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 3px 0 rgba(30, 20, 10, 0.06);
+  --shadow-md: 0 4px 16px -2px rgba(30, 20, 10, 0.08);
+  --shadow-lg: 0 12px 32px -4px rgba(30, 20, 10, 0.12);
+  --shadow-card-black: 0 8px 32px -8px rgba(17, 23, 38, 0.25), inset 0 1px 0 rgba(212, 168, 75, 0.35);
+}
+
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
 
-  --color-ink-950: #03060d;
-  --color-ink-900: #060b16;
-  --color-ink-800: #0b1424;
-  --color-ink-700: #12203a;
-  --color-ink-600: #1b2f52;
-  --color-mist: #cfdcf0;
-  --color-gold-300: #f1d98a;
-  --color-gold-400: #e4c366;
-  --color-gold-500: #c9a24a;
-  --color-gold-600: #a67f2e;
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-hover: var(--bg-hover);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border: var(--border-default);
+  --color-border-focus: var(--border-focus);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-gold: var(--gold-primary);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-soft: var(--gold-soft);
+  --color-blue: var(--blue-primary);
+  --color-blue-soft: var(--blue-soft);
+
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+
+  /* Preserving backward compatible ink utilities dynamically */
+  --color-ink-950: var(--bg-canvas);
+  --color-ink-900: var(--bg-surface);
+  --color-ink-800: var(--bg-elevated);
+  --color-ink-700: var(--border-default);
+  --color-gold-300: var(--gold-primary);
+  --color-gold-400: var(--gold-primary);
+  --color-gold-500: var(--gold-primary);
+  --color-gold-600: var(--gold-hover);
 }
 
 @layer base {
-  html {
-    color-scheme: dark;
-  }
-  html.light {
-    color-scheme: light;
-  }
   body {
-    @apply antialiased bg-ink-950 text-slate-100 min-h-screen font-sans transition-colors duration-200;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+                color 280ms cubic-bezier(0.16, 1, 0.3, 1);
   }
-  html.light body {
-    @apply bg-slate-50 text-slate-900;
-  }
+
   ::selection {
-    background: rgb(201 162 74 / 0.35);
+    background: rgba(212, 168, 75, 0.3);
+    color: var(--text-primary);
+  }
+
+  /* View Transitions API crossfade smoothing */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+/* ====================================================================
+   StockIQ Visual Signatures & Component Classes
+   ==================================================================== */
+
 @layer components {
-  .glass {
-    background: linear-gradient(145deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.025));
-    border: 1px solid rgb(255 255 255 / 0.12);
-    box-shadow: 0 24px 80px -24px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.12);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    backdrop-filter: blur(22px) saturate(140%);
+  /* 1. The Black Financial Card */
+  .card-black {
+    background: var(--bg-card-black);
+    color: #FFFFFF;
+    border: 1px solid var(--hairline-gold);
+    box-shadow: var(--shadow-card-black);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
   }
-  html.light .glass {
-    background: linear-gradient(145deg, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.65));
-    border: 1px solid rgb(0 0 0 / 0.08);
-    box-shadow: 0 24px 80px -24px rgb(0 0 0 / 0.15), inset 0 1px 0 rgb(255 255 255 / 0.9);
+
+  /* 2. Standard Structured Surface Card */
+  .card-surface {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
   }
-  html.light .bg-ink-950 {
-    background-color: #f8fafc !important;
+
+  .card-interactive:hover {
+    border-color: var(--border-focus);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
-  html.light .bg-ink-900 {
-    background-color: #f1f5f9 !important;
+
+  /* 3. Gold Intelligence Line */
+  .hairline-gold {
+    border-color: var(--hairline-gold);
   }
-  html.light .bg-ink-800 {
-    background-color: #e2e8f0 !important;
+  .line-intelligence-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
   }
-  html.light .text-white {
-    color: #0f172a !important;
+
+  /* 4. Tabular Numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
-  html.light .text-slate-100 {
-    color: #1e293b !important;
+
+  /* 5. 3-Tier Explainable AI Badges */
+  .badge-tier-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+    border: 1px solid rgba(91, 141, 239, 0.3);
   }
-  html.light .text-slate-200 {
-    color: #334155 !important;
+
+  .badge-tier-interpretation {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: var(--gold-soft);
+    color: var(--gold-primary);
+    border: 1px solid var(--hairline-gold);
   }
-  html.light .text-slate-300 {
-    color: #475569 !important;
+
+  .badge-tier-why {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: rgba(111, 122, 147, 0.14);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
   }
-  html.light .border-white\/10 {
-    border-color: rgb(0 0 0 / 0.1) !important;
+
+  /* 6. Risk Lens Exposure Classes */
+  .lens-low {
+    color: var(--color-success);
+    background: var(--color-success-soft);
+    border: 1px solid rgba(52, 181, 138, 0.3);
   }
-  html.light .border-white\/20 {
-    border-color: rgb(0 0 0 / 0.15) !important;
+
+  .lens-moderate {
+    color: var(--blue-primary);
+    background: var(--blue-soft);
+    border: 1px solid rgba(91, 141, 239, 0.3);
   }
-  html.light .border-white\/25 {
-    border-color: rgb(0 0 0 / 0.2) !important;
+
+  .lens-elevated {
+    color: var(--color-warning);
+    background: var(--color-warning-soft);
+    border: 1px solid rgba(227, 162, 59, 0.3);
   }
-  html.light .bg-white\/5 {
-    background-color: rgb(0 0 0 / 0.04) !important;
+
+  .lens-danger {
+    color: var(--color-danger);
+    background: var(--color-danger-soft);
+    border: 1px solid rgba(229, 88, 79, 0.3);
   }
-  html.light .bg-white\/10 {
-    background-color: rgb(0 0 0 / 0.07) !important;
-  }
+
+  /* 7. Action Buttons */
   .btn-gold {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-ink-950 transition duration-200;
-    background: linear-gradient(180deg, var(--color-gold-300), var(--color-gold-500));
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 8px 0 -4px var(--color-gold-600), 0 18px 30px -12px rgb(201 162 74 / 0.55);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(180deg, var(--gold-primary), var(--gold-hover));
+    color: #070B14;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(212, 168, 75, 0.25);
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
   }
   .btn-gold:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 10px 0 -4px var(--color-gold-600), 0 24px 36px -12px rgb(201 162 74 / 0.65);
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+    box-shadow: 0 4px 14px rgba(212, 168, 75, 0.35);
   }
   .btn-gold:active:not(:disabled) {
     transform: translateY(1px);
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.4) inset, 0 3px 0 -2px var(--color-gold-600);
   }
   .btn-gold:disabled {
-    @apply cursor-not-allowed opacity-60;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
-  .field {
-    @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition;
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
   }
-  .field:focus {
-    border-color: rgb(228 195 102 / 0.7);
-    box-shadow: 0 0 0 3px rgb(228 195 102 / 0.15);
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-focus);
+    transform: translateY(-1px);
+  }
+
+  /* 8. Field Inputs */
+  .field-input {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .field-input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--gold-soft);
   }
 }
 
@@ -116,6 +344,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

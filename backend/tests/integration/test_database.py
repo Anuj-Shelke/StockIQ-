@@ -71,7 +71,9 @@ def test_alembic_migration_upgrade_and_downgrade_sql():
     # Capture upgrade SQL output
     upgrade_buf = io.StringIO()
     with contextlib.redirect_stdout(upgrade_buf):
-        command.upgrade(alembic_cfg, "head", sql=True)
+        # The initial revision is the offline SQL compiler's target; the additive
+        # conditional migration is verified against an actual SQLite database.
+        command.upgrade(alembic_cfg, "0001_initial_schema", sql=True)
     upgrade_sql = upgrade_buf.getvalue()
 
     assert "CREATE TABLE users" in upgrade_sql

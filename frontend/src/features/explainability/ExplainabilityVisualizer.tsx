@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { Sparkles, CheckCircle2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Sparkles } from 'lucide-react'
 import { ShapWaterfallChart } from './ShapWaterfallChart'
 import { PredictionCard } from './PredictionCard'
 import { ExplanationDrawer } from './ExplanationDrawer'
 import type { ShapFactor, PredictionDetail } from '@/types/explainability'
+import { apiFetch } from '@/services/api'
 
 const SAMPLE_PREDICTION: PredictionDetail = {
   symbol: 'TCS.NS',
@@ -71,43 +73,48 @@ const SAMPLE_SHAP_FACTORS: ShapFactor[] = [
 ]
 
 export function ExplainabilityVisualizer() {
+  const navigate = useNavigate()
+  const [hasHoldings, setHasHoldings] = useState<boolean | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  useEffect(() => {
+    apiFetch<Array<{ holdings: unknown[] }>>('/portfolios')
+      .then((portfolios) => setHasHoldings(portfolios.some((portfolio) => portfolio.holdings.length > 0)))
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : 'Could not load your portfolio.'))
+  }, [])
   const [prediction] = useState<PredictionDetail>(SAMPLE_PREDICTION)
   const [factors] = useState<ShapFactor[]>(SAMPLE_SHAP_FACTORS)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [isDisputeSubmitted, setIsDisputeSubmitted] = useState(false)
-
   const handleReportIssue = () => {
-    setIsDisputeSubmitted(true)
-    setTimeout(() => setIsDisputeSubmitted(false), 5000)
+    const analysisId = `${prediction.symbol}:${prediction.forecastHorizon}:${prediction.baseValue}`
+    navigate('/dashboard/review-request', { state: { analysis: prediction, analysis_snapshot_id: analysisId } })
   }
+
+  if (hasHoldings === null) return <div className="card-surface p-8 text-center text-text-muted">{loadError || 'Loading your portfolio…'}</div>
+  if (loadError) return <div role="alert" className="card-surface p-8 text-center text-text-primary">{loadError}</div>
+  if (!hasHoldings) return <section className="card-surface mx-auto max-w-2xl space-y-4 p-8 text-center"><h2 className="text-xl font-semibold text-text-primary">No analysis yet.</h2><p className="text-sm text-text-muted">Add holdings before viewing analysis.</p><button className="btn-gold" onClick={() => navigate('/dashboard/portfolio')}>Add holdings</button></section>
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-display">
-            Explainable AI & Prediction Attribution
-          </h1>
-          <p className="text-sm text-slate-400">
-            Unpacking the algorithmic reasoning behind ML price forecasts with game-theoretic SHAP feature decomposition.
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
+              Explainable AI & Prediction Attribution
+            </h1>
+            <span className="badge-ai font-mono">
+              Deterministic SHAP
+            </span>
+          </div>
+          <p className="text-sm text-text-muted mt-0.5">
+            Unpacking algorithmic reasoning behind ML price forecasts with game-theoretic SHAP feature decomposition.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-gold-400 bg-gold-500/10 border border-gold-500/20 px-3 py-1.5 rounded-lg">
-          <Sparkles className="h-4 w-4" />
+        <div className="flex items-center gap-2 text-xs font-mono text-gold bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg self-start sm:self-auto font-medium">
+          <Sparkles className="h-4 w-4 text-gold" />
           <span>SHAP TreeExplainer Active</span>
         </div>
       </div>
-
-      {/* Dispute Alert Confirmation */}
-      {isDisputeSubmitted && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-          <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-          <span>
-            Issue reported successfully. A review request has been logged to the <strong>Admin Review Portal</strong> for audit.
-          </span>
-        </div>
-      )}
 
       {/* Prediction Overview Card */}
       <PredictionCard
@@ -124,27 +131,27 @@ export function ExplainabilityVisualizer() {
       />
 
       {/* Curated Explainability Insights & Methodology */}
-      <div className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm space-y-4">
-        <div className="flex items-center gap-2 text-white font-semibold text-sm">
-          <Sparkles className="h-4 w-4 text-gold-400" />
+      <div className="card-surface p-5 space-y-4">
+        <div className="flex items-center gap-2 text-text-primary font-semibold text-sm">
+          <Sparkles className="h-4 w-4 text-gold" />
           <span>Understanding Your Model Attribution (SHAP Deconstruction)</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300 leading-relaxed">
-          <div className="rounded-lg border border-white/5 bg-white/5 p-3.5 space-y-1.5">
-            <span className="font-semibold text-emerald-400">Positive Price Drivers (+₹278.20 Total Push)</span>
-            <p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-text-secondary leading-relaxed">
+          <div className="card-surface p-3.5 space-y-1.5 border-l-2 border-l-gain">
+            <span className="font-semibold text-gain font-mono">Positive Price Drivers (+₹278.20 Total Push)</span>
+            <p className="text-text-muted text-[11px] leading-relaxed">
               Operating margin expansion (+₹125.40) and resilient USD/INR realizations (+₹88.60) form the primary upward thrust. Coupled with validated 200-day EMA support (+₹64.20), these factors counteract prevailing domestic macro headwinds.
             </p>
           </div>
-          <div className="rounded-lg border border-white/5 bg-white/5 p-3.5 space-y-1.5">
-            <span className="font-semibold text-rose-400">Risk Deficits & Negative Factors (-₹52.95 Total Drag)</span>
-            <p>
+          <div className="card-surface p-3.5 space-y-1.5 border-l-2 border-l-loss">
+            <span className="font-semibold text-loss font-mono">Risk Deficits & Negative Factors (-₹52.95 Total Drag)</span>
+            <p className="text-text-muted text-[11px] leading-relaxed">
               Cautionary US discretionary enterprise tech spending (-₹32.50) and temporary delays in BFSI modernization (-₹20.45) pull the forecast down from its ceiling, moderating the model’s target to ₹4,345.50.
             </p>
           </div>
         </div>
-        <p className="text-[11px] text-slate-400">
-          <strong>Statutory Compliance:</strong> In accordance with SEBI circular guidelines on Algorithmic and AI-driven trading recommendations, this visualizer provides exact additive decomposition (Shapley values) ensuring no predictions are rendered without human-interpretable feature weights.
+        <p className="text-[11px] text-text-muted pt-2 border-t border-theme-subtle">
+          <strong className="text-text-primary">Statutory Transparency:</strong> In accordance with SEBI circular guidelines on algorithmic and AI-assisted financial technologies, this visualizer provides exact additive decomposition ensuring all predictions carry human-interpretable feature weights.
         </p>
       </div>
 

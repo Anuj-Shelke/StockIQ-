@@ -30,15 +30,14 @@ export async function register(data: RegisterRequest): Promise<void> {
     tokenStore.set(tokens)
     return
   }
-  await login({ email: data.email, password: data.password })
+  await login({ email: data.email, password: data.password, portal: 'user' })
 }
 
 /**
- * POST /api/v1/auth/google (Authenticate seamlessly with Google account).
+ * POST /api/v1/auth/google (exchange a verified Google credential for a StockIQ session).
  */
-export async function loginWithGoogle(payload?: { email?: string; full_name?: string; id_token?: string }): Promise<void> {
-  const body = payload || { email: 'sujeet.sonawane@stockiq.ai', full_name: 'Sujeet Sonawane' }
-  const res = await apiFetch<AuthSuccessResponse>('/auth/google', { method: 'POST', body, auth: false })
+export async function loginWithGoogle(payload: { access_token: string }): Promise<void> {
+  const res = await apiFetch<AuthSuccessResponse>('/auth/google', { method: 'POST', body: payload, auth: false })
   tokenStore.set(unwrapTokens(res))
 }
 

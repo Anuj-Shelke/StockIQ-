@@ -112,32 +112,37 @@ export function AssetComparison() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white font-display">
-          Cross-Asset Comparison Visualizer
-        </h1>
-        <p className="text-sm text-slate-400">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
+            Cross-Asset Comparison Visualizer
+          </h1>
+          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/20 font-medium">
+            Tri-Asset Compounding
+          </span>
+        </div>
+        <p className="text-sm text-text-muted mt-0.5">
           Compare multi-asset compounding, tax efficiencies, and drawdown behaviors across Equities, Gold, and Fixed Deposits on equal footing.
         </p>
       </div>
 
       {/* Control Panel: Horizons & Config */}
-      <div className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="card-surface p-5 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-theme-subtle pb-4">
           <div className="flex items-center gap-2">
-            <Sliders className="h-4 w-4 text-gold-400" />
-            <span className="text-sm font-semibold text-white">Investment Parameters</span>
+            <Sliders className="h-4 w-4 text-gold" />
+            <span className="text-sm font-semibold text-text-primary uppercase tracking-tight">Investment Parameters</span>
           </div>
 
           {/* Time Horizon Selector */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 p-1 text-xs">
+          <div className="flex items-center gap-1.5 rounded-lg border border-theme-subtle bg-surface-elevated p-1 text-xs">
             {(['1Y', '3Y', '5Y', '10Y'] as TimeHorizon[]).map((hz) => (
               <button
                 key={hz}
                 onClick={() => setTimeHorizon(hz)}
-                className={`rounded px-3 py-1 font-semibold transition ${
+                className={`rounded px-3 py-1 font-mono font-semibold transition ${
                   timeHorizon === hz
-                    ? 'bg-gold-500 text-ink-950 shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-gold text-canvas shadow'
+                    : 'text-text-muted hover:text-text-primary'
                 }`}
               >
                 {hz}
@@ -148,7 +153,7 @@ export function AssetComparison() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider font-mono mb-1">
               Initial Lump Sum (₹)
             </label>
             <input
@@ -156,12 +161,12 @@ export function AssetComparison() {
               step="5000"
               value={initialInvestment}
               onChange={(e) => setInitialInvestment(Math.max(0, Number(e.target.value)))}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono focus:border-gold-500 focus:outline-none"
+              className="input-default font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider font-mono mb-1">
               Monthly SIP (₹)
             </label>
             <input
@@ -169,12 +174,12 @@ export function AssetComparison() {
               step="1000"
               value={monthlySip}
               onChange={(e) => setMonthlySip(Math.max(0, Number(e.target.value)))}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono focus:border-gold-500 focus:outline-none"
+              className="input-default font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider font-mono mb-1">
               Gold CAGR (% p.a.)
             </label>
             <input
@@ -182,12 +187,12 @@ export function AssetComparison() {
               step="0.1"
               value={goldCagrOverride}
               onChange={(e) => setGoldCagrOverride(Number(e.target.value))}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono focus:border-gold-500 focus:outline-none"
+              className="input-default font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider font-mono mb-1">
               Bank FD Rate (% p.a.)
             </label>
             <input
@@ -195,19 +200,19 @@ export function AssetComparison() {
               step="0.1"
               value={fdRateOverride}
               onChange={(e) => setFdRateOverride(Number(e.target.value))}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono focus:border-gold-500 focus:outline-none"
+              className="input-default font-mono"
             />
           </div>
 
           <div className="flex flex-col justify-end">
-            <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 hover:bg-white/10 transition">
+            <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-theme-subtle bg-surface-elevated px-3 py-2 text-sm text-text-secondary hover:border-theme-default transition">
               <input
                 type="checkbox"
                 checked={inflationAdjusted}
                 onChange={(e) => setInflationAdjusted(e.target.checked)}
-                className="rounded border-white/20 text-gold-500 focus:ring-0"
+                className="rounded border-theme-subtle text-gold focus:ring-0"
               />
-              <span className="text-xs">Adjust 6% Inflation</span>
+              <span className="text-xs font-mono">Adjust 6% Inflation</span>
             </label>
           </div>
         </div>
@@ -221,52 +226,52 @@ export function AssetComparison() {
 
       {/* Curated Explainability Note: Gold vs Equities vs FDs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-gold-400 font-semibold text-sm">
-            <span className="h-2 w-2 rounded-full bg-gold-400" />
+        <div className="card-surface p-4 space-y-2 border-l-2 border-l-gold">
+          <div className="flex items-center gap-2 text-gold font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-gold" />
             <span>Why Hold Gold vs Equity SIP?</span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-text-muted leading-relaxed">
             Gold acts as an essential macroeconomic volatility shock-absorber. While equities create wealth via earnings expansion, gold has zero counterparty risk and preserves purchasing power through currency devaluation and geopolitical crises.
           </p>
         </div>
 
-        <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-blue-400 font-semibold text-sm">
-            <span className="h-2 w-2 rounded-full bg-blue-400" />
+        <div className="card-surface p-4 space-y-2 border-l-2 border-l-blue">
+          <div className="flex items-center gap-2 text-blue font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-blue" />
             <span>Equity Compounding Engine</span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-text-muted leading-relaxed">
             Equity SIPs benefit from rupee-cost averaging, purchasing more units during market drawdowns. Over 10-year horizons in India, NIFTY 50 nominal CAGR (~13.5%) strongly outpaces both inflation (6%) and fixed deposits (7.1%).
           </p>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+        <div className="card-surface p-4 space-y-2 border-l-2 border-l-gain">
+          <div className="flex items-center gap-2 text-gain font-semibold text-sm">
+            <span className="h-2 w-2 rounded-full bg-gain" />
             <span>Tax Arbitrage & SGB Rules</span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
+          <p className="text-xs text-text-muted leading-relaxed">
             Under Finance Act 2024, physical gold and equity LTCG are standardized at 12.5%. However, Sovereign Gold Bonds (SGB) held to maturity are 100% exempt from capital gains tax, yielding an additional 2.5% semi-annual coupon.
           </p>
         </div>
       </div>
 
       {/* Assumptions & Footnotes */}
-      <div className="rounded-xl border border-white/5 bg-ink-950/40 p-4 text-xs text-slate-400 space-y-2">
-        <div className="flex items-center gap-1.5 font-semibold text-slate-300">
-          <Info className="h-4 w-4 text-gold-400" />
+      <div className="card-surface p-4 text-xs text-text-muted space-y-2">
+        <div className="flex items-center gap-1.5 font-semibold text-text-secondary uppercase tracking-wider font-mono text-[11px]">
+          <Info className="h-4 w-4 text-gold" />
           <span>Methodology & Assumptions</span>
         </div>
-        <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-400">
+        <ul className="list-disc list-inside space-y-1 text-[11px] text-text-muted">
           <li>
-            <strong>Equities (NIFTY 50 TRI):</strong> Projected at 13.5% nominal historical CAGR with recurring monthly compounding. Historical drawdown reflects COVID-19 (-38.4%).
+            <strong className="text-text-primary">Equities (NIFTY 50 TRI):</strong> Projected at 13.5% nominal historical CAGR with recurring monthly compounding. Historical drawdown reflects COVID-19 (-38.4%).
           </li>
           <li>
-            <strong>Physical Gold (24K / 10g):</strong> Projected at {goldCagrOverride}% nominal historical INR CAGR based on long-term domestic returns.
+            <strong className="text-text-primary">Physical Gold (24K / 10g):</strong> Projected at {goldCagrOverride}% nominal historical INR CAGR based on long-term domestic returns.
           </li>
           <li>
-            <strong>Bank Fixed Deposit:</strong> Compounded quarterly at {fdRateOverride}% p.a. Capital is insured up to ₹5,00,000 by DICGC.
+            <strong className="text-text-primary">Bank Fixed Deposit:</strong> Compounded quarterly at {fdRateOverride}% p.a. Capital is insured up to ₹5,00,000 by DICGC.
           </li>
           <li>
             Past performance is simulated for educational comparison and does not constitute guaranteed future yields.

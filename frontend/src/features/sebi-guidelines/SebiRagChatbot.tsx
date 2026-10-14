@@ -303,24 +303,22 @@ export function SebiRagChatbot() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white font-display">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
               SEBI Regulatory Guidelines & Compliance RAG Chatbot
             </h1>
-            <span className="rounded-full bg-gold-500/20 border border-gold-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-gold-300">
-              RAG Grounded
-            </span>
+            <span className="badge-gold text-[11px]">RAG Grounded</span>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-text-secondary mt-1">
             Official statutory regulatory assistant referencing installed SEBI rulebooks, Investment Advisers Regulations, Insider Trading rules, and SCORES 2.0 dispute frameworks.
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center rounded-xl border border-white/10 bg-ink-950/60 p-1 backdrop-blur-sm">
+        <div className="flex items-center rounded-xl border border-theme-subtle bg-surface p-1">
           <button
             onClick={() => setActiveTab('CHAT')}
             className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${
-              activeTab === 'CHAT' ? 'bg-gold-500 text-ink-950 shadow' : 'text-slate-400 hover:text-white'
+              activeTab === 'CHAT' ? 'bg-gold text-canvas shadow' : 'text-text-muted hover:text-text-primary'
             }`}
           >
             RAG Chat Assistant
@@ -328,7 +326,7 @@ export function SebiRagChatbot() {
           <button
             onClick={() => setActiveTab('DOCUMENTS')}
             className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${
-              activeTab === 'DOCUMENTS' ? 'bg-gold-500 text-ink-950 shadow' : 'text-slate-400 hover:text-white'
+              activeTab === 'DOCUMENTS' ? 'bg-gold text-canvas shadow' : 'text-text-muted hover:text-text-primary'
             }`}
           >
             Installed SEBI Corpus ({INSTALLED_SEBI_DOCUMENTS.length})
@@ -339,7 +337,7 @@ export function SebiRagChatbot() {
       {activeTab === 'CHAT' ? (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface (3 cols) */}
-          <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-ink-950/70 backdrop-blur-md flex flex-col h-[640px] shadow-xl overflow-hidden">
+          <div className="lg:col-span-3 card-surface flex flex-col h-[640px] overflow-hidden">
             {/* Messages Scroll Area */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {messages.map((m) => {
@@ -348,22 +346,22 @@ export function SebiRagChatbot() {
                 return (
                   <div key={m.id} className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
                     {!isUser && (
-                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-gold-500/10 border border-gold-500/30 text-gold-400 shrink-0">
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-gold/10 border border-gold/30 text-gold shrink-0">
                         <Scale className="h-4 w-4" />
                       </div>
                     )}
 
                     <div className={`max-w-[85%] rounded-2xl p-4 text-xs space-y-2 ${
                       isUser
-                        ? 'bg-gold-500 text-ink-950 font-medium ml-12'
-                        : 'border border-white/10 bg-white/[0.03] text-slate-200'
+                        ? 'bg-gold text-canvas font-medium ml-12'
+                        : 'border border-theme-subtle bg-white/[0.03] text-text-primary'
                     }`}>
                       <div className="whitespace-pre-wrap leading-relaxed">{m.text}</div>
 
                       {/* Source Citations */}
                       {m.citations && m.citations.length > 0 && (
-                        <div className="pt-3 border-t border-white/10 space-y-1.5">
-                          <span className="text-[10px] font-semibold text-gold-300 uppercase tracking-wider block">
+                        <div className="pt-3 border-t border-theme-subtle space-y-1.5">
+                          <span className="text-[10px] font-semibold text-gold uppercase tracking-wider block">
                             Statutory SEBI Gazette Citations:
                           </span>
                           {m.citations.map((c, idx) => (
@@ -372,29 +370,29 @@ export function SebiRagChatbot() {
                               href={c.officialUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="group flex items-center justify-between rounded-lg bg-black/40 border border-white/5 p-2 hover:border-gold-400/40 transition"
+                              className="group flex items-center justify-between rounded-lg bg-black/40 border border-theme-subtle p-2 hover:border-gold/40 transition"
                             >
                               <div>
-                                <span className="font-semibold text-white group-hover:text-gold-300 transition">
+                                <span className="font-semibold text-text-primary group-hover:text-gold transition">
                                   {c.title} ({c.section})
                                 </span>
-                                <span className="block text-[10px] text-slate-400 font-mono">
+                                <span className="block text-[10px] text-text-muted font-mono">
                                   {c.circularNo} · Relevance: {(c.relevanceScore * 100).toFixed(0)}%
                                 </span>
                               </div>
-                              <ExternalLink className="h-3.5 w-3.5 text-slate-400 group-hover:text-gold-400" />
+                              <ExternalLink className="h-3.5 w-3.5 text-text-muted group-hover:text-gold" />
                             </a>
                           ))}
                         </div>
                       )}
 
-                      <div className={`text-[10px] ${isUser ? 'text-ink-900/70 text-right' : 'text-slate-500'}`}>
+                      <div className={`text-[10px] ${isUser ? 'text-canvas/70 text-right' : 'text-text-muted'}`}>
                         {m.timestamp}
                       </div>
                     </div>
 
                     {isUser && (
-                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 text-white shrink-0">
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 text-text-primary shrink-0">
                         <User className="h-4 w-4" />
                       </div>
                     )}
@@ -403,8 +401,8 @@ export function SebiRagChatbot() {
               })}
 
               {isTyping && (
-                <div className="flex items-center gap-2 text-xs text-slate-400 italic font-mono">
-                  <Scale className="h-4 w-4 text-gold-400 animate-pulse" />
+                <div className="flex items-center gap-2 text-xs text-text-muted italic font-mono">
+                  <Scale className="h-4 w-4 text-gold animate-pulse" />
                   <span>Retrieving statutory SEBI vector chunks & synthesizing answer...</span>
                 </div>
               )}
@@ -416,19 +414,19 @@ export function SebiRagChatbot() {
                 e.preventDefault()
                 handleSend()
               }}
-              className="border-t border-white/10 bg-black/30 p-3 flex items-center gap-2"
+              className="border-t border-theme-subtle bg-canvas/50 p-3 flex items-center gap-2"
             >
               <input
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
                 placeholder="Ask about SEBI guidelines, fee limits, UPSI, SCORES 2.0, or algorithm rules..."
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-gold-400"
+                className="input-default flex-1 text-xs"
               />
               <button
                 type="submit"
                 disabled={!inputQuery.trim() || isTyping}
-                className="grid h-10 w-10 place-items-center rounded-xl bg-gold-500 text-ink-950 hover:bg-gold-400 disabled:opacity-40 transition shadow"
+                className="btn-gold grid h-10 w-10 place-items-center disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -437,12 +435,12 @@ export function SebiRagChatbot() {
 
           {/* Quick Prompts & Statutory Badges (1 col) */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-ink-950/70 p-5 backdrop-blur-md space-y-3 shadow-xl">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
-                <HelpCircle className="h-4 w-4 text-gold-400" />
+            <div className="card-surface p-5 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
+                <HelpCircle className="h-4 w-4 text-gold" />
                 <span>Frequently Queried SEBI Topics</span>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-text-muted">
                 Click any compliance query below to execute an immediate RAG retrieval:
               </p>
 
@@ -451,7 +449,7 @@ export function SebiRagChatbot() {
                   <button
                     key={idx}
                     onClick={() => handleSend(prompt)}
-                    className="w-full text-left rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] p-2.5 text-xs text-slate-300 hover:text-gold-300 transition"
+                    className="w-full text-left rounded-xl border border-theme-subtle bg-white/[0.02] hover:bg-white/[0.06] p-2.5 text-xs text-text-secondary hover:text-gold transition"
                   >
                     {prompt}
                   </button>
@@ -459,12 +457,12 @@ export function SebiRagChatbot() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 text-[11px] text-slate-300 space-y-2">
-              <div className="flex items-center gap-1.5 font-semibold text-gold-300">
+            <div className="rounded-xl border border-gold/20 bg-gold/5 p-4 text-[11px] text-text-secondary space-y-2">
+              <div className="flex items-center gap-1.5 font-semibold text-gold">
                 <ShieldCheck className="h-4 w-4" />
                 <span>Statutory Compliance Notice</span>
               </div>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-text-muted leading-relaxed">
                 All answers are grounded in official SEBI circulars and statutory gazettes. StockIQ operates in strict compliance with SEBI AI/ML explainability standards.
               </p>
             </div>
@@ -473,12 +471,12 @@ export function SebiRagChatbot() {
       ) : (
         /* Installed SEBI Documents Explorer */
         <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-white font-semibold">
-              <BookOpen className="h-4 w-4 text-gold-400" />
+          <div className="card-surface p-4 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 text-text-primary font-semibold">
+              <BookOpen className="h-4 w-4 text-gold" />
               <span>Installed Statutory SEBI Rulebooks & Circular Gazettes</span>
             </div>
-            <span className="text-slate-400 font-mono">
+            <span className="text-text-muted font-mono">
               6 Master Rulebooks Indexed in Vector Database
             </span>
           </div>
@@ -487,29 +485,27 @@ export function SebiRagChatbot() {
             {INSTALLED_SEBI_DOCUMENTS.map((doc) => (
               <div
                 key={doc.docId}
-                className="rounded-2xl border border-white/10 bg-ink-950/70 p-5 backdrop-blur-md space-y-3 flex flex-col justify-between"
+                className="card-surface p-5 space-y-3 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="rounded bg-gold-500/10 border border-gold-500/20 px-2 py-0.5 text-[10px] font-semibold text-gold-400">
-                      {doc.category}
-                    </span>
-                    <span className="font-mono text-slate-500 text-[11px]">{doc.docId}</span>
+                    <span className="badge-gold text-[10px]">{doc.category}</span>
+                    <span className="font-mono text-text-muted text-[11px]">{doc.docId}</span>
                   </div>
 
-                  <h3 className="mt-2 font-bold text-white text-sm font-display">{doc.title}</h3>
-                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">{doc.summary}</p>
+                  <h3 className="mt-2 font-bold text-text-primary text-sm font-display">{doc.title}</h3>
+                  <p className="mt-1 text-xs text-text-secondary leading-relaxed">{doc.summary}</p>
                 </div>
 
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-slate-500 font-mono truncate max-w-[200px]">
+                <div className="pt-3 border-t border-theme-subtle flex items-center justify-between text-xs">
+                  <span className="text-[10px] text-text-muted font-mono truncate max-w-[200px]">
                     {doc.circularNo}
                   </span>
                   <a
                     href={doc.officialUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-gold-400 hover:text-gold-300 font-semibold text-[11px]"
+                    className="flex items-center gap-1 text-gold hover:text-text-primary font-semibold text-[11px] transition"
                   >
                     <span>View Gazette</span>
                     <ExternalLink className="h-3 w-3" />

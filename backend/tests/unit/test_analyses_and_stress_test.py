@@ -48,18 +48,10 @@ def test_list_stress_scenarios(client, auth_headers):
 
 
 def test_get_risk_metrics(client, auth_headers):
-    """Test quantitative risk metrics endpoint."""
+    """An empty portfolio cannot produce personalized risk metrics."""
     res = client.get("/api/v1/analyses/risk-metrics", headers=auth_headers)
-    assert res.status_code == 200
-    data = res.json()
-    assert "annualized_volatility" in data
-    assert "max_drawdown" in data
-    assert "var_95" in data
-    assert "var_99" in data
-    assert "cvar_95" in data
-    assert "beta" in data
-    assert "sharpe_ratio" in data
-    assert "sortino_ratio" in data
+    assert res.status_code == 404
+    assert "Add a holding" in res.json()["error"]["message"]
 
 
 def test_get_risk_reality_check_flow(client, auth_headers):

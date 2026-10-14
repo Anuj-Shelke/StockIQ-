@@ -2,6 +2,7 @@
 
 import socket
 from typing import AsyncGenerator, Generator
+from urllib.parse import urlparse
 from sqlalchemy import create_engine, text
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -25,11 +26,14 @@ def compile_vector(element, compiler, **kw):
 
 
 def is_postgres_available() -> bool:
-    """Fast socket probe to check if configured PostgreSQL server is accepting connections."""
+    """Fast socket probe against the host in the configured database URL."""
+    parsed = urlparse(settings.DATABASE_URL or "")
+    host = parsed.hostname or settings.POSTGRES_HOST
+    port = parsed.port or settings.POSTGRES_PORT
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(0.5)
     try:
-        s.connect((settings.POSTGRES_HOST, settings.POSTGRES_PORT))
+        s.connect((host, port))
         return True
     except Exception:
         return False
@@ -37,34 +41,39 @@ def is_postgres_available() -> bool:
         s.close()
 
 
-# Configure database engine
-use_sqlite = settings.DATABASE_URL.startswith("sqlite") or not is_postgres_available()
+# Configure database engine. SQLite fallback is an explicit local-development choice.
+configured_url = settings.DATABASE_URL or ""
+explicit_sqlite = configured_url.startswith("sqlite")
+postgres_available = is_postgres_available() if not explicit_sqlite else False
+use_sqlite = explicit_sqlite or (not postgres_available and settings.ALLOW_SQLITE_FALLBACK)
 
 if use_sqlite:
-    sqlite_url = "sqlite:///./stockiq.db"
-    logger.info("Configuring local SQLite database engine at %s", sqlite_url)
+    sqlite_url = configured_url if explicit_sqlite else "sqlite:///./stockiq.db"
     engine = create_engine(
         sqlite_url,
         echo=False,
         connect_args={"check_same_thread": False},
     )
 else:
-    logger.info("Connecting to primary PostgreSQL engine at %s:%s", settings.POSTGRES_HOST, settings.POSTGRES_PORT)
     engine = create_engine(
-        settings.DATABASE_URL,
+        configured_url,
         echo=False,
         pool_pre_ping=True,
         connect_args={"connect_timeout": 3},
     )
 
-# Automatically create tables when using SQLite
-if engine.url.drivername.startswith("sqlite"):
-    try:
-        import app.models  # noqa: F401
-        Base.metadata.create_all(bind=engine)
-        logger.info("Auto-created SQLite database schema successfully.")
-    except Exception as e:
-        logger.warning("Could not auto-create SQLite tables: %s", str(e))
+
+def _masked_db_host() -> str:
+    host = engine.url.host
+    if not host:
+        return "local"
+    if host in {"localhost", "127.0.0.1", "::1"}:
+        return "localhost"
+    parts = host.split(".")
+    return "[redacted]." + ".".join(parts[-2:]) if len(parts) > 2 else "[redacted]"
+
+
+logger.info("Database configured: dialect=%s host=%s", engine.dialect.name, _masked_db_host())
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -167,9 +176,10 @@ def seed_default_data(db: Session) -> None:
         db.rollback()
 
 
-# Auto-seed on startup
-with SessionLocal() as init_db:
-    seed_default_data(init_db)
+# Demo data seeding is opt-in and disabled by default.
+if settings.SEED_DEFAULT_DATA:
+    with SessionLocal() as init_db:
+        seed_default_data(init_db)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -206,11 +216,12 @@ def check_db_connection() -> dict:
         return {
             "status": "connected",
             "dialect": engine.url.drivername,
-            "database": str(engine.url).split("@")[-1] if "@" in str(engine.url) else str(engine.url),
+            "host": _masked_db_host(),
         }
-    except Exception as e:
-        logger.warning("Database connection check failed: %s", str(e))
+    except Exception:
+        logger.warning("Database connection check failed (dialect=%s host=%s)", engine.dialect.name, _masked_db_host())
         return {
             "status": "disconnected",
-            "error": str(e),
+            "dialect": engine.dialect.name,
+            "host": _masked_db_host(),
         }

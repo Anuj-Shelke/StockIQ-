@@ -14,6 +14,7 @@ from app.api.v1 import (
     administration,
     admin_dashboard,
     admin_reviews,
+    admin_users,
     analyses,
     asset_comparison,
     snapshots,
@@ -48,6 +49,7 @@ api_router.include_router(chatbot.router, prefix="/chatbot", tags=["Financial Ed
 api_router.include_router(administration.router, prefix="/administration", tags=["Administration"])
 api_router.include_router(admin_dashboard.router, prefix="/admin/dashboard", tags=["Admin Dashboard"])
 api_router.include_router(admin_reviews.router, prefix="/admin/reviews", tags=["Admin Reviews"])
+api_router.include_router(admin_users.router, prefix="/admin", tags=["Admin Users"])
 
 # Analytics, Comparisons, and Support
 api_router.include_router(analyses.router, prefix="/analyses", tags=["Analyses"])

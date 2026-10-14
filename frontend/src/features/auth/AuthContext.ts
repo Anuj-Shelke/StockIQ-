@@ -13,7 +13,7 @@ export interface AuthContextValue {
   profileLoading: boolean
   reloadProfile: () => Promise<void>
   login: (credentials: LoginRequest) => Promise<void>
-  loginWithGoogle: (payload?: { email?: string; full_name?: string; id_token?: string }) => Promise<void>
+  loginWithGoogle: (payload: { access_token: string }) => Promise<void>
   register: (data: RegisterRequest) => Promise<void>
   logout: () => void
 }

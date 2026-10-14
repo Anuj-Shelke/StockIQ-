@@ -13,12 +13,16 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
+    TESTING: bool = False
 
     # Security & JWT Auth
     SECRET_KEY: str = "development-secret-key-change-in-production-only-32bytes"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ALLOW_SQLITE_FALLBACK: bool = False
+    SEED_DEFAULT_DATA: bool = False
+    GOOGLE_CLIENT_ID: Optional[str] = None
 
     # CORS Configuration
     CORS_ORIGINS: Union[List[str], str] = [
@@ -69,7 +73,12 @@ class Settings(BaseSettings):
     # Email
     EMAIL_PROVIDER: str = "resend"
     EMAIL_API_KEY: Optional[str] = ""
-    FROM_EMAIL: str = "noreply@stockiq.ai"
+    FROM_EMAIL: str = "StockIQ Alerts <onboarding@resend.dev>"
+    RESEND_API_KEY: Optional[str] = None
+    ADMIN_NOTIFY_EMAIL: Optional[str] = None
+    ADMIN_EMAIL: Optional[str] = None
+    ADMIN_PASSWORD: Optional[str] = None
+    ADMIN_NAME: Optional[str] = None
 
     # Supabase (Optional)
     SUPABASE_URL: str = ""

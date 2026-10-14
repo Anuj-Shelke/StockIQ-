@@ -1,48 +1,47 @@
 """Event-driven Notification Service (In-App & Email)."""
 
 from datetime import datetime, timezone
+from html import escape
+import logging
 import uuid
 from typing import Dict, List, Optional
 from app.integrations.email.resend_client import ResendClient
 from app.schemas.snapshot import AppNotification, NotificationType
+from app.core.config import settings
+from app.schemas.admin_review import ReviewRequestItem
+
+logger = logging.getLogger(__name__)
 
 
-# In-memory notifications store initialized with realistic samples
-_in_memory_notifications: Dict[str, AppNotification] = {
-    "notif-01": AppNotification(
-        id="notif-01",
-        user_id="test-user-123",
-        title="Review Ticket Resolved",
-        message="Compliance review for HDFCBANK.NS (REV-2026-003) has been resolved. Adjusted model weights recorded.",
-        type="REVIEW_UPDATE",
-        timestamp=datetime.now(timezone.utc),
-        is_read=False,
-        action_url="/dashboard/admin/reviews",
-    ),
-    "notif-02": AppNotification(
-        id="notif-02",
-        user_id="test-user-123",
-        title="Drawdown Threshold Warning",
-        message="Simulated portfolio stress under COVID-19 scenario reaches -31.2%, exceeding 25% threshold.",
-        type="ALERT",
-        timestamp=datetime.now(timezone.utc),
-        is_read=False,
-        action_url="/dashboard/risk-check",
-    ),
-    "notif-03": AppNotification(
-        id="notif-03",
-        user_id="test-user-123",
-        title="Live NIFTY Feed Operational",
-        message="Market session opened. Live index feed streaming at 142ms latency.",
-        type="SYSTEM",
-        timestamp=datetime.now(timezone.utc),
-        is_read=True,
-    ),
-}
+# Notifications are created only by real user-scoped events.
+_in_memory_notifications: Dict[str, AppNotification] = {}
 
 
 class NotificationService:
     """Dispatches in-app alerts and transactional emails via Resend."""
+
+    @classmethod
+    def notify_admin_review_request(cls, review: ReviewRequestItem) -> None:
+        """Best-effort admin notification invoked after a review row has committed."""
+        recipient = settings.ADMIN_NOTIFY_EMAIL
+        if not recipient:
+            logger.info("Review notification email status=mock_skipped review_id=%s", review.id)
+            return
+        try:
+            result = ResendClient.send_email(
+                to_email=recipient,
+                subject=f"StockIQ expert review requested: {review.symbol}",
+                html_content=(
+                    "<h2>Expert review requested</h2>"
+                    f"<p>Request: {escape(review.id)}</p>"
+                    f"<p>Analysis: {escape(review.analysis_snapshot_id or '')}</p>"
+                    f"<p>Symbol: {escape(review.symbol)}</p>"
+                    f"<p>Reason: {escape(review.reason)}</p>"
+                ),
+            )
+            logger.info("Review notification email status=%s review_id=%s", result.get("status", "failed"), review.id)
+        except Exception as exc:
+            logger.warning("Review notification email status=failed review_id=%s error=%s", review.id, type(exc).__name__)
 
     @classmethod
     def dispatch_notification(
@@ -99,11 +98,13 @@ class NotificationService:
         return items
 
     @classmethod
-    def mark_as_read(cls, notification_id: str) -> bool:
+    def mark_as_read(cls, notification_id: str, user_id: str) -> bool:
         """Mark individual notification as read."""
         if notification_id in _in_memory_notifications:
-            _in_memory_notifications[notification_id].is_read = True
-            return True
+            notification = _in_memory_notifications[notification_id]
+            if notification.user_id == user_id:
+                notification.is_read = True
+                return True
         return False
 
     @classmethod

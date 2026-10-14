@@ -3,47 +3,8 @@ import { History, FileDown, RotateCcw, ArrowRight } from 'lucide-react'
 import { ExportReportModal } from '@/features/reports/ExportReportModal'
 import type { AnalysisSnapshot } from '@/types/snapshotHistory'
 
-const SAMPLE_SNAPSHOTS: AnalysisSnapshot[] = [
-  {
-    id: 'snp-109',
-    title: 'TCS Q3 Margin Expansion Analysis',
-    symbol: 'TCS.NS',
-    assetClass: 'Equity (IT)',
-    createdAt: '2026-10-12T16:00:00Z',
-    currentPrice: 4120.25,
-    targetPrice: 4345.50,
-    projectedReturnPercent: 5.47,
-    riskLevel: 'Moderate',
-    scenarioStressed: '2022 Rate Shock (-14.5%)',
-  },
-  {
-    id: 'snp-108',
-    title: 'Reliance Energy vs Physical Gold Hedge',
-    symbol: 'RELIANCE.NS',
-    assetClass: 'Equity (Energy)',
-    createdAt: '2026-10-10T11:30:00Z',
-    currentPrice: 2980.50,
-    targetPrice: 3210.00,
-    projectedReturnPercent: 7.70,
-    riskLevel: 'Moderate',
-    scenarioStressed: 'COVID-19 Crash (-31.2%)',
-  },
-  {
-    id: 'snp-107',
-    title: 'HDFC Bank Post-Merger Synergies',
-    symbol: 'HDFCBANK.NS',
-    assetClass: 'Equity (Banking)',
-    createdAt: '2026-10-06T14:45:00Z',
-    currentPrice: 1650.80,
-    targetPrice: 1820.00,
-    projectedReturnPercent: 10.25,
-    riskLevel: 'Conservative',
-    scenarioStressed: '2008 GFC (-48.6%)',
-  },
-]
-
 export function SnapshotDrawer() {
-  const [snapshots] = useState<AnalysisSnapshot[]>(SAMPLE_SNAPSHOTS)
+  const [snapshots] = useState<AnalysisSnapshot[]>([])
   const [selectedSnapshot, setSelectedSnapshot] = useState<AnalysisSnapshot | null>(null)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [restoredAlert, setRestoredAlert] = useState<string | null>(null)
@@ -80,6 +41,12 @@ export function SnapshotDrawer() {
         <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-300">
           <RotateCcw className="h-4 w-4 text-emerald-400 shrink-0" />
           <span>{restoredAlert}</span>
+        </div>
+      )}
+
+      {snapshots.length === 0 && (
+        <div className="rounded-xl border border-theme-default bg-surface p-8 text-center text-text-muted">
+          No saved analyses yet. Your analysis history will appear here when available.
         </div>
       )}
 

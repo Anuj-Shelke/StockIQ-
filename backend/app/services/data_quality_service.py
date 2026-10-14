@@ -5,35 +5,28 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.models.review import ReviewRequest
+from app.models.prediction import Prediction
 from app.schemas.admin_review import AdminSystemMetrics, DataQualityReport
-from app.services.review_service import _in_memory_reviews
 
 
 class DataQualityService:
     """Monitors ingestion feed latencies, data anomalies, and administration telemetry."""
 
     @classmethod
-    def get_system_metrics(cls, db: Optional[Session] = None) -> AdminSystemMetrics:
-        """Fetch system operational metrics for AdminOverview dashboard."""
-        total_users = 142
-        if db:
-            try:
-                cnt = db.query(User).count()
-                if cnt > 0:
-                    total_users = cnt
-            except Exception:
-                pass
-
-        # Count active pending/in-review requests
-        active_tickets = len([r for r in _in_memory_reviews.values() if r.status in ["PENDING", "IN_REVIEW"]])
+    def get_system_metrics(cls, db: Session) -> AdminSystemMetrics:
+        """Return database counts; unavailable feed telemetry is represented as unknown/zero."""
+        total_users = db.query(User).count()
+        total_analyses = db.query(Prediction).count()
+        active_tickets = db.query(ReviewRequest).filter(ReviewRequest.status.in_(("PENDING", "IN_REVIEW"))).count()
 
         return AdminSystemMetrics(
             total_users=total_users,
             total_analyses=1894,
             active_review_requests=active_tickets,
-            data_quality_status="HEALTHY",
-            nse_feed_latency_ms=142,
-            rag_vector_coverage_percent=98.4,
+            data_quality_status="DEGRADED",
+            nse_feed_latency_ms=0,
+            rag_vector_coverage_percent=0.0,
         )
 
     @classmethod

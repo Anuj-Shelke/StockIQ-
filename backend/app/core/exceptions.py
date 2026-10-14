@@ -96,6 +96,13 @@ class ServiceUnavailableError(StockIQException):
         )
 
 
+class DatabaseUnavailableError(ServiceUnavailableError):
+    """Persistent storage is unavailable; the request cannot be completed safely."""
+
+    def __init__(self, message: str = "The service is temporarily unavailable. Please try again shortly."):
+        super().__init__(message)
+
+
 def _format_error_payload(code: str, message: str, details: Optional[List[Any]] = None) -> dict:
     return {
         "success": False,
