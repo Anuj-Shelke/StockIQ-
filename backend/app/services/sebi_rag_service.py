@@ -43,23 +43,48 @@ class SebiRagService:
     @classmethod
     def search_sebi_corpus(cls, query: str, top_k: int = 3) -> List[Dict]:
         """Semantic & keyword vector similarity search over installed SEBI rulebook chunks."""
-        q_tokens = set(re.findall(r"\w+", query.lower()))
+        stopwords = {"what", "is", "the", "to", "in", "and", "a", "an", "of", "for", "on", "with", "or", "how", "can", "does", "are", "do", "about"}
+        raw_tokens = re.findall(r"\w+", query.lower())
+        q_tokens = set(raw_tokens)
+        meaningful_tokens = {t for t in q_tokens if t not in stopwords and len(t) >= 3}
 
         scored_chunks = []
+        q_lower = query.lower()
+
+        # Key phrases for regulatory retrieval
+        key_phrases = [
+            "minimum age", "18 years", "minor account", "demat", "kyc",
+            "risk profiling", "suitability", "advisory fee", "fee cap",
+            "upsi", "insider trading", "scores", "dispute", "smart odr",
+            "algo", "artificial intelligence", "f&o", "derivatives",
+        ]
+
         for doc in SEBI_REGULATORY_DOCUMENTS:
             for sec in doc["sections"]:
                 text_to_search = f"{doc['title']} {doc['category']} {sec['section']} {sec['summary']} {sec['text']}".lower()
                 doc_tokens = set(re.findall(r"\w+", text_to_search))
 
-                # Jaccard + frequency overlap scoring
-                overlap = len(q_tokens.intersection(doc_tokens))
-                total_unique = len(q_tokens.union(doc_tokens))
-                base_score = (overlap / total_unique) if total_unique > 0 else 0.0
+                # Overlap on meaningful tokens
+                if meaningful_tokens:
+                    overlap = len(meaningful_tokens.intersection(doc_tokens))
+                    base_score = (overlap / len(meaningful_tokens)) * 0.5
+                else:
+                    overlap = len(q_tokens.intersection(doc_tokens))
+                    base_score = (overlap / len(q_tokens)) * 0.3 if q_tokens else 0.1
 
-                # Keyword boosting for exact matches
-                for token in q_tokens:
-                    if len(token) > 3 and token in text_to_search:
-                        base_score += 0.15
+                # Exact phrase matching boost
+                phrase_boost = 0.0
+                for phrase in key_phrases:
+                    if phrase in q_lower and phrase in text_to_search:
+                        phrase_boost += 0.35
+
+                # Exact multi-token sequence matching from query
+                for i in range(len(raw_tokens) - 1):
+                    bigram = f"{raw_tokens[i]} {raw_tokens[i+1]}"
+                    if len(bigram) > 6 and bigram in text_to_search and bigram not in stopwords:
+                        phrase_boost += 0.15
+
+                total_score = base_score + phrase_boost
 
                 scored_chunks.append({
                     "doc_id": doc["doc_id"],
@@ -69,7 +94,7 @@ class SebiRagService:
                     "official_url": doc["official_url"],
                     "text": sec["text"],
                     "summary": sec["summary"],
-                    "score": round(min(0.98, max(0.40, base_score)), 2),
+                    "score": round(min(0.99, max(0.40, total_score)), 2),
                 })
 
         scored_chunks.sort(key=lambda x: x["score"], reverse=True)

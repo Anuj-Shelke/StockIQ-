@@ -52,3 +52,14 @@ def test_sebi_rag_query_scores_resolution_timeline():
 
     assert "21" in res.answer
     assert "SCORES" in res.answer
+
+
+def test_sebi_rag_query_minimum_age_eligibility():
+    """Verify query on minimum age to invest in stock returns 18 years and SEBI/depository citation."""
+    req = SebiQueryRequest(query="what is the minimum age to invest in stock")
+    res = SebiRagService.answer_query(req)
+
+    assert "18" in res.answer
+    assert len(res.citations) >= 1
+    assert any("SEBI-DEMAT-ELIGIBILITY-2024" == c.doc_id for c in res.citations)
+

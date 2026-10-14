@@ -61,6 +61,83 @@ KNOWLEDGE_CORPUS = [
             "Bank Fixed Deposit interest is taxed at normal personal income tax slab rates."
         ),
     },
+    {
+        "id": "sebi-age-eligibility-05",
+        "title": "SEBI & Depository Regulations: Minimum Age & Account Opening Eligibility",
+        "publisher": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://investor.sebi.gov.in/account-opening-guidelines.html",
+        "text": (
+            "The minimum legal age to open an independent Demat account and Trading account to invest in Indian stock markets "
+            "is 18 years, in accordance with the Indian Contract Act, 1872 and SEBI Master Circular for Depositories. "
+            "An individual who is 18 years of age or older has full legal capacity to enter into binding contracts, sign broker agreements, "
+            "execute equity trades, and invest independently. "
+            "Minors (individuals under 18 years old) can legally hold and invest in stocks, bonds, and mutual funds, but only through a "
+            "Minor Demat Account opened and operated exclusively by a natural guardian (father or mother) or a court-appointed legal guardian. "
+            "Minors are legally prohibited from speculative intraday trading and equity derivatives (Futures & Options). "
+            "Upon attaining 18 years of age, the minor must submit fresh major KYC documentation to transition the account to an independent individual Demat account."
+        ),
+    },
+    {
+        "id": "sebi-kyc-requirements-06",
+        "title": "SEBI KYC Registration Agency (KRA) & Mandatory Account Opening Documentation",
+        "publisher": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://www.sebi.gov.in/legal/master-circulars/oct-2023/master-circular-on-know-your-client-kyc-norms_77934.html",
+        "text": (
+            "To open a Demat and Trading account in India, SEBI mandates uniform KYC verification across all registered intermediaries. "
+            "Mandatory requirements include: (1) Permanent Account Number (PAN Card), which is statutory for all securities market transactions; "
+            "(2) Proof of Identity and Address (Aadhaar, Passport, Voter ID, or Driving License); (3) Active Bank Account in investor's name; "
+            "and (4) In-Person Verification (IPV) via webcam or Aadhaar e-Sign OTP. "
+            "A single CKYC or KRA registration allows investors to seamlessly transact across all SEBI-registered brokers, depositories (NSDL/CDSL), and mutual funds."
+        ),
+    },
+    {
+        "id": "exchange-trading-mechanics-07",
+        "title": "NSE & BSE Trading Hours, Order Mechanics and T+1 Settlement",
+        "publisher": "National Stock Exchange of India (NSE)",
+        "url": "https://www.nseindia.com/market-data/trading-hours-and-settlement",
+        "text": (
+            "Trading on Indian stock exchanges (NSE and BSE) operates Monday through Friday: "
+            "Pre-open session runs from 09:00 AM to 09:15 AM IST (order entry and price discovery); "
+            "Regular continuous trading runs from 09:15 AM to 03:30 PM IST; Post-closing session runs from 03:40 PM to 04:00 PM IST. "
+            "Indian equity cash markets settle on a T+1 (Trade date plus one business day) rolling settlement basis. "
+            "Standard order types include Limit Orders, Market Orders, Stop-Loss (SL and SL-M) orders, and After Market Orders (AMO)."
+        ),
+    },
+    {
+        "id": "sebi-circuit-breakers-08",
+        "title": "SEBI Market-Wide Circuit Breakers & Price Bands",
+        "publisher": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://www.sebi.gov.in/enforcement/circulars/index-based-market-wide-circuit-breaker.html",
+        "text": (
+            "SEBI implements index-based market-wide circuit breakers to curb catastrophic systemic panics. "
+            "Circuit triggers are set at 10%, 15%, and 20% movements in either the NIFTY 50 or SENSEX. "
+            "A 10% movement before 1:00 PM triggers a 45-minute market halt followed by a 15-minute pre-open auction. "
+            "Individual stocks (excluding F&O constituent stocks) are subject to dynamic daily price bands of 2%, 5%, 10%, or 20%."
+        ),
+    },
+    {
+        "id": "sebi-fo-risk-study-09",
+        "title": "SEBI Study on Retail Trader Performance in Equity F&O Segment",
+        "publisher": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://www.sebi.gov.in/reports-and-statistics/research/jan-2023/study-analysis-of-profit-and-loss-in-equity-derivatives-segment_67525.html",
+        "text": (
+            "SEBI's landmark empirical research study revealed that 9 out of 10 (89%) individual retail traders in equity Futures and Options (F&O) "
+            "incurred net financial losses. The average loss per loss-making trader exceeded ₹1.1 Lakh, with additional transaction costs "
+            "and STT contributing substantially to capital erosion. SEBI mandates that all stockbrokers display prominent risk warning banners "
+            "before any client enters derivative orders."
+        ),
+    },
+    {
+        "id": "sebi-scores-grievance-10",
+        "title": "SEBI SCORES 2.0 & Online Dispute Resolution (SMART ODR)",
+        "publisher": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://scores.sebi.gov.in/",
+        "text": (
+            "Investors facing unresolved complaints against listed companies, brokers, depositories, or investment advisers can file grievances "
+            "on the SEBI Complaints Redress System (SCORES 2.0). Intermediaries are legally mandated to resolve complaints within 21 calendar days. "
+            "If dissatisfied, investors can escalate to the SMART ODR portal for independent online conciliation and arbitration."
+        ),
+    },
 ]
 
 

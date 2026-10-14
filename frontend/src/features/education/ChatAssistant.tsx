@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Send, Bot, User, Sparkles, HelpCircle } from 'lucide-react'
 import { SourceBadge } from './SourceBadge'
+import { apiFetch } from '@/services/api'
 import type { ChatMessage, SourceCitation } from '@/types/education'
 
 const STARTER_PROMPTS = [
+  'What is the minimum age to invest in stock?',
   'What is Max Drawdown and how does it protect investors?',
   'How does inflation affect Bank Fixed Deposits?',
-  'Explain Beta vs Volatility in Indian Equities',
   'What is the difference between LTCG and STCG tax?',
 ]
 
@@ -15,7 +16,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     id: 'msg-1',
     sender: 'assistant',
     content:
-      'Hello! I am your **StockIQ Financial Education Assistant**. Ask me any question about portfolio construction, financial metrics, risk reality checks, or Indian market tax regulations.',
+      'Hello! I am your **StockIQ Financial Education Assistant**. Ask me any question about portfolio construction, financial metrics, risk reality checks, minimum age eligibility, or Indian market tax regulations.',
     timestamp: 'Just now',
     sources: [
       {
@@ -33,7 +34,7 @@ export function ChatAssistant() {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const question = textToSend || input
     if (!question.trim()) return
 
@@ -48,12 +49,65 @@ export function ChatAssistant() {
     if (!textToSend) setInput('')
     setIsTyping(true)
 
-    // Simulate RAG response with citations
+    // First attempt to query live FastAPI backend RAG service
+    try {
+      const data = await apiFetch<ChatMessage>('/education/chat', {
+        method: 'POST',
+        body: { query: question.trim() },
+        auth: false,
+      })
+
+      if (data && data.content) {
+        const botMsg: ChatMessage = {
+          id: data.id || `bot-${Date.now()}`,
+          sender: 'assistant',
+          content: data.content,
+          timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          sources: data.sources || [],
+        }
+        setMessages((prev) => [...prev, botMsg])
+        setIsTyping(false)
+        return
+      }
+    } catch (err) {
+      console.warn('Backend education RAG unreachable, using grounded fallback knowledge:', err)
+    }
+
+    // Graceful offline fallback
     setTimeout(() => {
       let reply = ''
       let citations: SourceCitation[] = []
+      const lower = question.toLowerCase()
 
-      if (question.toLowerCase().includes('drawdown')) {
+      if (
+        lower.includes('age') ||
+        lower.includes('minor') ||
+        lower.includes('invest in stock') ||
+        lower.includes('minimum age') ||
+        lower.includes('demat') ||
+        lower.includes('eligib')
+      ) {
+        reply =
+          'Under the **Indian Contract Act, 1872** and **SEBI / Depository (NSDL & CDSL) regulations**:\n\n' +
+          '- **Statutory Minimum Age:** The legal minimum age to independently open a Demat & Trading account and trade in the Indian stock market is **18 years** (age of majority).\n' +
+          '- **Minor Demat Accounts (<18 years):** Minors can hold a Demat account opened on their behalf by a natural or legal guardian for holding equities or mutual funds, but minors cannot independently trade or access derivatives (F&O).\n' +
+          '- **Mandatory Documentation:** Valid PAN, Aadhaar identity/address proof, an active bank account, and In-Person Verification (IPV) are required.\n' +
+          '- **Upon Turning 18:** The minor account is closed or converted to a standard individual adult account after submitting fresh adult KYC documentation.'
+        citations = [
+          {
+            id: 'c-age-01',
+            title: 'SEBI & Depository Regulations on Demat Eligibility & Minimum Age',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://investor.sebi.gov.in',
+          },
+          {
+            id: 'c-age-02',
+            title: 'Standard Operating Procedures for Minor Demat Accounts',
+            publisher: 'NSDL & CDSL Depository Master Circular',
+            url: 'https://www.nsdl.co.in',
+          },
+        ]
+      } else if (question.toLowerCase().includes('drawdown')) {
         reply =
           '**Maximum Drawdown (MDD)** measures the largest observed loss from a historical peak to a subsequent trough before a new peak is attained.\n\n- It reveals the psychological *pain threshold* an investor must endure.\n- While CAGR shows what you made, Max Drawdown shows what you had to survive to get there.'
         citations = [
@@ -80,14 +134,30 @@ export function ChatAssistant() {
             url: 'https://www.rbi.org.in',
           },
         ]
-      } else {
+      } else if (question.toLowerCase().includes('tax') || question.toLowerCase().includes('ltcg') || question.toLowerCase().includes('stcg')) {
         reply =
-          `Here is an evidence-backed analysis regarding "${question}":\n\nIn Indian capital markets, maintaining disciplined asset allocation across equities, debt, and liquid instruments is key to mitigating systemic downturns. All metrics in StockIQ are evaluated under standardized mathematical definitions without emotional bias.`
+          'Under the **Indian Income Tax Act, 1961 (Section 111A & Section 112A)**:\n\n' +
+          '- **Long Term Capital Gains (LTCG):** Listed equity shares and equity mutual funds held for more than 12 months are taxed at **12.5%** on gains exceeding ₹1.25 Lakh per financial year (without indexation).\n' +
+          '- **Short Term Capital Gains (STCG):** Listed equity assets held for 12 months or less are taxed at a flat rate of **20%** plus applicable surcharge and cess.'
         citations = [
           {
-            id: 'c4',
-            title: 'StockIQ Quantitative Knowledge Base',
-            publisher: 'StockIQ Research',
+            id: 'c-tax',
+            title: 'Section 112A & 111A Capital Gains Taxation',
+            publisher: 'Income Tax Department of India',
+            url: 'https://incometaxindia.gov.in',
+          },
+        ]
+      } else {
+        reply =
+          `According to the **SEBI Investor Education Framework** regarding "${question}":\n\n` +
+          'All equity investments in Indian capital markets are subject to systematic market volatility and risk profiling. ' +
+          'Investors should verify statutory regulations, maintain emergency liquidity, diversify across uncorrelated assets, and never invest on ungrounded speculative tips.'
+        citations = [
+          {
+            id: 'c-sebi',
+            title: 'SEBI Investor Education & Risk Mitigation Framework',
+            publisher: 'SEBI India',
+            url: 'https://investor.sebi.gov.in',
           },
         ]
       }
@@ -102,7 +172,7 @@ export function ChatAssistant() {
 
       setMessages((prev) => [...prev, botMsg])
       setIsTyping(false)
-    }, 700)
+    }, 400)
   }
 
   return (

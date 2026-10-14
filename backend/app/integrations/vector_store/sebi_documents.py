@@ -163,4 +163,37 @@ SEBI_REGULATORY_DOCUMENTS: List[Dict[str, Any]] = [
             },
         ],
     },
+    {
+        "doc_id": "SEBI-DEMAT-ELIGIBILITY-2024",
+        "title": "SEBI & Depository Regulations on Demat Eligibility, Minimum Age & Minor Accounts",
+        "category": "Account Opening, KYC & Eligibility",
+        "circular_no": "SEBI/HO/MIRSD/DOP/CIR/P/2021/600",
+        "effective_date": "2021-08-03",
+        "official_url": "https://www.sebi.gov.in/legal/circulars/aug-2021/standardization-of-account-opening-process_51680.html",
+        "sections": [
+            {
+                "section": "Eligibility Clause 3 - Age of Majority (18 Years) & Minor Accounts",
+                "summary": "Minimum age to independently trade and open an active trading account in Indian stock markets is 18 years. Minors under 18 can only hold Demat accounts managed by a legal guardian.",
+                "text": (
+                    "Under the Indian Contract Act, 1872 and SEBI / Depository (NSDL/CDSL) master circulars, the statutory minimum age "
+                    "to independently open a trading account and trade in the Indian stock market is 18 years (age of majority). "
+                    "Minors (individuals under 18 years of age) are legally permitted to hold a Demat account opened on their behalf "
+                    "and operated solely by their natural or court-appointed legal guardian for passive holding and gifting of shares. "
+                    "However, minor accounts cannot execute speculative intraday trades or enter into Equity Derivatives (Futures & Options) "
+                    "contracts. Upon reaching 18 years of age, the account is converted into a standard individual adult account following fresh KYC."
+                ),
+            },
+            {
+                "section": "Eligibility Clause 5 - Mandatory KYC Documentation for Demat Accounts",
+                "summary": "Mandatory prerequisites for opening a Demat and trading account in India: PAN card, Aadhaar, bank proof, and In-Person Verification.",
+                "text": (
+                    "To open a Demat and Trading account in India under SEBI Know Your Client (KYC) regulations, an investor must provide: "
+                    "1) Valid Permanent Account Number (PAN) linked with Aadhaar; 2) Proof of identity and address (Aadhaar, Passport, Voter ID); "
+                    "3) Active Bank Account proof (cancelled cheque or bank statement with IFSC); 4) In-Person Verification (IPV) or video KYC. "
+                    "No transactions can be executed in Indian secondary markets without an authenticated PAN-verified Demat and trading account."
+                ),
+            },
+        ],
+    },
 ]
+

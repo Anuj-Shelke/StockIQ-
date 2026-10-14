@@ -265,6 +265,24 @@ export function SebiRagChatbot() {
             relevanceScore: 0.95,
           },
         ]
+      } else if (lower.includes('age') || lower.includes('minor') || lower.includes('eligib') || lower.includes('demat') || lower.includes('invest in stock') || lower.includes('kyc')) {
+        botResponse =
+          'Under the **Indian Contract Act, 1872** and **SEBI / Depository (NSDL/CDSL) Master Circulars**:\n\n' +
+          '- **Statutory Minimum Age:** The legal minimum age to independently open a trading and Demat account and trade in the Indian stock market is **18 years** (age of majority).\n' +
+          '- **Minor Demat Accounts:** Individuals under 18 years can hold a Demat account opened and operated exclusively by their natural or legal guardian for holding/investing, but cannot trade independently or enter into derivative contracts.\n' +
+          '- **Mandatory KYC Prerequisites:** Opening an account requires PAN, Aadhaar identity/address proof, an active bank account, and In-Person Verification (IPV).\n' +
+          '- **Derivatives & Margin Trading:** Only adult individuals (18+) who have completed risk profiling can participate in Equity F&O segment.'
+        citations = [
+          {
+            docId: 'SEBI-DEMAT-ELIGIBILITY-2024',
+            title: 'SEBI & Depository Regulations on Demat Eligibility & Minimum Age',
+            section: 'Eligibility Clause 3 - Age of Majority (18 Years) & Minor Accounts',
+            circularNo: 'SEBI/HO/MIRSD/DOP/CIR/P/2021/600',
+            officialUrl: 'https://www.sebi.gov.in/legal/circulars/aug-2021/standardization-of-account-opening-process_51680.html',
+            excerpt: 'Statutory minimum age of 18 years to independently trade and open active demat/trading accounts.',
+            relevanceScore: 0.98,
+          },
+        ]
       } else {
         botResponse =
           'Under **SEBI (Investment Advisers) Regulations, 2013 (Regulation 17)**:\n\n' +
