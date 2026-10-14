@@ -44,3 +44,24 @@ def test_nonexistent_symbol_returns_none():
     """Verify querying an invalid symbol returns None gracefully."""
     invalid = OpeningPredictionService.get_symbol_opening("UNKNOWN_TICKER_999")
     assert invalid is None
+
+
+def test_opening_predictions_api_endpoints(client):
+    """Verify the mounted FastAPI router endpoints respond properly."""
+    res = client.get("/api/v1/opening-predictions")
+    assert res.status_code == 200
+    data = res.json()
+    assert "gift_nifty_implied_open" in data
+    assert "indices" in data
+    assert len(data["indices"]) >= 4
+
+    # Single symbol endpoint
+    sym_res = client.get("/api/v1/opening-predictions/%5ENSEI")
+    assert sym_res.status_code == 200
+    sym_data = sym_res.json()
+    assert sym_data["symbol"] == "^NSEI"
+    assert sym_data["predicted_open_price"] > 0
+
+    # 404 for invalid symbol
+    err_res = client.get("/api/v1/opening-predictions/INVALID_TICKER_XYZ")
+    assert err_res.status_code == 404
