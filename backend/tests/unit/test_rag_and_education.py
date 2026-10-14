@@ -88,3 +88,25 @@ def test_chatbot_and_education_endpoints(client, auth_headers):
     assert edu_chat.status_code == 200
     assert edu_chat.json()["sender"] == "assistant"
     assert len(edu_chat.json()["sources"]) > 0
+
+
+def test_rag_minimum_age_query_grounding():
+    """Verify that asking minimum age to invest in stock returns 18 years and depository grounding."""
+    resp = RAGService.generate_grounded_answer(query="what is the minimum age to invest in stock")
+    assert resp.answer is not None
+    assert "18" in resp.answer
+    assert "minor" in resp.answer.lower() or "guardian" in resp.answer.lower() or "demat" in resp.answer.lower()
+    assert len(resp.sources) > 0
+
+
+def test_education_chat_unauthenticated_minimum_age(client):
+    """Verify /education/chat works without mandatory authentication (guest access) and answers age query."""
+    res = client.post(
+        "/api/v1/education/chat",
+        json={"query": "what is the minimum age to invest in stock"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["sender"] == "assistant"
+    assert "18" in body["content"]
+    assert len(body["sources"]) > 0

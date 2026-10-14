@@ -58,3 +58,23 @@ def get_current_admin_user(
     if current_user.role != "admin":
         raise PermissionDeniedError("You do not have permission to access this area.")
     return current_user
+
+
+def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """Dependency that returns authenticated user if token present and valid, or None otherwise."""
+    if not credentials:
+        return None
+    try:
+        token = credentials.credentials
+        payload = decode_token(token)
+        if payload.get("type") != "access":
+            return None
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        return db.query(User).filter(User.id == user_id).first()
+    except Exception:
+        return None

@@ -1,11 +1,11 @@
 """Financial Education, Calculators, and Regulatory Sources API Endpoints."""
 
 import math
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.education import (
@@ -178,14 +178,15 @@ def calculate_financial_metric(
 def chat_with_education_assistant(
     request: dict,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ) -> ChatMessage:
     """Ask educational question grounded in regulatory documents with interactive source badges."""
     query = request.get("query", "").strip() or "What is CAGR?"
     session_id = request.get("session_id")
+    user_id = str(current_user.id) if current_user else "anonymous-investor"
     return RAGService.get_education_chat_message(
         query=query,
         session_id=session_id,
-        user_id=str(current_user.id),
+        user_id=user_id,
         db=db,
     )
