@@ -7,10 +7,9 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:80
 export const API_V1 = `${API_BASE_URL}/api/v1`
 
 /**
- * Frontend-only mode: serve /auth/* and /dashboard from the in-browser mock (services/mockBackend.ts).
- * ON by default in `npm run dev`; set VITE_AUTH_MOCK=false to talk to a real backend. Always OFF in production builds.
+ * Optional frontend-only mode for isolated UI work. Real backend is the default.
  */
-export const MOCK_AUTH = import.meta.env.DEV && import.meta.env.VITE_AUTH_MOCK !== 'false'
+export const MOCK_AUTH = import.meta.env.DEV && import.meta.env.VITE_AUTH_MOCK === 'true'
 
 /** Fired when the session can no longer be recovered (refresh failed / logout). */
 export const AUTH_LOGOUT_EVENT = 'stockiq:auth-logout'
@@ -79,9 +78,7 @@ export async function checkBackendHealth(): Promise<HealthResponse> {
 /* ------------------------------------------------------------------ */
 /*
  * Access token: memory only (never persisted, never rendered).
- * Refresh token: localStorage so a reload keeps the session. This is exposed to
- * XSS by design; if the backend can issue it as an httpOnly cookie instead,
- * switch to that and delete the localStorage path (see docs/api/auth-contract.md).
+ * Refresh token: sessionStorage keeps independent login state in each browser tab.
  * Passwords are never stored.
  */
 const REFRESH_KEY = 'stockiq.refresh'
@@ -89,7 +86,7 @@ let accessToken: string | null = null
 
 function safeStorage(): Storage | null {
   try {
-    return window.localStorage
+    return window.sessionStorage
   } catch {
     return null
   }

@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 .venv/
+.check-deps/
 ENV/
 
 # Database

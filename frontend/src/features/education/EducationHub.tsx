@@ -8,18 +8,23 @@ export function EducationHub() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white font-display">
-          Financial Education & Interactive Assistant
-        </h1>
-        <p className="text-sm text-slate-400">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
+            Financial Education & Interactive Assistant
+          </h1>
+          <span className="badge-verified font-mono">
+            RAG Grounded
+          </span>
+        </div>
+        <p className="text-sm text-text-muted mt-0.5">
           Source-backed financial learning, quantitative calculators, and plain-language answers grounded in research.
         </p>
       </div>
 
       {/* Interactive Definition Banner */}
-      <div className="rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 flex items-center gap-3 text-xs text-slate-300">
-        <BookOpen className="h-5 w-5 text-gold-400 shrink-0" />
-        <p>
+      <div className="card-surface p-4 flex items-center gap-3 text-xs text-text-secondary border-l-2 border-l-gold">
+        <BookOpen className="h-5 w-5 text-gold shrink-0" />
+        <p className="leading-relaxed">
           Hover over terms like{' '}
           <GlossaryTooltip
             term="CAGR (Compound Annual Growth Rate)"

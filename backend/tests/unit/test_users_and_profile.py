@@ -10,8 +10,10 @@ def test_get_users_me_authorized(client, auth_headers):
     response = client.get("/api/v1/users/me", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == "test-user-123"
-    assert data["email"] == "test@stockiq.example.com"
+    token = auth_headers["Authorization"].split(" ", 1)[1]
+    from app.core.security import decode_token
+    assert data["id"] == decode_token(token)["sub"]
+    assert data["email"].endswith("@stockiq.example.com")
     assert data["role"] == "investor"
 
 
@@ -32,7 +34,9 @@ def test_get_and_put_profile(client, auth_headers):
     assert get_res.status_code == 200
     profile = get_res.json()
     assert "risk_tolerance" in profile
-    assert profile["user_id"] == "test-user-123"
+    token = auth_headers["Authorization"].split(" ", 1)[1]
+    from app.core.security import decode_token
+    assert profile["user_id"] == decode_token(token)["sub"]
 
     # PUT profile
     put_res = client.put(

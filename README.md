@@ -289,9 +289,8 @@ Any future functionality involving personalised investment advice would require 
 # 1. Start PostgreSQL 16 with pgvector extension in the background
 docker compose up -d db
 
-# 2. Run database migrations from the backend directory
+# 2. For the SQLite demo migration and startup commands, use the Windows PowerShell section below.
 cd backend
-alembic upgrade head
 ```
 
 For full database architecture, table descriptions, and testing instructions, see [Database Setup Guide](docs/database/DATABASE_SETUP.md).
@@ -319,6 +318,19 @@ python -m venv .venv
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
+
+For a local SQLite demo in Windows PowerShell, use a scratch database explicitly so the ignored `backend/.env` database URL is not selected:
+
+```powershell
+Set-Location backend
+$env:DATABASE_URL = "sqlite:///./stockiq-demo.db"
+$env:ALLOW_SQLITE_FALLBACK = "false"
+python -m alembic upgrade head
+python -m app.scripts.seed_admin
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and optionally `ADMIN_NAME` in the gitignored `backend/.env` before running the seed command. The command hashes the password, creates the account once, and leaves an existing account unchanged unless run with `--force`. The Vite development server uses the real API by default; `VITE_AUTH_MOCK=true` opts into the UI mock.
 
 The backend API will be running at `http://localhost:8000`.
 Interactive API documentation will be available at `http://localhost:8000/docs`.

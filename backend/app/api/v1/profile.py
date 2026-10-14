@@ -4,16 +4,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_active_user
+from app.core.exceptions import DatabaseUnavailableError
 from app.db.session import get_db
 from app.models.profile import InvestorProfile
 from app.models.user import User
 from app.schemas.profile import InvestorProfileResponse, InvestorProfileUpdate
 
 router = APIRouter()
-
-# In-memory profiles fallback
-_in_memory_profiles = {}
-
 
 @router.get("", response_model=InvestorProfileResponse)
 @router.get("/", response_model=InvestorProfileResponse)
@@ -22,18 +19,14 @@ def get_investor_profile(
     db: Session = Depends(get_db),
 ):
     """Retrieve the investor risk profile for the current user."""
-    profile = None
     try:
         profile = db.query(InvestorProfile).filter(InvestorProfile.user_id == current_user.id).first()
-    except Exception:
-        pass
-
-    if not profile:
-        profile = _in_memory_profiles.get(current_user.id)
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     if not profile:
         # Default profile
-        now = datetime.now(timezone.utc)
         profile = InvestorProfile(
             id=str(uuid.uuid4()),
             user_id=current_user.id,
@@ -46,8 +39,9 @@ def get_investor_profile(
             db.add(profile)
             db.commit()
             db.refresh(profile)
-        except Exception:
-            _in_memory_profiles[current_user.id] = profile
+        except Exception as exc:
+            db.rollback()
+            raise DatabaseUnavailableError() from exc
 
     created_at = getattr(profile, "created_at", None) or datetime.now(timezone.utc)
     updated_at = getattr(profile, "updated_at", None) or datetime.now(timezone.utc)
@@ -72,14 +66,11 @@ def update_investor_profile(
     db: Session = Depends(get_db),
 ):
     """Update or create the investor risk profile for the current user."""
-    profile = None
     try:
         profile = db.query(InvestorProfile).filter(InvestorProfile.user_id == current_user.id).first()
-    except Exception:
-        pass
-
-    if not profile:
-        profile = _in_memory_profiles.get(current_user.id)
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     now = datetime.now(timezone.utc)
     if not profile:
@@ -95,8 +86,9 @@ def update_investor_profile(
             db.add(profile)
             db.commit()
             db.refresh(profile)
-        except Exception:
-            _in_memory_profiles[current_user.id] = profile
+        except Exception as exc:
+            db.rollback()
+            raise DatabaseUnavailableError() from exc
     else:
         if request.risk_tolerance is not None:
             profile.risk_tolerance = request.risk_tolerance
@@ -110,8 +102,9 @@ def update_investor_profile(
         try:
             db.commit()
             db.refresh(profile)
-        except Exception:
-            _in_memory_profiles[current_user.id] = profile
+        except Exception as exc:
+            db.rollback()
+            raise DatabaseUnavailableError() from exc
 
     created_at = getattr(profile, "created_at", None) or now
     updated_at = getattr(profile, "updated_at", None) or now

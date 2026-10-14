@@ -22,11 +22,11 @@ export function ReviewQueue({ items, onSelectRequest }: ReviewQueueProps) {
     })
 
   return (
-    <div className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-4">
+    <div className="card-surface p-5 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-theme-subtle pb-4">
         <div>
-          <h3 className="font-semibold text-white">Review Request Queue</h3>
-          <p className="text-xs text-slate-400">
+          <h3 className="font-semibold text-text-primary text-sm uppercase tracking-tight">Review Request Queue</h3>
+          <p className="text-xs text-text-muted mt-0.5">
             Disputed model forecasts and automated risk anomaly tickets awaiting compliance verification.
           </p>
         </div>
@@ -36,85 +36,85 @@ export function ReviewQueue({ items, onSelectRequest }: ReviewQueueProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-slate-200 focus:outline-none"
+            className="input-default font-mono py-1.5 px-3 text-xs w-auto"
           >
-            <option value="ALL" className="bg-ink-900">All Statuses</option>
-            <option value="PENDING" className="bg-ink-900">Pending</option>
-            <option value="IN_REVIEW" className="bg-ink-900">In Review</option>
-            <option value="RESOLVED" className="bg-ink-900">Resolved</option>
-            <option value="REJECTED" className="bg-ink-900">Rejected</option>
+            <option value="ALL" className="bg-surface text-text-primary">All Statuses</option>
+            <option value="PENDING" className="bg-surface text-text-primary">Pending</option>
+            <option value="IN_REVIEW" className="bg-surface text-text-primary">In Review</option>
+            <option value="RESOLVED" className="bg-surface text-text-primary">Completed</option>
+            <option value="REJECTED" className="bg-surface text-text-primary">Declined</option>
           </select>
 
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-slate-200 focus:outline-none"
+            className="input-default font-mono py-1.5 px-3 text-xs w-auto"
           >
-            <option value="ALL" className="bg-ink-900">All Severities</option>
-            <option value="CRITICAL" className="bg-ink-900">Critical</option>
-            <option value="HIGH" className="bg-ink-900">High</option>
-            <option value="MEDIUM" className="bg-ink-900">Medium</option>
-            <option value="LOW" className="bg-ink-900">Low</option>
+            <option value="ALL" className="bg-surface text-text-primary">All Severities</option>
+            <option value="CRITICAL" className="bg-surface text-text-primary">Critical</option>
+            <option value="HIGH" className="bg-surface text-text-primary">High</option>
+            <option value="MEDIUM" className="bg-surface text-text-primary">Medium</option>
+            <option value="LOW" className="bg-surface text-text-primary">Low</option>
           </select>
 
           <button
             onClick={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-slate-200 hover:bg-white/10"
+            className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 font-mono"
             title="Toggle Date Sort Order"
           >
-            <ArrowUpDown className="h-3 w-3 text-gold-400" />
-            <span>{sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}</span>
+            <ArrowUpDown className="h-3 w-3 text-gold" />
+            <span>{sortOrder === 'desc' ? 'Newest' : 'Oldest'}</span>
           </button>
         </div>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-white/10 bg-white/[0.02] uppercase text-slate-400">
+          <thead className="border-b border-theme-subtle bg-surface-hover/30 text-[11px] uppercase tracking-wider font-mono text-text-muted">
             <tr>
-              <th className="px-3.5 py-2.5 font-semibold">ID</th>
-              <th className="px-3.5 py-2.5 font-semibold">Asset</th>
-              <th className="px-3.5 py-2.5 font-semibold">User</th>
-              <th className="px-3.5 py-2.5 font-semibold">Reason</th>
-              <th className="px-3.5 py-2.5 font-semibold text-center">Severity</th>
-              <th className="px-3.5 py-2.5 font-semibold text-center">Status</th>
-              <th className="px-3.5 py-2.5 font-semibold">Date</th>
-              <th className="px-3.5 py-2.5 font-semibold text-center">Action</th>
+              <th className="px-3.5 py-2.5 font-medium">ID</th>
+              <th className="px-3.5 py-2.5 font-medium">Asset</th>
+              <th className="px-3.5 py-2.5 font-medium">User</th>
+              <th className="px-3.5 py-2.5 font-medium">Reason</th>
+              <th className="px-3.5 py-2.5 font-medium text-center">Severity</th>
+              <th className="px-3.5 py-2.5 font-medium text-center">Status</th>
+              <th className="px-3.5 py-2.5 font-medium">Date</th>
+              <th className="px-3.5 py-2.5 font-medium text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-theme-subtle">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-slate-500">
+                <td colSpan={8} className="py-8 text-center text-text-muted">
                   No review requests match current filters.
                 </td>
               </tr>
             ) : (
               filtered.map((item) => {
                 return (
-                  <tr key={item.id} className="transition hover:bg-white/[0.03]">
-                    <td className="px-3.5 py-3 font-mono font-medium text-slate-300">
+                  <tr key={item.id} className="transition hover:bg-surface-hover/50">
+                    <td className="px-3.5 py-3 font-mono font-medium text-text-secondary">
                       {item.id}
                     </td>
-                    <td className="px-3.5 py-3 font-semibold text-white">
+                    <td className="px-3.5 py-3 font-semibold font-mono text-text-primary">
                       {item.symbol}
                     </td>
-                    <td className="px-3.5 py-3 text-slate-400 truncate max-w-[140px]" title={item.userEmail}>
-                      {item.userEmail}
+                    <td className="px-3.5 py-3 text-text-muted truncate max-w-[140px] font-mono text-[11px]" title={item.userEmail}>
+                      {item.userName ? <><span className="block text-text-primary">{item.userName}</span><span>{item.userEmail}</span></> : item.userEmail}
                     </td>
-                    <td className="px-3.5 py-3 text-slate-300 max-w-[180px] truncate" title={item.reason}>
+                    <td className="px-3.5 py-3 text-text-secondary max-w-[180px] truncate" title={item.reason}>
                       {item.reason}
                     </td>
                     <td className="px-3.5 py-3 text-center">
                       <span
-                        className={`inline-block rounded px-2 py-0.5 text-[10px] font-semibold ${
+                        className={`inline-block rounded px-2 py-0.5 text-[10px] font-mono font-semibold ${
                           item.severity === 'CRITICAL'
-                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                            ? 'badge-risk-danger'
                             : item.severity === 'HIGH'
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                            ? 'badge-risk-elevated'
                             : item.severity === 'MEDIUM'
-                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
-                            : 'bg-slate-500/20 text-slate-300 border border-slate-500/40'
+                            ? 'badge-risk-moderate'
+                            : 'badge-risk-low'
                         }`}
                       >
                         {item.severity}
@@ -122,26 +122,26 @@ export function ReviewQueue({ items, onSelectRequest }: ReviewQueueProps) {
                     </td>
                     <td className="px-3.5 py-3 text-center">
                       <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-mono font-medium ${
                           item.status === 'RESOLVED'
-                            ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                            ? 'badge-verified'
                             : item.status === 'IN_REVIEW'
-                            ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                            ? 'badge-gold'
                             : item.status === 'REJECTED'
-                            ? 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-                            : 'bg-purple-500/10 text-purple-300 border border-purple-500/30'
+                            ? 'badge-risk-danger'
+                            : 'badge-ai'
                         }`}
                       >
-                        {item.status}
+                        {item.status === 'RESOLVED' ? 'Completed' : item.status === 'REJECTED' ? 'Declined' : item.status === 'IN_REVIEW' ? 'In Review' : 'Pending'}
                       </span>
                     </td>
-                    <td className="px-3.5 py-3 font-mono text-slate-400">
+                    <td className="px-3.5 py-3 font-mono text-text-muted text-[11px]">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-3.5 py-3 text-center">
                       <button
                         onClick={() => onSelectRequest(item)}
-                        className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white transition"
+                        className="rounded p-1.5 text-text-muted hover:bg-surface-hover hover:text-gold transition"
                         title="Audit Review Details"
                       >
                         <Eye className="h-4 w-4" />

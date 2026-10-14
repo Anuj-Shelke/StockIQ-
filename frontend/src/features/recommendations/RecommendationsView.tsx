@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { apiFetch } from '@/services/api'
 import {
   Sparkles,
   ShieldCheck,
@@ -150,6 +152,13 @@ const STOCK_UNIVERSE: StockRecommendation[] = [
 ]
 
 export function RecommendationsView() {
+  const [hasHoldings, setHasHoldings] = useState<boolean | null>(null)
+  const [portfolioError, setPortfolioError] = useState<string | null>(null)
+  useEffect(() => {
+    apiFetch<Array<{ holdings: unknown[] }>>('/portfolios')
+      .then((portfolios) => setHasHoldings(portfolios.some((portfolio) => portfolio.holdings.length > 0)))
+      .catch((error: unknown) => setPortfolioError(error instanceof Error ? error.message : 'Could not load your portfolio.'))
+  }, [])
   // Investor Demographic Inputs
   const [age, setAge] = useState<number>(28)
   const [annualIncome, setAnnualIncome] = useState<number>(1500000)
@@ -267,6 +276,10 @@ export function RecommendationsView() {
     }
   }, [age, annualIncome, investmentAmount, horizonYears, riskPreference])
 
+  if (hasHoldings === null) return <div className="card-surface p-8 text-center text-text-muted">{portfolioError || 'Loading your portfolio…'}</div>
+  if (portfolioError) return <div role="alert" className="card-surface p-8 text-center text-text-primary">{portfolioError}</div>
+  if (!hasHoldings) return <section className="card-surface mx-auto max-w-2xl space-y-4 p-8 text-center"><h2 className="text-xl font-semibold text-text-primary">Recommendations are not available yet.</h2><p className="text-sm text-text-muted">Add holdings before viewing portfolio recommendations.</p><Link to="/dashboard/portfolio" className="btn-gold inline-flex">Add holdings</Link></section>
+
   const handleApplyPortfolio = () => {
     setAppliedToast(`Successfully applied ${recommendationData.stockPicks.length} ML recommended holdings to your active portfolio!`)
     setTimeout(() => setAppliedToast(null), 5000)
@@ -278,21 +291,21 @@ export function RecommendationsView() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white font-display">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
               Personalized AI Stock & Portfolio Recommendations
             </h1>
-            <span className="rounded-full bg-gold-500/20 border border-gold-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-gold-300">
-              ML Engine
+            <span className="badge-gold font-mono">
+              Life-Cycle Engine
             </span>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
-            Machine learning stock selections and dynamic life-cycle asset allocation customized to your exact age, income, investment amount, and investment horizon.
+          <p className="text-sm text-text-muted mt-1">
+            Machine learning stock selections and dynamic life-cycle asset allocation customized to your exact age, income, capital, and horizon.
           </p>
         </div>
 
         <button
           onClick={handleApplyPortfolio}
-          className="flex items-center gap-2 rounded-xl bg-gold-500 px-4 py-2.5 text-xs font-semibold text-ink-950 hover:bg-gold-400 transition shadow-lg shadow-gold-500/20"
+          className="btn-gold flex items-center gap-2 self-start sm:self-auto"
         >
           <Award className="h-4 w-4" />
           Apply to My Portfolio
@@ -300,19 +313,19 @@ export function RecommendationsView() {
       </div>
 
       {appliedToast && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-300 shadow">
-          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-gain/30 bg-gain/10 p-4 text-xs text-gain shadow animate-fade-in">
+          <CheckCircle2 className="h-4 w-4 text-gain shrink-0" />
           <span>{appliedToast}</span>
         </div>
       )}
 
       {/* Profiling Inputs Panel */}
-      <div className="rounded-2xl border border-white/10 bg-ink-950/70 p-6 backdrop-blur-md space-y-6 shadow-xl">
-        <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-          <Sliders className="h-5 w-5 text-gold-400" />
-          <h2 className="font-semibold text-white">Investor Financial Profile & Risk Constraints</h2>
-          <span className="ml-auto text-xs text-slate-400 flex items-center gap-1">
-            <RefreshCw className="h-3 w-3 animate-spin text-gold-400" /> Real-time ML calculation
+      <div className="card-surface p-6 space-y-6">
+        <div className="flex items-center gap-2 border-b border-theme-subtle pb-3">
+          <Sliders className="h-5 w-5 text-gold" />
+          <h2 className="font-semibold text-text-primary text-sm uppercase tracking-tight">Investor Financial Profile & Risk Constraints</h2>
+          <span className="ml-auto text-xs text-text-muted flex items-center gap-1 font-mono">
+            <RefreshCw className="h-3 w-3 animate-spin text-gold" /> Real-time model sync
           </span>
         </div>
 
@@ -320,8 +333,8 @@ export function RecommendationsView() {
           {/* 1. Age Input */}
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
-              <span className="text-slate-300">Investor Age</span>
-              <span className="font-mono text-gold-400 font-bold">{age} Years</span>
+              <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Investor Age</span>
+              <span className="font-mono text-gold font-bold">{age} Years</span>
             </div>
             <input
               type="range"
@@ -330,20 +343,20 @@ export function RecommendationsView() {
               step={1}
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
-              className="w-full accent-gold-400 cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500">
-              <span>18 yrs (Aggressive)</span>
+            <div className="flex justify-between text-[10px] text-text-muted font-mono">
+              <span>18 yrs (Growth)</span>
               <span>45 yrs</span>
-              <span>75 yrs (Capital Pres.)</span>
+              <span>75 yrs (Preservation)</span>
             </div>
           </div>
 
           {/* 2. Annual Income Input */}
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
-              <span className="text-slate-300">Annual Income</span>
-              <span className="font-mono text-gold-400 font-bold">₹{annualIncome.toLocaleString('en-IN')}</span>
+              <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Annual Income</span>
+              <span className="font-mono text-gold font-bold">₹{annualIncome.toLocaleString('en-IN')}</span>
             </div>
             <input
               type="range"
@@ -352,9 +365,9 @@ export function RecommendationsView() {
               step={100000}
               value={annualIncome}
               onChange={(e) => setAnnualIncome(Number(e.target.value))}
-              className="w-full accent-gold-400 cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500">
+            <div className="flex justify-between text-[10px] text-text-muted font-mono">
               <span>₹3 Lakh</span>
               <span>₹25 Lakh</span>
               <span>₹50+ Lakh</span>
@@ -364,8 +377,8 @@ export function RecommendationsView() {
           {/* 3. Investment Amount Input */}
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
-              <span className="text-slate-300">Investment Capital</span>
-              <span className="font-mono text-gold-400 font-bold">₹{investmentAmount.toLocaleString('en-IN')}</span>
+              <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Investment Capital</span>
+              <span className="font-mono text-gold font-bold">₹{investmentAmount.toLocaleString('en-IN')}</span>
             </div>
             <input
               type="range"
@@ -374,9 +387,9 @@ export function RecommendationsView() {
               step={25000}
               value={investmentAmount}
               onChange={(e) => setInvestmentAmount(Number(e.target.value))}
-              className="w-full accent-gold-400 cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500">
+            <div className="flex justify-between text-[10px] text-text-muted font-mono">
               <span>₹25K</span>
               <span>₹10 Lakh</span>
               <span>₹20+ Lakh</span>
@@ -386,8 +399,8 @@ export function RecommendationsView() {
           {/* 4. Time Horizon Input */}
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
-              <span className="text-slate-300">Time Horizon</span>
-              <span className="font-mono text-gold-400 font-bold">{horizonYears} Years</span>
+              <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Time Horizon</span>
+              <span className="font-mono text-gold font-bold">{horizonYears} Years</span>
             </div>
             <input
               type="range"
@@ -396,9 +409,9 @@ export function RecommendationsView() {
               step={1}
               value={horizonYears}
               onChange={(e) => setHorizonYears(Number(e.target.value))}
-              className="w-full accent-gold-400 cursor-pointer"
+              className="w-full accent-gold cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500">
+            <div className="flex justify-between text-[10px] text-text-muted font-mono">
               <span>1 Year (Short)</span>
               <span>5 Years</span>
               <span>20 Years (Long)</span>
@@ -407,32 +420,32 @@ export function RecommendationsView() {
         </div>
 
         {/* Strategy Preferences */}
-        <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-white/5 text-xs">
+        <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-theme-subtle text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400">Primary Goal:</span>
+            <span className="text-text-muted font-mono uppercase text-[11px]">Primary Goal:</span>
             <select
               value={primaryGoal}
               onChange={(e) => setPrimaryGoal(e.target.value)}
-              className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-slate-200 focus:outline-none"
+              className="input-default font-mono py-1 px-3 text-xs w-auto"
             >
-              <option value="wealth_creation" className="bg-ink-900">Long-term Wealth Creation</option>
-              <option value="retirement" className="bg-ink-900">Retirement Independence</option>
-              <option value="capital_preservation" className="bg-ink-900">Capital Preservation</option>
-              <option value="growth_income" className="bg-ink-900">Growth with Income</option>
+              <option value="wealth_creation" className="bg-surface text-text-primary">Long-term Wealth Creation</option>
+              <option value="retirement" className="bg-surface text-text-primary">Retirement Independence</option>
+              <option value="capital_preservation" className="bg-surface text-text-primary">Capital Preservation</option>
+              <option value="growth_income" className="bg-surface text-text-primary">Growth with Income</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-slate-400">Risk Profile Mode:</span>
+            <span className="text-text-muted font-mono uppercase text-[11px]">Risk Profile Mode:</span>
             <select
               value={riskPreference}
               onChange={(e) => setRiskPreference(e.target.value as any)}
-              className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-slate-200 focus:outline-none"
+              className="input-default font-mono py-1 px-3 text-xs w-auto"
             >
-              <option value="dynamic" className="bg-ink-900">Auto-Compute via Machine Learning</option>
-              <option value="conservative" className="bg-ink-900">Conservative Override</option>
-              <option value="moderate" className="bg-ink-900">Moderate Override</option>
-              <option value="aggressive" className="bg-ink-900">Aggressive Growth Override</option>
+              <option value="dynamic" className="bg-surface text-text-primary">Auto-Compute via Machine Learning</option>
+              <option value="conservative" className="bg-surface text-text-primary">Conservative Override</option>
+              <option value="moderate" className="bg-surface text-text-primary">Moderate Override</option>
+              <option value="aggressive" className="bg-surface text-text-primary">Aggressive Growth Override</option>
             </select>
           </div>
         </div>
@@ -440,103 +453,103 @@ export function RecommendationsView() {
 
       {/* Synthesis Summary Bar */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">ML Risk Capacity</span>
-          <div className="mt-1 text-xl font-bold text-white font-display flex items-center gap-2">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">ML Risk Capacity</span>
+          <div className="mt-1 text-xl font-bold text-text-primary font-display flex items-center gap-2">
             <span>{recommendationData.riskCapacity}</span>
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <ShieldCheck className="h-4 w-4 text-gain" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400 font-mono">
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
             Score: {recommendationData.riskScore} / 100
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Life-Cycle Equity Allocation</span>
-          <div className="mt-1 text-xl font-bold text-gold-400 font-mono">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Life-Cycle Equity Weight</span>
+          <div className="mt-1 text-xl font-bold text-gold font-mono">
             {recommendationData.allocations.equityPct}%
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
             Rule of (110 - Age) + Horizon Bonus
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Debt & Gold Hedges</span>
-          <div className="mt-1 text-xl font-bold text-sky-400 font-mono">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Debt & Gold Hedges</span>
+          <div className="mt-1 text-xl font-bold text-blue font-mono">
             {recommendationData.allocations.fdPct}% FD · {recommendationData.allocations.goldPct}% Gold
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
             Inflation & Drawdown Cushion
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Projected Portfolio CAGR</span>
-          <div className="mt-1 text-xl font-bold text-emerald-400 font-mono">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Projected Portfolio CAGR</span>
+          <div className="mt-1 text-xl font-bold text-gain font-mono">
             +{recommendationData.expectedCagr}% / yr
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
             Across {horizonYears}-Year Time Horizon
           </p>
         </div>
       </div>
 
       {/* Asset Allocation Visualizer */}
-      <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 space-y-3">
+      <div className="card-surface p-4 space-y-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-white flex items-center gap-1.5">
-            <PieIcon className="h-4 w-4 text-gold-400" />
+          <span className="font-semibold text-text-primary flex items-center gap-1.5 uppercase tracking-tight text-xs font-mono">
+            <PieIcon className="h-4 w-4 text-gold" />
             Recommended Macro Allocation Split
           </span>
-          <span className="text-slate-400">Total Capital: ₹{investmentAmount.toLocaleString('en-IN')}</span>
+          <span className="text-text-muted font-mono">Total Capital: ₹{investmentAmount.toLocaleString('en-IN')}</span>
         </div>
 
-        <div className="h-4 w-full rounded-full overflow-hidden flex bg-white/5">
+        <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-surface-hover">
           <div
             style={{ width: `${recommendationData.allocations.equityPct}%` }}
-            className="bg-gold-500 h-full transition-all duration-500"
+            className="bg-gold h-full transition-all duration-500"
             title={`Equities: ${recommendationData.allocations.equityPct}%`}
           />
           <div
             style={{ width: `${recommendationData.allocations.fdPct}%` }}
-            className="bg-sky-500 h-full transition-all duration-500"
+            className="bg-blue h-full transition-all duration-500"
             title={`Fixed Deposits: ${recommendationData.allocations.fdPct}%`}
           />
           <div
             style={{ width: `${recommendationData.allocations.goldPct}%` }}
-            className="bg-amber-400 h-full transition-all duration-500"
+            className="bg-warning h-full transition-all duration-500"
             title={`Gold: ${recommendationData.allocations.goldPct}%`}
           />
           <div
             style={{ width: `${recommendationData.allocations.cashPct}%` }}
-            className="bg-slate-500 h-full transition-all duration-500"
+            className="bg-text-muted h-full transition-all duration-500"
             title={`Cash: ${recommendationData.allocations.cashPct}%`}
           />
         </div>
 
-        <div className="flex flex-wrap gap-4 text-xs">
+        <div className="flex flex-wrap gap-4 text-xs font-mono">
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-gold-500" />
-            <span className="text-slate-300 font-medium">Equities ({recommendationData.allocations.equityPct}%)</span>
-            <span className="text-slate-500 font-mono">
+            <span className="h-2.5 w-2.5 rounded-full bg-gold" />
+            <span className="text-text-primary font-medium">Equities ({recommendationData.allocations.equityPct}%)</span>
+            <span className="text-text-muted">
               ₹{Math.round(investmentAmount * (recommendationData.allocations.equityPct / 100)).toLocaleString('en-IN')}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-            <span className="text-slate-300 font-medium">Fixed Deposits ({recommendationData.allocations.fdPct}%)</span>
-            <span className="text-slate-500 font-mono">₹{recommendationData.hedges.fdAmount.toLocaleString('en-IN')}</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-blue" />
+            <span className="text-text-primary font-medium">Fixed Deposits ({recommendationData.allocations.fdPct}%)</span>
+            <span className="text-text-muted">₹{recommendationData.hedges.fdAmount.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-            <span className="text-slate-300 font-medium">Physical Gold ({recommendationData.allocations.goldPct}%)</span>
-            <span className="text-slate-500 font-mono">₹{recommendationData.hedges.goldAmount.toLocaleString('en-IN')}</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-warning" />
+            <span className="text-text-primary font-medium">Physical Gold ({recommendationData.allocations.goldPct}%)</span>
+            <span className="text-text-muted">₹{recommendationData.hedges.goldAmount.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-slate-500" />
-            <span className="text-slate-300 font-medium">Cash Buffer (5%)</span>
-            <span className="text-slate-500 font-mono">
+            <span className="h-2.5 w-2.5 rounded-full bg-text-muted" />
+            <span className="text-text-primary font-medium">Cash Buffer (5%)</span>
+            <span className="text-text-muted">
               ₹{Math.round(investmentAmount * 0.05).toLocaleString('en-IN')}
             </span>
           </div>
@@ -544,15 +557,15 @@ export function RecommendationsView() {
       </div>
 
       {/* Recommended Stocks Basket */}
-      <div className="rounded-2xl border border-white/10 bg-ink-950/70 p-6 backdrop-blur-md space-y-4 shadow-xl">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      <div className="card-surface p-6 space-y-4 shadow-xl">
+        <div className="flex items-center justify-between border-b border-theme-subtle pb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-gold-400" />
-            <h2 className="font-semibold text-white">
+            <Sparkles className="h-5 w-5 text-gold" />
+            <h2 className="font-semibold text-text-primary text-sm uppercase tracking-tight">
               Personalized Stock Basket (Top {recommendationData.stockPicks.length} Model Picks)
             </h2>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-text-muted font-mono">
             Powered by XGBoost & SHAP Explainability
           </span>
         </div>
@@ -561,45 +574,45 @@ export function RecommendationsView() {
           {recommendationData.stockPicks.map((stock, idx) => (
             <div
               key={stock.symbol}
-              className="rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-5 transition space-y-3"
+              className="card-surface p-5 transition space-y-3 hover:border-theme-default"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold-500/10 border border-gold-500/20 text-xs font-bold text-gold-300">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold/10 border border-gold/20 text-xs font-bold font-mono text-gold">
                     0{idx + 1}
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white tracking-wide">{stock.symbol}</span>
-                      <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] text-slate-300">
+                      <span className="font-bold text-text-primary tracking-wide font-mono">{stock.symbol}</span>
+                      <span className="rounded bg-surface-elevated border border-theme-subtle px-2 py-0.5 text-[10px] text-text-muted font-mono">
                         {stock.sector}
                       </span>
-                      <span className="rounded bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                      <span className="badge-verified font-mono text-[10px]">
                         {stock.suitabilityTier}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-400">{stock.companyName}</span>
+                    <span className="text-xs text-text-muted">{stock.companyName}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-6 text-right">
                   <div>
-                    <span className="block text-[10px] uppercase text-slate-500">Current Price</span>
-                    <span className="font-mono text-sm font-semibold text-slate-200">
+                    <span className="block text-[10px] uppercase text-text-muted font-mono">Current Price</span>
+                    <span className="font-mono text-sm font-semibold text-text-secondary">
                       ₹{stock.currentPrice.toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div>
-                    <span className="block text-[10px] uppercase text-slate-500">ML Target (30d)</span>
-                    <span className="font-mono text-sm font-bold text-gold-400">
+                    <span className="block text-[10px] uppercase text-text-muted font-mono">ML Target (30d)</span>
+                    <span className="font-mono text-sm font-bold text-gold">
                       ₹{stock.mlPredictedTarget.toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div>
-                    <span className="block text-[10px] uppercase text-slate-500">Projected Gain</span>
-                    <span className="font-mono text-sm font-bold text-emerald-400">
+                    <span className="block text-[10px] uppercase text-text-muted font-mono">Projected Gain</span>
+                    <span className="font-mono text-sm font-bold text-gain">
                       +{stock.projectedReturnPercent}%
                     </span>
                   </div>
@@ -607,34 +620,34 @@ export function RecommendationsView() {
               </div>
 
               {/* Rationale and Allocation Bar */}
-              <div className="rounded-lg bg-ink-950/80 p-3.5 border border-white/5 space-y-2">
+              <div className="rounded-lg bg-surface-elevated/60 p-3.5 border border-theme-subtle space-y-2">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <Info className="h-3.5 w-3.5 text-gold-400 shrink-0" />
-                    <span className="text-slate-300">{stock.personalizedRationale}</span>
+                    <Info className="h-3.5 w-3.5 text-gold shrink-0" />
+                    <span className="text-text-secondary">{stock.personalizedRationale}</span>
                   </div>
                   <div className="shrink-0 flex items-center gap-3 font-mono text-xs">
-                    <span className="text-gold-300 font-bold">
+                    <span className="text-gold font-bold">
                       {stock.allocationPct}% Allocation
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-text-muted">
                       ≈ ₹{stock.allocatedAmount.toLocaleString('en-IN')} ({stock.shares} shares)
                     </span>
                   </div>
                 </div>
 
                 {/* Key SHAP Drivers */}
-                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5 text-[11px]">
-                  <span className="text-slate-500 font-semibold uppercase text-[10px]">SHAP Drivers:</span>
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-theme-subtle text-[11px]">
+                  <span className="text-text-muted font-semibold uppercase font-mono text-[10px]">SHAP Drivers:</span>
                   {stock.keyShapDrivers.map((driver, dIdx) => (
                     <span
                       key={dIdx}
-                      className="rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-slate-300"
+                      className="rounded-full bg-surface-elevated border border-theme-subtle px-2.5 py-0.5 text-text-secondary font-mono text-[11px]"
                     >
                       {driver}
                     </span>
                   ))}
-                  <span className="ml-auto font-mono text-[10px] text-slate-400">
+                  <span className="ml-auto font-mono text-[10px] text-text-muted">
                     Confidence: {(stock.mlConfidence * 100).toFixed(0)}% · Beta: {stock.beta.toFixed(2)}
                   </span>
                 </div>

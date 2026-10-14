@@ -4,6 +4,10 @@ import os
 import sys
 import pytest
 import sqlalchemy as sa
+import uuid
+
+# Prevent test-triggered background tasks from sending real email.
+os.environ["TESTING"] = "true"
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.compiler import compiles
@@ -25,25 +29,12 @@ def compile_vector(element, compiler, **kw):
 
 
 from app.core.config import settings
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_password_hash
 from app.db.base import Base
 from app.db.session import get_db
+from app.models.user import User
 import app.models  # noqa: F401
 from app.main import app
-
-
-def is_postgres_available() -> bool:
-    """Fast socket probe to check if PostgreSQL server is accepting connections."""
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(0.5)
-    try:
-        s.connect((settings.POSTGRES_HOST, settings.POSTGRES_PORT))
-        return True
-    except Exception:
-        return False
-    finally:
-        s.close()
 
 
 # Shared engine for fast in-memory or Postgres test executions
@@ -52,6 +43,7 @@ test_engine_instance = sa.create_engine(
     TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},
     poolclass=sa.pool.StaticPool,
+    use_insertmanyvalues=False,
 )
 TestingSessionLocal = sessionmaker(
     autocommit=False,
@@ -79,15 +71,6 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture(scope="session")
 def test_engine():
     """Create test engine for integration tests."""
-    if is_postgres_available():
-        try:
-            pg_engine = sa.create_engine(settings.DATABASE_URL, pool_pre_ping=True)
-            with pg_engine.connect() as conn:
-                conn.execute(sa.text("SELECT 1"))
-            return pg_engine
-        except Exception:
-            pass
-
     return test_engine_instance
 
 
@@ -128,26 +111,38 @@ def client():
 
 
 @pytest.fixture
-def auth_headers():
+def auth_headers(db_session):
     """Generates valid JWT bearer authorization headers for testing."""
+    email = f"test-{uuid.uuid4().hex}@stockiq.example.com"
+    user = User(
+        id=uuid.uuid4(), email=email, password_hash=get_password_hash("TestPass123!"),
+        full_name="Test Investor", role="investor", is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
     token = create_access_token(
-        subject="test-user-123",
+        subject=str(user.id),
         claims={
-            "email": "test@stockiq.example.com",
+            "email": email,
             "role": "investor",
             "full_name": "Test Investor",
         },
     )
     return {"Authorization": f"Bearer {token}"}
-
-
 @pytest.fixture
-def admin_auth_headers():
+def admin_auth_headers(db_session):
     """Generates valid admin JWT bearer authorization headers for testing."""
+    email = f"admin-{uuid.uuid4().hex}@stockiq.example.com"
+    user = User(
+        id=uuid.uuid4(), email=email, password_hash=get_password_hash("TestPass123!"),
+        full_name="Admin User", role="admin", is_active=True, is_superuser=True,
+    )
+    db_session.add(user)
+    db_session.commit()
     token = create_access_token(
-        subject="admin-user-001",
+        subject=str(user.id),
         claims={
-            "email": "admin@stockiq.example.com",
+            "email": email,
             "role": "admin",
             "full_name": "Admin User",
         },

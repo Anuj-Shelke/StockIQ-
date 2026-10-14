@@ -305,70 +305,70 @@ export function NextDayOpenPredictor() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white font-display">
-              Next-Day NSE & BSE Opening Price & Gap Predictor
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
+              Next-Day Opening Price & Gap Predictor
             </h1>
-            <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300">
+            <span className="badge-ai font-mono">
               Quantile ML v2.1
             </span>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-text-muted mt-1">
             Machine learning forecast of tomorrow's 9:15 AM IST opening price, gap probability (P_gap_up), and confidence intervals for NIFTY 50, BSE SENSEX, and top equities.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-slate-300">
-          <Clock className="h-4 w-4 text-gold-400" />
-          <span>Forecast For: Next Trading Session (09:15 IST)</span>
+        <div className="flex items-center gap-2 text-xs font-mono bg-surface-elevated border border-theme-subtle px-3 py-1.5 rounded-xl text-text-secondary self-start sm:self-auto">
+          <Clock className="h-4 w-4 text-gold" />
+          <span>Forecast For: Next Session (09:15 IST)</span>
         </div>
       </div>
 
       {/* Global Macro & Overnight Signals Ribbon */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">GIFT Nifty Implied Open</span>
-          <div className="mt-1 text-xl font-bold font-mono text-emerald-400 flex items-center gap-1.5">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">GIFT Nifty Implied Open</span>
+          <div className="mt-1 text-xl font-bold font-mono text-gain flex items-center gap-1.5">
             <span>22,448.00</span>
             <ArrowUpRight className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">+84.65 pts (+0.38%) Premium</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">+84.65 pts (+0.38%) Premium</p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Wall Street Close</span>
-          <div className="mt-1 text-xl font-bold font-mono text-white flex items-center gap-1.5">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Wall Street Overnight</span>
+          <div className="mt-1 text-xl font-bold font-mono text-text-primary flex items-center gap-1.5">
             <span>S&P +0.65%</span>
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">Nasdaq +0.82% Tech Rally</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">Nasdaq +0.82% Tech Rally</p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Brent Crude Oil</span>
-          <div className="mt-1 text-xl font-bold font-mono text-sky-400 flex items-center gap-1.5">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Brent Crude Oil</span>
+          <div className="mt-1 text-xl font-bold font-mono text-blue flex items-center gap-1.5">
             <span>$78.40 / bbl</span>
             <ArrowDownRight className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">-1.1% Overnight Easing</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">-1.1% Overnight Easing</p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-ink-950/60 p-4 backdrop-blur-sm">
-          <span className="text-xs text-slate-400">Market Opening Bias</span>
-          <div className="mt-1 text-xl font-bold text-emerald-400 flex items-center gap-1.5 font-display">
+        <div className="card-surface p-4">
+          <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Market Opening Bias</span>
+          <div className="mt-1 text-xl font-bold text-gain flex items-center gap-1.5 font-display">
             <span>Bullish Gap Up</span>
             <TrendingUp className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">74% Historical Gap-Up Odds</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">74% Historical Gap-Up Odds</p>
         </div>
       </div>
 
       {/* What-If Overnight Futures Simulator */}
-      <div className="rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="card-surface p-4 flex flex-col md:flex-row items-center justify-between gap-4 border-l-2 border-l-gold">
         <div className="flex items-center gap-3">
-          <Sliders className="h-5 w-5 text-gold-400 shrink-0" />
+          <Sliders className="h-5 w-5 text-gold shrink-0" />
           <div>
-            <h4 className="text-xs font-semibold text-white">GIFT Nifty Pre-Market Stress Simulator</h4>
-            <p className="text-[11px] text-slate-400">
-              Slide to simulate sudden pre-market futures swings and see real-time recalculation of Indian market opening coordinates.
+            <h4 className="text-xs font-semibold text-text-primary uppercase tracking-tight">GIFT Nifty Pre-Market Stress Simulator</h4>
+            <p className="text-[11px] text-text-muted">
+              Slide to simulate sudden pre-market futures swings and see real-time recalculation of opening coordinates.
             </p>
           </div>
         </div>
@@ -381,25 +381,25 @@ export function NextDayOpenPredictor() {
             step={10}
             value={giftNiftyShift}
             onChange={(e) => setGiftNiftyShift(Number(e.target.value))}
-            className="w-full accent-gold-400 cursor-pointer"
+            className="w-full accent-gold cursor-pointer"
           />
-          <span className="font-mono text-xs font-bold w-16 text-right text-gold-300">
+          <span className="font-mono text-xs font-bold w-16 text-right text-gold">
             {giftNiftyShift >= 0 ? `+${giftNiftyShift}` : giftNiftyShift} pts
           </span>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-theme-subtle pb-3">
         <div className="flex items-center gap-2">
           {(['ALL', 'INDICES', 'BSE', 'NSE', 'EQUITIES'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilterType(tab)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              className={`rounded-lg px-3 py-1.5 text-xs font-mono font-semibold transition ${
                 filterType === tab
-                  ? 'bg-gold-500 text-ink-950 shadow'
-                  : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                  ? 'bg-gold text-canvas shadow'
+                  : 'btn-secondary'
               }`}
             >
               {tab === 'ALL'
@@ -415,7 +415,7 @@ export function NextDayOpenPredictor() {
           ))}
         </div>
 
-        <span className="text-xs text-slate-400 font-mono">
+        <span className="text-xs text-text-muted font-mono">
           Showing {filteredQuotes.length} Quantile Forecasts
         </span>
       </div>
@@ -429,28 +429,28 @@ export function NextDayOpenPredictor() {
           return (
             <div
               key={q.symbol}
-              className="rounded-2xl border border-white/10 bg-ink-950/70 backdrop-blur-md overflow-hidden transition shadow-lg"
+              className="card-surface overflow-hidden transition hover:border-theme-default"
             >
               <div
                 onClick={() => setExpandedSymbol(isExpanded ? null : q.symbol)}
-                className="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 cursor-pointer hover:bg-white/[0.02]"
+                className="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 cursor-pointer hover:bg-surface-hover/40 transition"
               >
                 {/* Asset Identity */}
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-gold-500/10 border border-gold-500/20 text-gold-300 font-bold text-xs font-mono">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-gold/10 border border-gold/20 text-gold font-bold text-xs font-mono">
                     {q.exchange}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-base tracking-wide font-display">
+                      <span className="font-bold text-text-primary text-base tracking-wide font-display">
                         {q.name}
                       </span>
-                      <span className="font-mono text-xs text-slate-400">({q.symbol})</span>
-                      <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] text-slate-300">
+                      <span className="font-mono text-xs text-text-muted">({q.symbol})</span>
+                      <span className="rounded bg-surface-elevated border border-theme-subtle px-2 py-0.5 text-[10px] text-text-secondary font-mono">
                         {q.assetType}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-slate-400 font-mono">
+                    <div className="mt-1 flex items-center gap-3 text-xs text-text-muted font-mono">
                       <span>Prev Close: ₹{q.lastClosePrice.toLocaleString('en-IN')}</span>
                       <span>·</span>
                       <span>Confidence: {(q.confidenceScore * 100).toFixed(0)}%</span>
@@ -462,20 +462,20 @@ export function NextDayOpenPredictor() {
                 <div className="flex flex-wrap items-center gap-6">
                   {/* Predicted Open */}
                   <div>
-                    <span className="block text-[10px] uppercase text-slate-500 font-semibold">
+                    <span className="block text-[10px] uppercase text-text-muted font-mono font-semibold">
                       Predicted 9:15 AM Open
                     </span>
-                    <span className="font-mono text-lg font-bold text-white">
+                    <span className="font-mono text-lg font-bold text-text-primary">
                       ₹{q.dynamicOpen.toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   {/* Expected Gap */}
                   <div>
-                    <span className="block text-[10px] uppercase text-slate-500 font-semibold">
+                    <span className="block text-[10px] uppercase text-text-muted font-mono font-semibold">
                       Expected Gap
                     </span>
-                    <div className={`font-mono text-base font-bold flex items-center gap-1 ${isGapUp ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <div className={`font-mono text-base font-bold flex items-center gap-1 ${isGapUp ? 'text-gain' : 'text-loss'}`}>
                       {isGapUp ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
                       <span>
                         {isGapUp ? `+${q.dynamicGapPoints}` : q.dynamicGapPoints} pts ({isGapUp ? `+${q.dynamicGapPct}%` : `${q.dynamicGapPct}%`})
@@ -486,19 +486,19 @@ export function NextDayOpenPredictor() {
                   {/* Probability Bar */}
                   <div className="w-28 space-y-1">
                     <div className="flex justify-between text-[10px] font-mono">
-                      <span className="text-slate-400">P(Gap-Up)</span>
-                      <span className="font-bold text-emerald-400">{(q.pGapUp * 100).toFixed(0)}%</span>
+                      <span className="text-text-muted">P(Gap-Up)</span>
+                      <span className="font-bold text-gain">{(q.pGapUp * 100).toFixed(0)}%</span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-2 w-full rounded-full bg-surface-hover overflow-hidden">
                       <div
                         style={{ width: `${q.pGapUp * 100}%` }}
-                        className="h-full bg-emerald-500 rounded-full"
+                        className="h-full bg-gain rounded-full"
                       />
                     </div>
                   </div>
 
                   {/* Chevron Toggle */}
-                  <button className="text-slate-400 hover:text-white p-1">
+                  <button className="text-text-muted hover:text-text-primary p-1">
                     {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </button>
                 </div>
@@ -506,57 +506,57 @@ export function NextDayOpenPredictor() {
 
               {/* Expanded Quantile Range & Overnight Factors Drawer */}
               {isExpanded && (
-                <div className="border-t border-white/5 bg-black/30 p-5 space-y-4 text-xs">
+                <div className="border-t border-theme-subtle bg-surface-elevated/40 p-5 space-y-4 text-xs">
                   {/* Quantile Confidence Interval (P10 to P90) */}
-                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
+                  <div className="card-surface p-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-200">Quantile Regression Range (P10 - P90)</span>
-                      <span className="text-[11px] text-slate-400 font-mono">
+                      <span className="font-semibold text-text-primary font-mono text-xs">Quantile Regression Range (P10 - P90)</span>
+                      <span className="text-[11px] text-text-muted font-mono">
                         90% Confidence Band: ₹{q.openP10.toLocaleString('en-IN')} — ₹{q.openP90.toLocaleString('en-IN')}
                       </span>
                     </div>
 
                     <div className="relative pt-3 pb-1">
-                      <div className="h-2 w-full rounded-full bg-white/10 relative">
+                      <div className="h-2 w-full rounded-full bg-surface-hover relative">
                         <div
                           style={{
                             left: '20%',
                             width: '60%',
                           }}
-                          className="absolute h-full bg-gold-400/40 rounded-full"
+                          className="absolute h-full bg-gold/40 rounded-full"
                         />
                         <div
                           style={{ left: '50%' }}
-                          className="absolute -top-1 h-4 w-1 bg-gold-400 rounded-full"
+                          className="absolute -top-1 h-4 w-1 bg-gold rounded-full"
                           title={`Median P50: ₹${q.openP50}`}
                         />
                       </div>
-                      <div className="flex justify-between mt-2 font-mono text-[10px] text-slate-400">
-                        <span>P10 (Bearish Open): ₹{q.openP10.toLocaleString('en-IN')}</span>
-                        <span className="text-gold-300 font-bold">P50 (Expected): ₹{q.openP50.toLocaleString('en-IN')}</span>
-                        <span>P90 (Bullish Open): ₹{q.openP90.toLocaleString('en-IN')}</span>
+                      <div className="flex justify-between mt-2 font-mono text-[10px] text-text-muted">
+                        <span>P10 (Bearish): ₹{q.openP10.toLocaleString('en-IN')}</span>
+                        <span className="text-gold font-bold">P50 (Expected): ₹{q.openP50.toLocaleString('en-IN')}</span>
+                        <span>P90 (Bullish): ₹{q.openP90.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Overnight Catalyst SHAP Drivers */}
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-300 mb-2.5">
+                    <h4 className="text-xs font-semibold text-text-secondary font-mono uppercase tracking-wider mb-2.5">
                       Key Overnight Catalysts & Feature Contributions
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {q.overnightFactors.map((factor, fIdx) => (
                         <div
                           key={fIdx}
-                          className="rounded-lg border border-white/5 bg-white/[0.02] p-3 space-y-1"
+                          className="card-surface p-3 space-y-1"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-white">{factor.name}</span>
-                            <span className={`font-mono font-bold ${factor.direction === 'positive' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <span className="font-semibold text-text-primary">{factor.name}</span>
+                            <span className={`font-mono font-bold ${factor.direction === 'positive' ? 'text-gain' : 'text-loss'}`}>
                               {factor.direction === 'positive' ? `+${factor.impactPoints}` : factor.impactPoints} pts
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400">{factor.description}</p>
+                          <p className="text-[11px] text-text-muted">{factor.description}</p>
                         </div>
                       ))}
                     </div>

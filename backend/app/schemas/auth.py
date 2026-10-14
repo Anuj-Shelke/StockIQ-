@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import EmailStr, Field
 from app.schemas.common import APIBaseModel
 
@@ -14,6 +14,7 @@ class UserLoginRequest(APIBaseModel):
     """Payload for user authentication."""
     email: EmailStr
     password: str
+    portal: Literal["user", "admin"] = "user"
 
 
 class RefreshTokenRequest(APIBaseModel):
@@ -24,6 +25,7 @@ class RefreshTokenRequest(APIBaseModel):
 class GoogleAuthRequest(APIBaseModel):
     """Payload for authenticating via Google OAuth/credential."""
     id_token: Optional[str] = None
+    access_token: Optional[str] = None
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
 

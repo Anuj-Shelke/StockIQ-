@@ -16,31 +16,31 @@ export function HoldingsTable({
 }: HoldingsTableProps) {
   if (holdings.length === 0) {
     return (
-      <div className="rounded-xl border border-white/10 bg-ink-950/60 p-8 text-center text-slate-400">
-        <p className="text-base font-medium text-slate-300">No holdings found</p>
-        <p className="mt-1 text-sm text-slate-500">
-          Click "Add Holding" above to start building your portfolio.
+      <div className="card-surface p-8 text-center text-text-muted border-dashed">
+        <p className="text-base font-medium text-text-primary">No Holdings Recorded</p>
+        <p className="mt-1 text-sm text-text-muted">
+          Click "Add Holding" above to start populating your portfolio assets.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/10 bg-ink-950/60 backdrop-blur-sm">
+    <div className="card-surface overflow-x-auto">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-white/10 bg-white/[0.02] text-xs uppercase text-slate-400">
+        <thead className="border-b border-theme-subtle bg-surface-hover/30 text-[11px] uppercase tracking-wider font-mono text-text-muted">
           <tr>
-            <th className="px-4 py-3 font-semibold">Symbol / Asset</th>
-            <th className="px-4 py-3 font-semibold text-right">Shares</th>
-            <th className="px-4 py-3 font-semibold text-right">Buy Price</th>
-            <th className="px-4 py-3 font-semibold text-right">Current Price</th>
-            <th className="px-4 py-3 font-semibold text-right">Current Value</th>
-            <th className="px-4 py-3 font-semibold text-right">P&L (%)</th>
-            <th className="px-4 py-3 font-semibold text-right">Weight</th>
-            <th className="px-4 py-3 font-semibold text-center">Actions</th>
+            <th className="px-4 py-3 font-medium">Symbol / Asset</th>
+            <th className="px-4 py-3 font-medium text-right">Shares</th>
+            <th className="px-4 py-3 font-medium text-right">Buy Price</th>
+            <th className="px-4 py-3 font-medium text-right">Current Price</th>
+            <th className="px-4 py-3 font-medium text-right">Current Value</th>
+            <th className="px-4 py-3 font-medium text-right">P&L (%)</th>
+            <th className="px-4 py-3 font-medium text-right">Weight</th>
+            <th className="px-4 py-3 font-medium text-center">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5">
+        <tbody className="divide-y divide-theme-subtle">
           {holdings.map((h) => {
             const currentPrice = h.current_price || h.buy_price
             const investedVal = h.quantity * h.buy_price
@@ -51,29 +51,29 @@ export function HoldingsTable({
             const isProfit = pnl >= 0
 
             return (
-              <tr key={h.id} className="transition hover:bg-white/[0.03]">
+              <tr key={h.id} className="transition hover:bg-surface-hover/50">
                 <td className="px-4 py-3.5">
                   <div className="flex flex-col">
-                    <span className="font-semibold text-white tracking-wide">{h.symbol}</span>
-                    <span className="text-xs text-slate-400">{h.name || h.asset_type}</span>
+                    <span className="font-semibold text-text-primary tracking-wide font-mono text-sm">{h.symbol}</span>
+                    <span className="text-xs text-text-muted">{h.name || h.asset_type}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono text-slate-200">
+                <td className="px-4 py-3.5 text-right font-mono text-text-secondary">
                   {h.quantity.toLocaleString('en-IN')}
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono text-slate-300">
+                <td className="px-4 py-3.5 text-right font-mono text-text-muted">
                   ₹{h.buy_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono text-slate-200">
+                <td className="px-4 py-3.5 text-right font-mono text-text-secondary">
                   ₹{currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono font-medium text-white">
-                  ₹{currentVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                <td className="px-4 py-3.5 text-right font-mono font-medium text-text-primary">
+                  ₹{currentVal.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono">
                   <div
                     className={`inline-flex items-center gap-1 font-medium ${
-                      isProfit ? 'text-emerald-400' : 'text-rose-400'
+                      isProfit ? 'text-gain' : 'text-loss'
                     }`}
                   >
                     {isProfit ? (
@@ -87,26 +87,26 @@ export function HoldingsTable({
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono text-slate-300">
-                  <span className="rounded bg-white/5 px-2 py-0.5 text-xs">
+                <td className="px-4 py-3.5 text-right font-mono text-text-muted">
+                  <span className="rounded bg-surface-elevated border border-theme-subtle px-2 py-0.5 text-xs">
                     {weight.toFixed(1)}%
                   </span>
                 </td>
                 <td className="px-4 py-3.5 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-1.5">
                     <button
                       onClick={() => onEdit(h)}
-                      className="rounded p-1 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                      className="rounded p-1.5 text-text-muted hover:text-gold hover:bg-surface-hover transition"
                       title="Edit Holding"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => onDelete(h.id)}
-                      className="rounded p-1 text-slate-400 transition hover:bg-rose-500/20 hover:text-rose-400"
+                      className="rounded p-1.5 text-text-muted hover:text-loss hover:bg-loss/10 transition"
                       title="Delete Holding"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </td>

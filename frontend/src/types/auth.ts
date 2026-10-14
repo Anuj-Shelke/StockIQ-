@@ -5,6 +5,7 @@
 export interface LoginRequest {
   email: string
   password: string
+  portal: 'user' | 'admin'
 }
 
 export interface RegisterRequest {

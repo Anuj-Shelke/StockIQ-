@@ -21,6 +21,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Create all StockIQ relational tables and enable pgvector extension."""
+    if op.get_bind().dialect.name == "sqlite":
+        # Keep SQLite available for isolated local/test database upgrades.
+        import app.models  # noqa: F401
+        from app.db.base import Base
+        Base.metadata.create_all(bind=op.get_bind())
+        return
+
     # 1. Enable required PostgreSQL extensions
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
     op.execute('CREATE EXTENSION IF NOT EXISTS vector;')

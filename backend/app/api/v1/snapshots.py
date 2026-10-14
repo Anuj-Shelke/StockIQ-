@@ -49,7 +49,7 @@ def compare_snapshots(
     current_user: User = Depends(get_current_user),
 ) -> Dict:
     """Compare targets, returns, and changes across two saved analysis snapshots."""
-    return SnapshotService.compare_snapshots(id_a=id_a, id_b=id_b)
+    return SnapshotService.compare_snapshots(id_a=id_a, id_b=id_b, user_id=str(current_user.id))
 
 
 @router.get("/{snapshot_id}", response_model=AnalysisSnapshot, summary="Get snapshot detail")
@@ -58,7 +58,7 @@ def get_snapshot(
     current_user: User = Depends(get_current_user),
 ) -> AnalysisSnapshot:
     """Retrieve full data for a specific immutable snapshot."""
-    return SnapshotService.get_snapshot(snapshot_id=snapshot_id)
+    return SnapshotService.get_snapshot(snapshot_id=snapshot_id, user_id=str(current_user.id))
 
 
 @router.delete("/{snapshot_id}", summary="Delete an analysis snapshot")

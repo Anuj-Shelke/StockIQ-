@@ -42,10 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Restore a session from the stored refresh token on first load.
   useEffect(() => {
     let cancelled = false
-    authService.restoreSession().then((ok) => {
+    authService.restoreSession().then(async (ok) => {
       if (cancelled) return
-      setStatus(ok ? 'authenticated' : 'unauthenticated')
-      if (ok) void loadProfile()
+      if (ok) await loadProfile()
+      if (!cancelled) setStatus(ok ? 'authenticated' : 'unauthenticated')
     })
     return () => {
       cancelled = true
@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (credentials: LoginRequest) => {
       await authService.login(credentials)
+      await loadProfile()
       setStatus('authenticated')
-      void loadProfile()
     },
     [loadProfile],
   )
@@ -74,17 +74,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (data: RegisterRequest) => {
       await authService.register(data)
+      await loadProfile()
       setStatus('authenticated')
-      void loadProfile()
     },
     [loadProfile],
   )
 
   const loginWithGoogle = useCallback(
-    async (payload?: { email?: string; full_name?: string; id_token?: string }) => {
+    async (payload: { access_token: string }) => {
       await authService.loginWithGoogle(payload)
+      await loadProfile()
       setStatus('authenticated')
-      void loadProfile()
     },
     [loadProfile],
   )

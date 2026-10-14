@@ -3,7 +3,7 @@ from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import AuthenticationError, PermissionDeniedError
+from app.core.exceptions import AuthenticationError, DatabaseUnavailableError, PermissionDeniedError
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.user import User
@@ -32,29 +32,12 @@ def get_current_user(
     # Fetch user from database
     try:
         user = db.query(User).filter(User.id == user_id).first()
-    except Exception:
-        user = None
+    except Exception as exc:
+        db.rollback()
+        raise DatabaseUnavailableError() from exc
 
     if not user:
-        # If database does not contain user or offline fallback, reconstruct user instance from token claims
-        email = payload.get("email", f"{user_id}@example.com")
-        role = payload.get("role", "investor")
-        full_name = payload.get("full_name")
-        user = User(
-            id=user_id,
-            email=email,
-            hashed_password="",
-            full_name=full_name,
-            role=role,
-            is_active=True,
-            is_superuser=(role == "admin"),
-        )
-        try:
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        except Exception:
-            db.rollback()
+        raise AuthenticationError("Please log in to continue.")
 
     return user
 
@@ -72,6 +55,6 @@ def get_current_admin_user(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
     """Dependency to verify that user has administrative privileges."""
-    if not current_user.is_superuser and current_user.role != "admin":
-        raise PermissionDeniedError("Administrative privileges required")
+    if current_user.role != "admin":
+        raise PermissionDeniedError("You do not have permission to access this area.")
     return current_user

@@ -12,11 +12,11 @@ export function ComparisonMatrix({ metrics }: ComparisonMatrixProps) {
         return (
           <div
             key={metric.assetClass}
-            className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm flex flex-col justify-between"
+            className="card-surface p-5 flex flex-col justify-between transition hover:border-theme-default"
           >
             <div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <div className="flex items-center justify-between pb-2.5 border-b border-theme-subtle">
+                <span className="text-xs font-semibold uppercase tracking-wider font-mono text-text-muted">
                   {metric.assetClass}
                 </span>
                 <span
@@ -26,50 +26,50 @@ export function ComparisonMatrix({ metrics }: ComparisonMatrixProps) {
               </div>
 
               <div className="mt-3">
-                <div className="text-2xl font-bold font-mono text-white">
+                <div className="text-2xl font-bold font-mono text-text-primary tracking-tight">
                   ₹{metric.totalFinalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs font-mono text-emerald-400">
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-mono text-gain">
                   <TrendingUp className="h-3.5 w-3.5" />
-                  <span>+{metric.totalReturnPercent.toFixed(1)}% Total Return</span>
+                  <span>+{metric.totalReturnPercent.toFixed(1)}% Compounded Return</span>
                 </div>
               </div>
 
-              <div className="mt-5 space-y-2.5 border-t border-white/5 pt-4 text-xs">
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Annualized CAGR:</span>
-                  <span className="font-mono font-semibold text-white">
+              <div className="mt-5 space-y-2.5 border-t border-theme-subtle pt-4 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Annualized CAGR:</span>
+                  <span className="font-mono font-semibold text-text-primary">
                     {metric.cagr.toFixed(1)}% p.a.
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Max Historical Drawdown:</span>
-                  <span className="font-mono text-rose-400">
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Max Historical Drawdown:</span>
+                  <span className="font-mono text-loss font-semibold">
                     {metric.maxDrawdown}%
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Liquidity Horizon:</span>
-                  <span className="text-slate-200">{metric.liquidity}</span>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Liquidity Horizon:</span>
+                  <span className="text-text-secondary">{metric.liquidity}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-slate-400">Tax Treatment:</span>
-                  <span className="text-slate-200 truncate max-w-[150px]" title={metric.taxImplication}>
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Tax Treatment:</span>
+                  <span className="text-text-secondary truncate max-w-[150px] font-mono" title={metric.taxImplication}>
                     {metric.taxImplication}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-              <span className="text-slate-400">Risk Assessment:</span>
+            <div className="mt-5 pt-3 border-t border-theme-subtle flex items-center justify-between text-xs">
+              <span className="text-text-muted">Risk Profile:</span>
               <span
-                className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-medium ${
                   metric.riskLevel === 'High'
-                    ? 'bg-rose-500/10 text-rose-300'
+                    ? 'badge-risk-elevated'
                     : metric.riskLevel === 'Medium'
-                    ? 'bg-amber-500/10 text-amber-300'
-                    : 'bg-emerald-500/10 text-emerald-300'
+                    ? 'badge-risk-moderate'
+                    : 'badge-risk-low'
                 }`}
               >
                 {metric.riskLevel === 'Low' ? (
@@ -77,7 +77,7 @@ export function ComparisonMatrix({ metrics }: ComparisonMatrixProps) {
                 ) : (
                   <AlertTriangle className="h-3 w-3" />
                 )}
-                {metric.riskLevel} Risk
+                {metric.riskLevel} Volatility
               </span>
             </div>
           </div>

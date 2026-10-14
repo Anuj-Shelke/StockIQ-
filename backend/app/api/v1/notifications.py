@@ -43,7 +43,7 @@ def mark_notification_read(
     current_user: User = Depends(get_current_user),
 ) -> Dict:
     """Mark single notification as read."""
-    success = NotificationService.mark_as_read(notification_id)
+    success = NotificationService.mark_as_read(notification_id, str(current_user.id))
     return {"status": "updated", "is_read": success}
 
 

@@ -9,51 +9,7 @@ from app.core.exceptions import NotFoundError
 from app.schemas.snapshot import AnalysisSnapshot, AnalysisSnapshotCreate
 
 
-# In-memory snapshot archive initialized with realistic samples
-_in_memory_snapshots: Dict[str, AnalysisSnapshot] = {
-    "snp-109": AnalysisSnapshot(
-        id="snp-109",
-        user_id="test-user-123",
-        title="TCS Q3 Margin Expansion Analysis",
-        symbol="TCS.NS",
-        asset_class="Equity (IT)",
-        current_price=4120.25,
-        target_price=4345.50,
-        projected_return_percent=5.47,
-        risk_level="Moderate",
-        notes="Evaluated 90-day operational margin expansion.",
-        scenario_stressed="2022 Rate Shock (-14.5%)",
-        created_at=datetime.fromisoformat("2026-10-12T16:00:00+00:00"),
-    ),
-    "snp-108": AnalysisSnapshot(
-        id="snp-108",
-        user_id="test-user-123",
-        title="Reliance Energy vs Physical Gold Hedge",
-        symbol="RELIANCE.NS",
-        asset_class="Equity (Energy)",
-        current_price=2980.50,
-        target_price=3210.00,
-        projected_return_percent=7.70,
-        risk_level="Moderate",
-        notes="Hedge ratio verified across COVID-19 shock.",
-        scenario_stressed="COVID-19 Crash (-31.2%)",
-        created_at=datetime.fromisoformat("2026-10-10T11:30:00+00:00"),
-    ),
-    "snp-107": AnalysisSnapshot(
-        id="snp-107",
-        user_id="test-user-123",
-        title="HDFC Bank Post-Merger Synergies",
-        symbol="HDFCBANK.NS",
-        asset_class="Equity (Banking)",
-        current_price=1650.80,
-        target_price=1820.00,
-        projected_return_percent=10.25,
-        risk_level="Conservative",
-        notes="Conservative long-term loan growth forecast.",
-        scenario_stressed="2008 GFC (-48.6%)",
-        created_at=datetime.fromisoformat("2026-10-06T14:45:00+00:00"),
-    ),
-}
+_in_memory_snapshots: Dict[str, AnalysisSnapshot] = {}
 
 
 class SnapshotService:
@@ -92,13 +48,12 @@ class SnapshotService:
     @classmethod
     def list_snapshots(
         cls,
-        user_id: Optional[str] = None,
+        user_id: str,
         symbol: Optional[str] = None,
     ) -> List[AnalysisSnapshot]:
         """List snapshots for user with optional symbol filter."""
         results = list(_in_memory_snapshots.values())
-        if user_id:
-            results = [s for s in results if s.user_id == user_id]
+        results = [s for s in results if s.user_id == user_id]
         if symbol:
             sym_clean = symbol.strip().upper()
             results = [s for s in results if s.symbol == sym_clean]
@@ -107,27 +62,27 @@ class SnapshotService:
         return results
 
     @classmethod
-    def get_snapshot(cls, snapshot_id: str) -> AnalysisSnapshot:
+    def get_snapshot(cls, snapshot_id: str, user_id: str) -> AnalysisSnapshot:
         """Fetch individual immutable snapshot."""
         snp = _in_memory_snapshots.get(snapshot_id)
-        if not snp:
+        if not snp or snp.user_id != user_id:
             raise NotFoundError(f"Analysis snapshot '{snapshot_id}' not found")
         return snp
 
     @classmethod
-    def delete_snapshot(cls, snapshot_id: str, user_id: Optional[str] = None) -> bool:
+    def delete_snapshot(cls, snapshot_id: str, user_id: str) -> bool:
         """Delete snapshot from archive."""
         snp = _in_memory_snapshots.get(snapshot_id)
-        if not snp:
+        if not snp or snp.user_id != user_id:
             raise NotFoundError(f"Analysis snapshot '{snapshot_id}' not found")
         del _in_memory_snapshots[snapshot_id]
         return True
 
     @classmethod
-    def compare_snapshots(cls, id_a: str, id_b: str) -> Dict:
+    def compare_snapshots(cls, id_a: str, id_b: str, user_id: str) -> Dict:
         """Generate side-by-side delta between two analysis snapshots."""
-        snp_a = cls.get_snapshot(id_a)
-        snp_b = cls.get_snapshot(id_b)
+        snp_a = cls.get_snapshot(id_a, user_id)
+        snp_b = cls.get_snapshot(id_b, user_id)
 
         price_diff = round(snp_b.target_price - snp_a.target_price, 2)
         return_diff = round(snp_b.projected_return_percent - snp_a.projected_return_percent, 2)

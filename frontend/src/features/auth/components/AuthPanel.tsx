@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, type Variants } from 'framer-motion'
-import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Loader2, UserRound, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { ApiError } from '@/services/api'
 import { validateEmail, validatePassword } from '@/services/auth'
+import { requestGoogleAccessToken } from '@/services/googleIdentity'
 
 export type AuthVariant = 'login' | 'signup' | 'forgot'
 
@@ -26,10 +27,10 @@ const item: Variants = {
 function Field({ label, error, children }: { label: string; error?: string | null; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-slate-300">{label}</span>
+      <span className="mb-1.5 block text-xs font-mono uppercase tracking-wider text-text-secondary">{label}</span>
       {children}
       {error && (
-        <span role="alert" className="mt-1 block text-xs text-rose-300">
+        <span role="alert" className="mt-1 block text-xs text-loss font-mono">
           {error}
         </span>
       )}
@@ -38,9 +39,8 @@ function Field({ label, error, children }: { label: string; error?: string | nul
 }
 
 /**
- * Glass auth card that fades in over the same 3D scene once the bubble has burst.
- * Auth logic lives in the FastAPI backend; this component only collects input, validates it for UX,
- * calls the auth service through AuthContext and routes on success.
+ * The Black Financial Card: matte black, thin gold perimeter, embossed ₹.
+ * Emerges once the bubble has burst.
  */
 export function AuthPanel({ variant, revealed }: Props) {
   const { status, login, loginWithGoogle, register, logout } = useAuth()
@@ -56,6 +56,7 @@ export function AuthPanel({ variant, revealed }: Props) {
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirm?: string }>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [portal, setPortal] = useState<'user' | 'admin' | null>(null)
 
   const signup = variant === 'signup'
   const authed = status === 'authenticated'
@@ -73,14 +74,15 @@ export function AuthPanel({ variant, revealed }: Props) {
     setBusy(true)
     try {
       if (signup) await register({ email: email.trim(), password, full_name: name.trim() || undefined })
-      else await login({ email: email.trim(), password })
+      else await login({ email: email.trim(), password, portal: portal ?? 'user' })
       setPassword('')
       setConfirm('')
-      navigate(from, { replace: true })
+      navigate(signup || portal !== 'admin' ? (from.startsWith('/dashboard') ? from : '/dashboard') : (from.startsWith('/admin') ? from : '/admin/dashboard'), { replace: true })
     } catch (err) {
-      if (err instanceof ApiError && !signup && [400, 401, 403, 422].includes(err.status)) {
-        // Never reveal whether the email exists or which field was wrong.
-        setFormError('Incorrect email or password.')
+      if (err instanceof ApiError && !signup && err.status === 401) {
+        setFormError('Invalid email or password.')
+      } else if (err instanceof ApiError && !signup && err.status === 403) {
+        setFormError(err.message)
       } else {
         setFormError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
       }
@@ -93,10 +95,13 @@ export function AuthPanel({ variant, revealed }: Props) {
     setFormError(null)
     setBusy(true)
     try {
-      await loginWithGoogle({ email: 'sujeet.sonawane@stockiq.ai', full_name: 'Sujeet Sonawane' })
-      navigate(from, { replace: true })
+      const access_token = await requestGoogleAccessToken()
+      await loginWithGoogle({ access_token })
+      navigate('/dashboard', { replace: true })
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Google sign-in failed. Please try again.')
+      setFormError(err instanceof ApiError
+        ? err.message
+        : err instanceof Error ? err.message : 'Google sign-in could not be completed. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -108,84 +113,87 @@ export function AuthPanel({ variant, revealed }: Props) {
       initial="hide"
       animate={revealed ? 'show' : 'hide'}
       variants={panel}
-      // `inert` keeps the card out of the tab order and pointer path until it has emerged.
       inert={!revealed}
-      className={`glass absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-6 md:p-7
+      className={`card-black absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-6 md:p-8
         inset-x-3 bottom-3
         md:inset-x-auto md:bottom-auto md:right-[5vw] md:top-1/2 md:w-[26rem] md:-translate-y-1/2
+        shadow-2xl border border-gold/30 backdrop-blur-xl
         ${revealed ? '' : 'pointer-events-none'}`}
     >
-      <motion.div variants={item} className="mb-5 flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold-500/40 bg-gold-500/10 font-display text-lg text-gold-400">₹</span>
-        <span className="font-display text-xl tracking-tight text-white">StockIQ</span>
+      {/* Subtle embossed ₹ signature watermark */}
+      <div className="absolute -right-3 -bottom-8 text-9xl font-mono text-gold/5 pointer-events-none select-none font-bold">
+        ₹
+      </div>
+
+      <motion.div variants={item} className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold/50 bg-gold/10 font-display text-lg text-gold font-bold">₹</span>
+          <span className="font-display text-xl tracking-tight text-text-primary">StockIQ</span>
+        </div>
+        <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-gold/10 border border-gold/20 text-gold">
+          Secure Access
+        </span>
       </motion.div>
 
-      <motion.h2 variants={item} className="font-display text-3xl leading-tight tracking-tight text-white">
+      <motion.h2 variants={item} className="font-display text-2xl md:text-3xl leading-tight tracking-tight text-text-primary">
         {variant === 'forgot' ? 'Reset your password' : signup ? 'Create your account' : (
           <>
             Money talks.
             <br />
-            <span className="text-gold-400">Learn the language.</span>
+            <span className="text-gold">Learn the language.</span>
           </>
         )}
       </motion.h2>
-      <motion.p variants={item} className="mb-5 mt-2 text-sm text-slate-300/90">
+      <motion.p variants={item} className="mb-5 mt-2 text-xs md:text-sm text-text-muted leading-relaxed">
         {variant === 'forgot' ? 'Password reset is not available yet.' : 'Understand the risk. Explore the data. Know the reasoning.'}
       </motion.p>
 
       {variant === 'forgot' ? (
-        <motion.div variants={item} className="space-y-4 text-sm text-slate-300">
+        <motion.div variants={item} className="space-y-4 text-xs md:text-sm text-text-secondary">
           <p>
             Self-service reset isn't enabled on this server yet. Please contact the StockIQ team and we'll help you regain access.
           </p>
-          <Link to="/login" className="inline-flex items-center gap-1.5 text-gold-400 hover:text-gold-300">
+          <Link to="/login" className="inline-flex items-center gap-1.5 text-gold hover:underline font-mono">
             <ArrowLeft className="h-4 w-4" /> Back to sign in
           </Link>
         </motion.div>
       ) : authed ? (
         <motion.div variants={item} className="space-y-3">
-          <Link to="/dashboard" className="btn-gold w-full">
+          <Link to="/dashboard" className="btn-gold w-full text-center block">
             Continue to dashboard
           </Link>
-          <button type="button" onClick={logout} className="w-full text-center text-xs text-slate-400 hover:text-white">
+          <button type="button" onClick={logout} className="w-full text-center text-xs text-text-muted hover:text-text-primary transition font-mono">
             Sign out
           </button>
         </motion.div>
+      ) : !signup && !portal ? (
+        <motion.div variants={item} className="space-y-3">
+          <p className="text-sm font-semibold text-text-primary">How would you like to continue?</p>
+          <button type="button" onClick={() => setPortal('user')} className="card-surface flex w-full items-start gap-3 p-4 text-left hover:border-gold/40">
+            <UserRound className="mt-0.5 h-5 w-5 text-gold" />
+            <span><strong className="block text-sm text-text-primary">User</strong><span className="text-xs text-text-muted">Understand your portfolio and risk</span></span>
+          </button>
+          <button type="button" onClick={() => setPortal('admin')} className="card-surface flex w-full items-start gap-3 p-4 text-left hover:border-gold/40">
+            <ShieldCheck className="mt-0.5 h-5 w-5 text-gold" />
+            <span><strong className="block text-sm text-text-primary">Admin</strong><span className="text-xs text-text-muted">Review users, analyses, and expert-review requests</span></span>
+          </button>
+          <p className="pt-2 text-center text-xs text-text-muted">Don't have an account? <Link to="/signup" className="font-medium text-gold hover:underline">Sign up</Link></p>
+        </motion.div>
       ) : (
         <>
-          <motion.div variants={item}>
-            <button
-              type="button"
-              onClick={onGoogleSignIn}
-              disabled={busy}
-              aria-label="Continue with Google"
-              className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-white/15 hover:border-white/25 active:scale-[0.99] disabled:opacity-60"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden>
-                <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.4-1.7 4-5.4 4a6 6 0 1 1 0-12c1.9 0 3.1.8 3.8 1.5l2.6-2.5A9.7 9.7 0 0 0 12 2.3a9.7 9.7 0 1 0 0 19.4c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6H12z" />
-              </svg>
-              <span>Continue with Google</span>
-            </button>
-          </motion.div>
-
-          <motion.div variants={item} className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-slate-500">
-            <span className="h-px flex-1 bg-white/10" />
-            or
-            <span className="h-px flex-1 bg-white/10" />
-          </motion.div>
-
+          {!signup && portal && <button type="button" onClick={() => { setPortal(null); setFormError(null) }} className="mb-3 inline-flex items-center gap-1 text-xs text-text-muted hover:text-text-primary"><ArrowLeft className="h-3.5 w-3.5" /> Change portal · {portal === 'admin' ? 'Admin' : 'User'}</button>}
           <form onSubmit={onSubmit} noValidate className="space-y-3.5">
             {signup && (
               <motion.div variants={item}>
                 <Field label="Full name (optional)">
-                  <input className="field" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+                  <input className="input-default" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
                 </Field>
               </motion.div>
             )}
             <motion.div variants={item}>
               <Field label="Email" error={errors.email}>
                 <input
-                  className="field"
+                  className="input-default font-mono"
                   type="email"
                   autoComplete="email"
                   inputMode="email"
@@ -200,7 +208,7 @@ export function AuthPanel({ variant, revealed }: Props) {
               <Field label="Password" error={errors.password}>
                 <span className="relative block">
                   <input
-                    className="field pr-11"
+                    className="input-default pr-11 font-mono"
                     type={showPw ? 'text' : 'password'}
                     autoComplete={signup ? 'new-password' : 'current-password'}
                     value={password}
@@ -212,7 +220,7 @@ export function AuthPanel({ variant, revealed }: Props) {
                     type="button"
                     onClick={() => setShowPw((v) => !v)}
                     aria-label={showPw ? 'Hide password' : 'Show password'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition"
                   >
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -222,34 +230,53 @@ export function AuthPanel({ variant, revealed }: Props) {
             {signup && (
               <motion.div variants={item}>
                 <Field label="Confirm password" error={errors.confirm}>
-                  <input className="field" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                  <input className="input-default font-mono" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
                 </Field>
               </motion.div>
             )}
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+              <p role="alert" className="rounded-lg border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss font-mono">
                 {formError}
               </p>
             )}
 
             <motion.div variants={item}>
-              <button type="submit" className="btn-gold w-full" disabled={busy}>
+              <button type="submit" className="btn-gold w-full text-center flex items-center justify-center gap-2" disabled={busy}>
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
                 {signup ? 'Create account' : 'Sign in'}
               </button>
             </motion.div>
           </form>
 
-          <motion.div variants={item} className="mt-4 flex flex-col items-center gap-1.5 text-xs text-slate-400">
+          {(signup || portal === 'user') && (
+            <motion.div variants={item} className="mt-4">
+              <div className="mb-3 flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-text-muted">
+                <span className="h-px flex-1 bg-white/10" />
+                <span>Or continue with</span>
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+              <button
+                type="button"
+                onClick={() => void onGoogleSignIn()}
+                disabled={busy}
+                className="card-surface flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-text-primary transition hover:border-gold/40 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span aria-hidden="true" className="grid h-5 w-5 place-items-center rounded-full bg-white font-display font-bold text-[#4285F4]">G</span>}
+                Continue with Google
+              </button>
+            </motion.div>
+          )}
+
+          <motion.div variants={item} className="mt-4 flex flex-col items-center gap-1.5 text-xs text-text-muted">
             {!signup && (
-              <Link to="/forgot-password" className="hover:text-white">
+              <Link to="/forgot-password" className="hover:text-text-primary transition">
                 Forgot password?
               </Link>
             )}
             <p>
               {signup ? 'Already have an account? ' : "Don't have an account? "}
-              <Link to={signup ? '/login' : '/signup'} className="font-medium text-gold-400 hover:text-gold-300">
+              <Link to={signup ? '/login' : '/signup'} className="font-medium text-gold hover:underline">
                 {signup ? 'Sign in' : 'Sign up'}
               </Link>
             </p>

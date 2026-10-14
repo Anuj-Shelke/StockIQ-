@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_API_URL?: string
   /** Dev only. 'false' disables the in-browser auth/dashboard mock. Ignored in production builds. */
   readonly VITE_AUTH_MOCK?: string
+  /** Google OAuth web client ID used by Google Identity Services. */
+  readonly VITE_GOOGLE_CLIENT_ID?: string
 }
 
 interface ImportMeta {

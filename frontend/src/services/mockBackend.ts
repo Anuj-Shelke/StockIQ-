@@ -105,29 +105,11 @@ export function installMockBackend() {
 
     if (path === '/dashboard') {
       if (!bearerEmail(init)) return fail(401, 'UNAUTHORIZED', 'Not authenticated')
-      // Same SAMPLE values the real backend returns today (demo data, not live market data).
+      // Mock registrations start with no user portfolio, matching the real API.
       return json(200, {
-        metrics: [
-          { title: 'Portfolio Value', value: '₹2,45,000.00', change_percent: 2.45, trend: 'up', description: 'Overall portfolio valuation across all held assets' },
-          { title: 'NIFTY 50 Benchmark', value: '24,964.35', change_percent: 0.78, trend: 'up', description: 'NSE benchmark index 1-day movement' },
-          { title: 'Gold (10g 24K)', value: '₹75,400.00', change_percent: -0.32, trend: 'down', description: 'Current domestic physical gold benchmark' },
-          { title: 'Portfolio Risk Score', value: 'Moderate', change_percent: null, trend: 'neutral', description: 'Derived from asset volatility and sector concentration' },
-        ],
-        portfolios: [
-          {
-            portfolio_id: 'sample-demo-portfolio-1',
-            portfolio_name: 'Primary Equity Growth',
-            current_value: 245000.0,
-            invested_value: 210000.0,
-            total_gain_loss: 35000.0,
-            return_percentage: 16.67,
-          },
-        ],
-        recent_activity: [
-          'Risk reality check simulated for COVID-19 crash scenario',
-          'Portfolio asset allocation compared with Gold and Bank FD',
-          'Explanation generated for TCS.NS 30-day forecast',
-        ],
+        metrics: [],
+        portfolios: [],
+        recent_activity: [],
       })
     }
 

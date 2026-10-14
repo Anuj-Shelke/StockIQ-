@@ -98,15 +98,18 @@ export function AddHoldingModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-ink-950 p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
-          <h2 className="text-xl font-bold text-white">
-            {editingHolding ? 'Edit Holding' : 'Add Holding to Portfolio'}
-          </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-lg rounded-2xl border border-theme-default bg-surface p-6 shadow-2xl text-text-primary">
+        <div className="mb-6 flex items-center justify-between border-b border-theme-subtle pb-4">
+          <div>
+            <h2 className="text-lg font-bold font-display text-text-primary">
+              {editingHolding ? 'Edit Position' : 'Add Position to Portfolio'}
+            </h2>
+            <p className="text-xs text-text-muted mt-0.5">Configure asset parameters for risk & allocation analytics</p>
+          </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-1.5 text-text-muted hover:bg-surface-hover hover:text-text-primary transition"
           >
             <X className="h-5 w-5" />
           </button>
@@ -115,11 +118,11 @@ export function AddHoldingModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Autocomplete Search */}
           <div className="relative">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
               Search NSE Stock / Symbol
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="e.g. RELIANCE, TCS, INFY"
@@ -130,48 +133,48 @@ export function AddHoldingModal({
                   if (!symbol) setSymbol(e.target.value)
                 }}
                 onFocus={() => setShowDropdown(true)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 py-2 pl-9 pr-4 text-sm text-white placeholder-slate-500 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                className="input-default pl-9 font-mono"
               />
             </div>
             {showDropdown && searchQuery && filteredCatalog.length > 0 && (
-              <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-white/10 bg-ink-900 shadow-xl">
+              <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-theme-default bg-surface-elevated shadow-xl">
                 {filteredCatalog.map((item) => (
                   <button
                     type="button"
                     key={item.symbol}
                     onClick={() => handleSelectStock(item)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-xs transition hover:bg-white/10"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-xs transition hover:bg-surface-hover"
                   >
                     <div>
-                      <div className="font-semibold text-white">{item.symbol}</div>
-                      <div className="text-slate-400">{item.name}</div>
+                      <div className="font-semibold text-text-primary font-mono">{item.symbol}</div>
+                      <div className="text-text-muted text-[11px]">{item.name}</div>
                     </div>
-                    <div className="font-mono text-gold-400">₹{item.current_price}</div>
+                    <div className="font-mono text-gold font-medium">₹{item.current_price}</div>
                   </button>
                 ))}
               </div>
             )}
-            {errors.symbol && <p className="mt-1 text-xs text-rose-400">{errors.symbol}</p>}
+            {errors.symbol && <p className="mt-1 text-xs text-loss">{errors.symbol}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                Asset Type
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                Asset Class
               </label>
               <select
                 value={assetType}
                 onChange={(e) => setAssetType(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-gold-500 focus:outline-none"
+                className="input-default"
               >
-                <option value="EQUITY" className="bg-ink-900">Equity (NSE)</option>
-                <option value="GOLD" className="bg-ink-900">Physical Gold</option>
-                <option value="FD" className="bg-ink-900">Fixed Deposit</option>
+                <option value="EQUITY" className="bg-surface text-text-primary">Equity (NSE)</option>
+                <option value="GOLD" className="bg-surface text-text-primary">Physical Gold</option>
+                <option value="FD" className="bg-surface text-text-primary">Fixed Deposit</option>
               </select>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
                 Quantity / Shares
               </label>
               <input
@@ -180,15 +183,15 @@ export function AddHoldingModal({
                 min="0.001"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-gold-500 focus:outline-none"
+                className="input-default font-mono"
               />
-              {errors.quantity && <p className="mt-1 text-xs text-rose-400">{errors.quantity}</p>}
+              {errors.quantity && <p className="mt-1 text-xs text-loss">{errors.quantity}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
                 Buy Price (₹)
               </label>
               <input
@@ -198,14 +201,14 @@ export function AddHoldingModal({
                 placeholder="Purchase price"
                 value={buyPrice}
                 onChange={(e) => setBuyPrice(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-gold-500 focus:outline-none"
+                className="input-default font-mono"
               />
-              {errors.buyPrice && <p className="mt-1 text-xs text-rose-400">{errors.buyPrice}</p>}
+              {errors.buyPrice && <p className="mt-1 text-xs text-loss">{errors.buyPrice}</p>}
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                Current Market Price (₹)
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                Current Price (₹)
               </label>
               <input
                 type="number"
@@ -214,24 +217,24 @@ export function AddHoldingModal({
                 placeholder="Market price"
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-gold-500 focus:outline-none"
+                className="input-default font-mono"
               />
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-theme-subtle">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-gold-500 px-5 py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-400"
+              className="btn-gold"
             >
-              {editingHolding ? 'Update Holding' : 'Add Holding'}
+              {editingHolding ? 'Update Position' : 'Save Position'}
             </button>
           </div>
         </form>

@@ -10,6 +10,23 @@
       name="description"
       content="StockIQ is an AI-based investment research, portfolio risk analysis, and financial education platform."
     />
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('stockiq-theme') || localStorage.getItem('stockiq_theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = (stored === 'light' || stored === 'dark') ? stored : (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+          if (theme === 'light') {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="bg-ink-950 text-slate-100">
     <div id="root"></div>

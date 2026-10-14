@@ -1,5 +1,6 @@
 import { ShieldAlert, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import type { RiskToleranceProfile } from '@/types/riskCheck'
+import { Badge } from '@/components/ui/Badge'
 
 interface RiskToleranceGaugeProps {
   profile: RiskToleranceProfile
@@ -10,76 +11,98 @@ export function RiskToleranceGauge({ profile }: RiskToleranceGaugeProps) {
   const isDivergent = Math.abs(gap) >= 20
 
   return (
-    <div className="rounded-xl border border-white/10 bg-ink-950/60 p-6 backdrop-blur-sm">
-      <div className="flex items-center justify-between">
+    <div className="card-surface p-6 sm:p-7 relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
         <div>
-          <h3 className="text-base font-semibold text-white">
-            Stated Risk vs. Historical Reality
-          </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Compares declared risk appetite with empirical drawdown exposure.
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
+              Risk Lens: Stated Appetite vs. Historical Reality
+            </h3>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] border border-[var(--border-subtle)] rounded px-1.5 py-0.5">
+              Psychometric Alignment
+            </span>
+          </div>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Compares declared risk preference against empirical simulated loss exposure.
           </p>
         </div>
+
         {isDivergent ? (
-          <div className="flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
+          <Badge variant="elevated">
             <AlertTriangle className="h-3.5 w-3.5" />
             Reality Gap Detected
-          </div>
+          </Badge>
         ) : (
-          <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <Badge variant="low">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Aligned Exposure
-          </div>
+            Empirically Aligned
+          </Badge>
         )}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Stated Risk Appetite */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span>Stated Risk Tolerance</span>
-            <span className="font-semibold text-white">{profile.statedLevel}</span>
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-semibold uppercase tracking-wider text-[var(--text-muted)] text-[11px]">
+              Stated Risk Appetite
+            </span>
+            <span className="font-bold text-[var(--text-primary)]">{profile.statedLevel}</span>
           </div>
-          <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
+          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500"
+              className="h-full rounded-full bg-gradient-to-r from-[var(--color-success)] via-[var(--blue-primary)] to-[var(--color-warning)]"
               style={{ width: `${profile.statedScore}%` }}
             />
           </div>
-          <div className="mt-2 flex justify-between text-[11px] text-slate-500 font-mono">
+          <div className="mt-2.5 flex justify-between text-[11px] text-[var(--text-muted)] font-mono">
             <span>Score: {profile.statedScore}/100</span>
-            <span>Questionnaire Output</span>
+            <span>Self-Declared</span>
           </div>
         </div>
 
         {/* Historical Reality Under Stress */}
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span>Historical Reality Score</span>
-            <span className="font-semibold text-gold-400">{profile.historicalRealityLevel}</span>
-          </div>
-          <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className={`h-full rounded-full ${
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-semibold uppercase tracking-wider text-[var(--text-muted)] text-[11px]">
+              Simulated Stress Exposure
+            </span>
+            <span
+              className={`font-bold ${
                 profile.historicalRealityScore < 40
-                  ? 'bg-rose-500'
+                  ? 'text-[var(--color-danger)]'
                   : profile.historicalRealityScore < 70
-                  ? 'bg-amber-500'
-                  : 'bg-emerald-500'
+                  ? 'text-[var(--color-warning)]'
+                  : 'text-[var(--color-success)]'
+              }`}
+            >
+              {profile.historicalRealityLevel}
+            </span>
+          </div>
+          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                profile.historicalRealityScore < 40
+                  ? 'bg-[var(--color-danger)]'
+                  : profile.historicalRealityScore < 70
+                  ? 'bg-[var(--color-warning)]'
+                  : 'bg-[var(--color-success)]'
               }`}
               style={{ width: `${profile.historicalRealityScore}%` }}
             />
           </div>
-          <div className="mt-2 flex justify-between text-[11px] text-slate-500 font-mono">
+          <div className="mt-2.5 flex justify-between text-[11px] text-[var(--text-muted)] font-mono">
             <span>Score: {profile.historicalRealityScore}/100</span>
-            <span>Historical Stress Tested</span>
+            <span>Stress Tested</span>
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.01] p-3 text-xs text-slate-300">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
-        <p>{profile.gapDescription}</p>
+      <div className="mt-5 flex items-start gap-3 rounded-xl border border-[var(--hairline-gold)] bg-[var(--gold-soft)] p-3.5 text-xs text-[var(--text-secondary)] leading-relaxed">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold-primary)]" />
+        <p className="text-[var(--text-primary)]">
+          <strong>Risk Officer Note:</strong> {profile.gapDescription}
+        </p>
       </div>
     </div>
   )

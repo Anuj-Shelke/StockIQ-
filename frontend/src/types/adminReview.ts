@@ -5,6 +5,7 @@ export interface ReviewRequestItem {
   id: string
   userId: string
   userEmail: string
+  userName?: string
   symbol: string
   analysisSnapshotId: string
   reason: string
@@ -14,13 +15,10 @@ export interface ReviewRequestItem {
   createdAt: string
   updatedAt?: string
   assignedReviewer?: string
+  reviewerId?: string
+  reviewedAt?: string
   resolutionNotes?: string
-  snapshotData?: {
-    currentPrice: number
-    predictedTarget: number
-    modelConfidence: number
-    timeHorizon: string
-  }
+  snapshotData?: Record<string, unknown>
 }
 
 export interface AdminSystemMetrics {
