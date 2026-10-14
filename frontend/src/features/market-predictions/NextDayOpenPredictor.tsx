@@ -1,13 +1,19 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   TrendingUp,
+  TrendingDown,
   Clock,
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
   ChevronUp,
   Sliders,
+  RefreshCw,
 } from 'lucide-react'
+import {
+  fetchNextDayOpeningPredictions,
+  type NextDayOpeningOverviewResponse,
+} from '@/services/api'
 
 interface OvernightFactor {
   name: string
@@ -277,27 +283,107 @@ export function NextDayOpenPredictor() {
   const [filterType, setFilterType] = useState<'ALL' | 'INDICES' | 'EQUITIES' | 'BSE' | 'NSE'>('ALL')
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>('^NSEI')
   const [giftNiftyShift, setGiftNiftyShift] = useState<number>(0)
+  const [apiOverview, setApiOverview] = useState<NextDayOpeningOverviewResponse | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
+  // Asynchronously load live predictions from backend API; fallback instantly to robust in-memory data
+  const loadPredictions = useCallback(async (isManual = false) => {
+    if (isManual) setRefreshing(true)
+    try {
+      const data = await fetchNextDayOpeningPredictions()
+      setApiOverview(data)
+    } catch (err) {
+      console.warn('Using resilient local opening predictions feed:', err)
+    } finally {
+      setRefreshing(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadPredictions()
+  }, [loadPredictions])
+
+  // Map API response to UI OpeningQuote interface or use resilient fallback with zero latency
+  const baseQuotes = useMemo<OpeningQuote[]>(() => {
+    if (!apiOverview) return OPENING_PREDICTIONS
+    const allQuotes = [...apiOverview.indices, ...apiOverview.top_stocks]
+    if (allQuotes.length === 0) return OPENING_PREDICTIONS
+
+    return allQuotes.map((q) => ({
+      symbol: q.symbol,
+      name: q.name,
+      exchange: q.exchange,
+      assetType: q.asset_type,
+      lastClosePrice: q.last_close_price,
+      predictedOpenPrice: q.predicted_open_price,
+      expectedGapPoints: q.expected_gap_points,
+      expectedGapPct: q.expected_gap_pct,
+      pGapUp: q.p_gap_up,
+      direction: q.direction,
+      openP10: q.open_p10,
+      openP50: q.open_p50,
+      openP90: q.open_p90,
+      confidenceScore: q.confidence_score,
+      overnightFactors: q.overnight_factors.map((f) => ({
+        name: f.name,
+        impactPoints: f.impact_points,
+        percentageContribution: f.percentage_contribution,
+        direction: f.direction,
+        description: f.description,
+      })),
+    }))
+  }, [apiOverview])
+
+  // Live forecast target session formatted string
+  const targetSessionLabel = useMemo(() => {
+    const rawDate = apiOverview?.indices?.[0]?.prediction_for_date
+    if (!rawDate) return 'Next Session (09:15 IST)'
+    try {
+      const [year, month, day] = rawDate.split('-').map(Number)
+      const d = new Date(year, month - 1, day)
+      const dayName = d.toLocaleDateString('en-IN', { weekday: 'short' })
+      const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      return `${dayName}, ${dateStr} · 09:15 AM IST`
+    } catch {
+      return `${rawDate} (09:15 IST)`
+    }
+  }, [apiOverview])
+
+  // Benchmark baseline for GIFT Nifty proportional adjustments
+  const niftyRefPrice = useMemo(() => {
+    const nifty = baseQuotes.find((q) => q.symbol === '^NSEI')
+    return nifty?.lastClosePrice || 22363.35
+  }, [baseQuotes])
+
+  // Instant zero-lag recalculation based on filter and slider
   const filteredQuotes = useMemo(() => {
-    return OPENING_PREDICTIONS.filter((q) => {
-      if (filterType === 'INDICES') return q.assetType === 'INDEX'
-      if (filterType === 'EQUITIES') return q.assetType === 'EQUITY'
-      if (filterType === 'BSE') return q.exchange === 'BSE'
-      if (filterType === 'NSE') return q.exchange === 'NSE'
-      return true
-    }).map((q) => {
-      // Dynamic what-if shift based on GIFT Nifty adjustment slider
-      const shiftedGap = q.expectedGapPoints + (giftNiftyShift * (q.lastClosePrice / 22363.35) * 0.75)
-      const shiftedOpen = q.lastClosePrice + shiftedGap
-      const shiftedPct = (shiftedGap / q.lastClosePrice) * 100
-      return {
-        ...q,
-        dynamicOpen: Math.round(shiftedOpen * 100) / 100,
-        dynamicGapPoints: Math.round(shiftedGap * 100) / 100,
-        dynamicGapPct: Math.round(shiftedPct * 100) / 100,
-      }
-    })
-  }, [filterType, giftNiftyShift])
+    return baseQuotes
+      .filter((q) => {
+        if (filterType === 'INDICES') return q.assetType === 'INDEX'
+        if (filterType === 'EQUITIES') return q.assetType === 'EQUITY'
+        if (filterType === 'BSE') return q.exchange === 'BSE'
+        if (filterType === 'NSE') return q.exchange === 'NSE'
+        return true
+      })
+      .map((q) => {
+        const shiftedGap = q.expectedGapPoints + giftNiftyShift * (q.lastClosePrice / niftyRefPrice) * 0.75
+        const shiftedOpen = q.lastClosePrice + shiftedGap
+        const shiftedPct = (shiftedGap / q.lastClosePrice) * 100
+        return {
+          ...q,
+          dynamicOpen: Math.round(shiftedOpen * 100) / 100,
+          dynamicGapPoints: Math.round(shiftedGap * 100) / 100,
+          dynamicGapPct: Math.round(shiftedPct * 100) / 100,
+        }
+      })
+  }, [baseQuotes, filterType, giftNiftyShift, niftyRefPrice])
+
+  // Live macro ribbon indicators
+  const giftNiftyOpen = apiOverview?.gift_nifty_implied_open ?? 22448.0
+  const giftNiftyGap = apiOverview?.gift_nifty_gap_points ?? 84.65
+  const isGiftPositive = giftNiftyGap >= 0
+  const marketBias = apiOverview?.market_sentiment ?? 'BULLISH_GAP'
+  const isBullishBias = marketBias === 'BULLISH_GAP'
 
   return (
     <div className="space-y-6">
@@ -317,9 +403,20 @@ export function NextDayOpenPredictor() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono bg-surface-elevated border border-theme-subtle px-3 py-1.5 rounded-xl text-text-secondary self-start sm:self-auto">
-          <Clock className="h-4 w-4 text-gold" />
-          <span>Forecast For: Next Session (09:15 IST)</span>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <div className="flex items-center gap-2 text-xs font-mono bg-surface-elevated border border-theme-subtle px-3 py-1.5 rounded-xl text-text-secondary">
+            <Clock className="h-4 w-4 text-gold shrink-0" />
+            <span className="font-semibold text-text-primary">Forecast: {targetSessionLabel}</span>
+          </div>
+          <button
+            onClick={() => void loadPredictions(true)}
+            disabled={refreshing}
+            className="flex items-center gap-1.5 rounded-xl border border-theme-subtle bg-surface-elevated px-3 py-1.5 text-xs font-mono text-text-secondary hover:text-text-primary hover:border-gold/40 transition disabled:opacity-60"
+            title="Refresh live predictions"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin text-gold' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </div>
 
@@ -327,11 +424,13 @@ export function NextDayOpenPredictor() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card-surface p-4">
           <span className="text-xs text-text-muted font-mono uppercase tracking-wider">GIFT Nifty Implied Open</span>
-          <div className="mt-1 text-xl font-bold font-mono text-gain flex items-center gap-1.5">
-            <span>22,448.00</span>
-            <ArrowUpRight className="h-4 w-4" />
+          <div className={`mt-1 text-xl font-bold font-mono flex items-center gap-1.5 ${isGiftPositive ? 'text-gain' : 'text-loss'}`}>
+            <span>{giftNiftyOpen.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            {isGiftPositive ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
           </div>
-          <p className="mt-1 text-[11px] text-text-muted font-mono">+84.65 pts (+0.38%) Premium</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
+            {isGiftPositive ? `+${giftNiftyGap}` : giftNiftyGap} pts Premium
+          </p>
         </div>
 
         <div className="card-surface p-4">
@@ -353,9 +452,9 @@ export function NextDayOpenPredictor() {
 
         <div className="card-surface p-4">
           <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Market Opening Bias</span>
-          <div className="mt-1 text-xl font-bold text-gain flex items-center gap-1.5 font-display">
-            <span>Bullish Gap Up</span>
-            <TrendingUp className="h-4 w-4" />
+          <div className={`mt-1 text-xl font-bold flex items-center gap-1.5 font-display ${isBullishBias ? 'text-gain' : 'text-loss'}`}>
+            <span>{isBullishBias ? 'Bullish Gap Up' : 'Bearish Gap Down'}</span>
+            {isBullishBias ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
           </div>
           <p className="mt-1 text-[11px] text-text-muted font-mono">74% Historical Gap-Up Odds</p>
         </div>

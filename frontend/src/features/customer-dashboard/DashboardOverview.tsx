@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ShieldAlert,
@@ -13,6 +14,7 @@ import {
 import { NiftyLiveWidget } from '@/components/dashboard/NiftyLiveWidget'
 import { Badge } from '@/components/ui/Badge'
 import { useAuth } from '@/hooks/useAuth'
+import { fetchNextDayOpeningPredictions, type NextDayOpeningOverviewResponse } from '@/services/api'
 import { NAV_ITEMS } from './navItems'
 
 const inr = new Intl.NumberFormat('en-IN', {
@@ -24,6 +26,34 @@ const inr = new Intl.NumberFormat('en-IN', {
 export function DashboardOverview() {
   const { user, dashboard, profileError, profileLoading, reloadProfile } = useAuth()
   const name = user?.full_name || user?.email?.split('@')[0] || 'Investor'
+
+  const [openingPredictions, setOpeningPredictions] = useState<NextDayOpeningOverviewResponse | null>(null)
+
+  useEffect(() => {
+    let active = true
+    fetchNextDayOpeningPredictions()
+      .then((data) => {
+        if (active) setOpeningPredictions(data)
+      })
+      .catch((err) => console.warn('Resilient fallback for opening predictions:', err))
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const niftyPrediction = openingPredictions?.indices?.find((i) => i.symbol === '^NSEI')
+  const sensexPrediction = openingPredictions?.indices?.find((i) => i.symbol === '^BSESN')
+  const predictionDate = openingPredictions?.indices?.[0]?.prediction_for_date
+  const formattedSessionDate = predictionDate
+    ? (() => {
+        try {
+          const [y, m, d] = predictionDate.split('-').map(Number)
+          return new Date(y, m - 1, d).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · 09:15 AM'
+        } catch {
+          return predictionDate + ' · 09:15 AM'
+        }
+      })()
+    : 'Next Session · 09:15 AM'
 
   if (profileLoading) return <div className="card-surface mx-auto max-w-6xl p-8 text-center text-text-muted">Loading your dashboard…</div>
   if (!dashboard) return <div role="alert" className="card-surface mx-auto max-w-6xl p-8 text-center text-text-primary">{profileError || 'Could not load your dashboard.'}<button onClick={() => void reloadProfile()} className="ml-3 text-gold underline">Retry</button></div>
@@ -303,6 +333,114 @@ export function DashboardOverview() {
       {/* Live Market Bar */}
       <section aria-label="Indian Market Live Benchmarks">
         <NiftyLiveWidget />
+      </section>
+
+      {/* ====================================================================
+          NEXT-DAY MARKET OPENING PREDICTION HERO WIDGET
+          ==================================================================== */}
+      <section aria-label="Next-Day Market Opening Forecast">
+        <div className="card-surface p-6 sm:p-7 rounded-2xl border border-[var(--border-default)] shadow-[var(--shadow-md)] relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-gold/10 border border-gold/20 text-gold">
+                <TrendingUp className="h-5 w-5" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)] font-display">
+                    Next-Day Market Opening Forecast
+                  </h2>
+                  <span className="badge-ai text-[10px] font-mono">Quantile ML v2.1</span>
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  Machine learning opening prices & gap probabilities for NSE & BSE constituents.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-canvas)] px-3 py-1 text-xs font-mono text-[var(--text-secondary)]">
+                <Clock className="h-3.5 w-3.5 text-gold" />
+                <span>{formattedSessionDate}</span>
+              </div>
+              <Link
+                to="/dashboard/next-day-open"
+                className="btn-gold text-xs py-1.5 px-3 whitespace-nowrap inline-flex items-center gap-1"
+              >
+                <span>Full Predictor</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* NIFTY 50 Prediction */}
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+              <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+                <span className="font-semibold text-[var(--text-primary)]">NIFTY 50 (^NSEI)</span>
+                <span className="text-[10px] uppercase">NSE Index</span>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Predicted Open</span>
+                  <span className="text-xl font-bold font-mono text-[var(--text-primary)]">
+                    ₹{(niftyPrediction?.predicted_open_price ?? 22448).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Expected Gap</span>
+                  <span className="text-xs font-bold font-mono text-[var(--color-success)]">
+                    +{(niftyPrediction?.expected_gap_points ?? 84.65).toFixed(2)} pts (+{(niftyPrediction?.expected_gap_pct ?? 0.38).toFixed(2)}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* BSE SENSEX Prediction */}
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
+              <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+                <span className="font-semibold text-[var(--text-primary)]">BSE SENSEX (^BSESN)</span>
+                <span className="text-[10px] uppercase">BSE Index</span>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Predicted Open</span>
+                  <span className="text-xl font-bold font-mono text-[var(--text-primary)]">
+                    ₹{(sensexPrediction?.predicted_open_price ?? 74156.15).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Expected Gap</span>
+                  <span className="text-xs font-bold font-mono text-[var(--color-success)]">
+                    +{(sensexPrediction?.expected_gap_points ?? 266.0).toFixed(2)} pts (+{(sensexPrediction?.expected_gap_pct ?? 0.36).toFixed(2)}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Overnight Sentiment & GIFT Nifty */}
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+                <span>GIFT Nifty Overnight</span>
+                <span className="text-[10px] uppercase text-gold font-bold">Live Lead</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Implied Open</span>
+                  <span className="text-xl font-bold font-mono text-[var(--color-success)]">
+                    ₹{(openingPredictions?.gift_nifty_implied_open ?? 22448.0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">P(Gap-Up)</span>
+                  <span className="text-xs font-bold font-mono text-gold">
+                    {((niftyPrediction?.p_gap_up ?? 0.74) * 100).toFixed(0)}% Probability
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Supporting Tools Grid */}

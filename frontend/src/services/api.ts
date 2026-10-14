@@ -396,3 +396,52 @@ export async function fetchIntradayChart(
     return generateFallbackChartPoints(symbol)
   }
 }
+
+export interface OvernightFactor {
+  name: string
+  impact_points: number
+  percentage_contribution: number
+  direction: 'positive' | 'negative' | 'neutral'
+  description: string
+}
+
+export interface NextDayOpeningQuote {
+  symbol: string
+  name: string
+  exchange: 'NSE' | 'BSE'
+  asset_type: 'INDEX' | 'EQUITY'
+  last_close_price: number
+  predicted_open_price: number
+  expected_gap_points: number
+  expected_gap_pct: number
+  p_gap_up: number
+  direction: 'GAP_UP' | 'GAP_DOWN' | 'FLAT'
+  open_p10: number
+  open_p50: number
+  open_p90: number
+  confidence_score: number
+  overnight_factors: OvernightFactor[]
+  model_version: string
+  prediction_for_date: string
+  updated_at: string
+}
+
+export interface NextDayOpeningOverviewResponse {
+  market_sentiment: string
+  gift_nifty_implied_open: number
+  gift_nifty_gap_points: number
+  usd_inr_drift_pct: number
+  us_markets_summary: string
+  indices: NextDayOpeningQuote[]
+  top_stocks: NextDayOpeningQuote[]
+  disclaimer: string
+  timestamp: string
+}
+
+export async function fetchNextDayOpeningPredictions(): Promise<NextDayOpeningOverviewResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/opening-predictions`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch next-day opening predictions: ${response.statusText}`)
+  }
+  return await response.json()
+}
