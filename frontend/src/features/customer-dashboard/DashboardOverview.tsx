@@ -55,8 +55,21 @@ export function DashboardOverview() {
       })()
     : 'Next Session · 09:15 AM'
 
-  if (profileLoading) return <div className="card-surface mx-auto max-w-6xl p-8 text-center text-text-muted">Loading your dashboard…</div>
-  if (!dashboard) return <div role="alert" className="card-surface mx-auto max-w-6xl p-8 text-center text-text-primary">{profileError || 'Could not load your dashboard.'}<button onClick={() => void reloadProfile()} className="ml-3 text-gold underline">Retry</button></div>
+  if (profileLoading) return (
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div className="card-surface p-8 text-center text-text-muted">Loading your dashboard…</div>
+      <NiftyLiveWidget />
+    </div>
+  )
+  if (!dashboard) return (
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div role="alert" className="card-surface p-8 text-center text-text-primary">
+        {profileError || 'Could not load your dashboard.'}
+        <button onClick={() => void reloadProfile()} className="ml-3 text-gold underline">Retry</button>
+      </div>
+      <NiftyLiveWidget />
+    </div>
+  )
   if (dashboard.portfolios.length === 0) return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
       <header className="border-b border-[var(--border-subtle)] pb-6"><p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--gold-primary)]">StockIQ Financial Intelligence</p><h1 className="mt-2 font-display text-3xl font-semibold text-[var(--text-primary)]">Welcome, {name}</h1></header>

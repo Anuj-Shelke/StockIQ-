@@ -14,6 +14,7 @@ from app.schemas.admin_review import (
     ReviewUpdatePayload,
 )
 from app.services.review_service import ReviewService
+from app.services.notification_service import NotificationService
 
 
 router = APIRouter()
@@ -50,9 +51,12 @@ def update_admin_review(
     db: Session = Depends(get_db),
 ) -> ReviewRequestItem:
     """Advance review status to IN_REVIEW, RESOLVED, or REJECTED with compliance notes."""
-    return ReviewService.update_review_request(
+    updated = ReviewService.update_review_request(
         ticket_id=ticket_id,
         payload=payload,
         reviewer=current_user,
         db=db,
     )
+    if payload.status == "RESOLVED":
+        NotificationService.notify_review_satisfied(updated)
+    return updated
