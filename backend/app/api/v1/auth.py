@@ -2,11 +2,12 @@ from datetime import timedelta
 import uuid
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.exceptions import AuthenticationError, ConflictError, DatabaseUnavailableError, PermissionDeniedError, ServiceUnavailableError
+from app.core.logging import logger
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -86,8 +87,36 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
     user = None
     try:
         user = db.query(User).filter(User.email == request.email).first()
+    except DBAPIError as exc:
+        # A connection can be dropped after pool_pre_ping succeeds but before
+        # the query reaches Postgres. Since this lookup is read-only, retry it
+        # once on a newly checked-out connection.
+        if exc.connection_invalidated:
+            db.rollback()
+            logger.warning("Login database connection was invalidated; retrying the user lookup once.")
+            try:
+                user = db.query(User).filter(User.email == request.email).first()
+            except Exception as retry_exc:
+                db.rollback()
+                original = getattr(retry_exc, "orig", retry_exc)
+                logger.error(
+                    "Login database lookup failed after reconnect (error_type=%s, sqlstate=%s).",
+                    type(original).__name__,
+                    getattr(original, "sqlstate", None),
+                )
+                raise DatabaseUnavailableError() from retry_exc
+        else:
+            db.rollback()
+            original = getattr(exc, "orig", exc)
+            logger.error(
+                "Login database lookup failed (error_type=%s, sqlstate=%s).",
+                type(original).__name__,
+                getattr(original, "sqlstate", None),
+            )
+            raise DatabaseUnavailableError() from exc
     except Exception as exc:
         db.rollback()
+        logger.error("Login database lookup failed (error_type=%s).", type(exc).__name__)
         raise DatabaseUnavailableError() from exc
 
     if not user or not verify_password(request.password, user.hashed_password):
