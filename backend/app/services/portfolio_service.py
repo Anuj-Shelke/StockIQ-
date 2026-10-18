@@ -311,6 +311,8 @@ class PortfolioService:
         """Add a new asset holding to a portfolio."""
         clean_pid = str(portfolio_id).strip()
         clean_sym = request.symbol.strip().upper()
+        if request.asset_type.lower() == "stock" and not clean_sym.endswith((".NS", ".BO")):
+            clean_sym = f"{clean_sym}.NS"
 
         # Verify portfolio ownership
         cls.get_portfolio(db, clean_pid, user_id)
@@ -330,6 +332,21 @@ class PortfolioService:
 
         curr_pr = request.current_price if request.current_price is not None else request.buy_price
         curr_pr = cls._resolve_asset_price(db, clean_sym, request.asset_type, curr_pr)
+
+        # Let investors add any NSE ticker, even when it is not in the starter catalog.
+        # The entered price is a user-provided reference value; it is not treated as a live quote.
+        if request.asset_type.lower() == "stock":
+            catalog_entry = db.query(Stock).filter(Stock.symbol.ilike(clean_sym)).first()
+            if not catalog_entry:
+                db.add(Stock(
+                    symbol=clean_sym,
+                    name=(request.name or clean_sym.removesuffix(".NS")).strip(),
+                    exchange="BSE" if clean_sym.endswith(".BO") else "NSE",
+                    sector=None,
+                    current_price=curr_pr,
+                    currency="INR",
+                    is_active=True,
+                ))
 
         holding = Holding(
             id=str(uuid.uuid4()),

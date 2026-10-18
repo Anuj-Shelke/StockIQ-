@@ -24,6 +24,13 @@ export function PublicOnlyRoute() {
   if (status === 'authenticated') {
     const from = (location.state as { from?: string } | null)?.from
     const defaultPath = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'
+    let hasPendingWelcome = false
+    try {
+      hasPendingWelcome = user?.role === 'investor' && sessionStorage.getItem('stockiq_welcome_pending') === '1'
+    } catch {
+      // Continue to the existing dashboard if browser storage is unavailable.
+    }
+    if (hasPendingWelcome) return <Navigate to="/welcome" replace />
     return <Navigate to={from && from.startsWith('/') && !from.startsWith('//') ? from : defaultPath} replace />
   }
   return <Outlet />

@@ -71,13 +71,34 @@ export function AuthPanel({ variant, revealed }: Props) {
     setErrors(next)
     if (next.email || next.password || next.confirm) return
     setBusy(true)
+    const shouldWelcome = signup || portal !== 'admin'
+    if (shouldWelcome) {
+      try {
+        // Set this before auth state changes so PublicOnlyRoute can preserve the welcome destination.
+        sessionStorage.removeItem('stockiq_welcome_seen')
+        sessionStorage.setItem('stockiq_welcome_pending', '1')
+      } catch {
+        // Storage may be unavailable; direct navigation below remains the fallback.
+      }
+    }
     try {
       if (signup) await register({ email: email.trim(), password, full_name: name.trim() || undefined })
       else await login({ email: email.trim(), password, portal: portal ?? 'user' })
       setPassword('')
       setConfirm('')
-      navigate(signup || portal !== 'admin' ? (from.startsWith('/dashboard') ? from : '/dashboard') : (from.startsWith('/admin') ? from : '/admin/dashboard'), { replace: true })
+      if (shouldWelcome) {
+        navigate('/welcome', { replace: true })
+      } else {
+        navigate(from.startsWith('/admin') ? from : '/admin/dashboard', { replace: true })
+      }
     } catch (err) {
+      if (shouldWelcome) {
+        try {
+          sessionStorage.removeItem('stockiq_welcome_pending')
+        } catch {
+          // Keep the authentication error visible even when storage is unavailable.
+        }
+      }
       if (err instanceof ApiError && !signup && err.status === 401) {
         setFormError('Invalid email or password.')
       } else if (err instanceof ApiError && !signup && err.status === 403) {

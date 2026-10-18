@@ -1,6 +1,7 @@
 import { ShieldAlert, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import type { RiskToleranceProfile } from '@/types/riskCheck'
 import { Badge } from '@/components/ui/Badge'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 
 interface RiskToleranceGaugeProps {
   profile: RiskToleranceProfile
@@ -45,7 +46,7 @@ export function RiskToleranceGauge({ profile }: RiskToleranceGaugeProps) {
         <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="font-semibold uppercase tracking-wider text-[var(--text-muted)] text-[11px]">
-              Stated Risk Appetite
+              <GlossaryTooltip term="Stated Risk Appetite" glossaryKey="statedRiskAppetite">Stated Risk Appetite</GlossaryTooltip>
             </span>
             <span className="font-bold text-[var(--text-primary)]">{profile.statedLevel}</span>
           </div>
@@ -65,7 +66,7 @@ export function RiskToleranceGauge({ profile }: RiskToleranceGaugeProps) {
         <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="font-semibold uppercase tracking-wider text-[var(--text-muted)] text-[11px]">
-              Simulated Stress Exposure
+              <GlossaryTooltip term="Simulated Stress Exposure" glossaryKey="simulatedStressExposure">Simulated Stress Exposure</GlossaryTooltip>
             </span>
             <span
               className={`font-bold ${

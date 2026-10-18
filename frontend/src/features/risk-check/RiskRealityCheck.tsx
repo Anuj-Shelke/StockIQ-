@@ -7,6 +7,7 @@ import { DrawdownChart } from './DrawdownChart'
 import { ScenarioSelector } from './ScenarioSelector'
 import { Badge } from '@/components/ui/Badge'
 import type { StressScenario, DrawdownDataPoint, AssetDrawdownContribution, RiskToleranceProfile } from '@/types/riskCheck'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 
 interface RiskAnalysis {
   portfolio_name: string
@@ -94,7 +95,7 @@ export function RiskRealityCheck() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">{contributions.map((item) => {
           const isHigh = item.status === 'High Vulnerability'
           const isResilient = item.status === 'Resilient Anchor'
-          return <div key={item.symbol} className="card-surface p-5"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-[var(--text-primary)] text-sm">{item.symbol}</h3><p className="text-xs text-[var(--text-muted)] mt-0.5">{item.name}</p></div><Badge variant={isHigh ? 'danger' : isResilient ? 'low' : 'moderate'}>{isResilient && <ShieldCheck className="h-3 w-3" />}{item.status}</Badge></div><div className="mt-4 space-y-2 border-t border-[var(--border-subtle)] pt-3 text-xs"><p className="flex justify-between"><span>Portfolio Weight</span><strong>{item.allocationWeight}%</strong></p><p className="flex justify-between"><span>Max Asset Decline</span><strong>{item.maxDecline}%</strong></p><p className="flex justify-between border-t border-[var(--border-subtle)] pt-1.5"><span>Contribution to Drawdown</span><strong>{item.contributionToDrawdown}%</strong></p></div></div>
+          return <div key={item.symbol} className="card-surface p-5"><div className="flex items-start justify-between gap-2"><div><h3 className="font-bold text-[var(--text-primary)] text-sm">{item.symbol}</h3><p className="text-xs text-[var(--text-muted)] mt-0.5">{item.name}</p></div><Badge variant={isHigh ? 'danger' : isResilient ? 'low' : 'moderate'}>{isResilient && <ShieldCheck className="h-3 w-3" />}{item.status}</Badge></div><div className="mt-4 space-y-2 border-t border-[var(--border-subtle)] pt-3 text-xs"><p className="flex justify-between"><span>Portfolio Weight</span><strong>{item.allocationWeight}%</strong></p><p className="flex justify-between"><span>Max Asset Decline</span><strong>{item.maxDecline}%</strong></p><p className="flex justify-between border-t border-[var(--border-subtle)] pt-1.5"><span><GlossaryTooltip term="Contribution to Drawdown" glossaryKey="contributionToDrawdown">Contribution to Drawdown</GlossaryTooltip></span><strong>{item.contributionToDrawdown}%</strong></p></div></div>
         })}</div>
       </div>
     </div>

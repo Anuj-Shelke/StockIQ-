@@ -24,6 +24,16 @@ import {
   type MarketStatusInfo,
   type IntradayChartPoint,
 } from '../../services/api'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
+
+const getIndexGlossaryKey = (name: string) => {
+  const normalized = name.toUpperCase()
+  if (normalized.includes('BANK')) return 'bankNifty'
+  if (normalized.includes('IT')) return 'niftyIt'
+  if (normalized.includes('SENSEX')) return 'sensex'
+  if (normalized.includes('NIFTY')) return 'nifty50'
+  return 'indexLevel'
+}
 
 export const NiftyLiveWidget: React.FC = () => {
   const [indices, setIndices] = useState<IndexQuote[]>([])
@@ -106,7 +116,7 @@ export const NiftyLiveWidget: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight text-white">NSE & BSE Live Markets</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white"><GlossaryTooltip term="NSE and BSE" glossaryKey="nseBse">NSE &amp; BSE Live Markets</GlossaryTooltip></h2>
               {/* Session Status Pill */}
               {marketStatus && (
                 <span
@@ -121,13 +131,13 @@ export const NiftyLiveWidget: React.FC = () => {
                       marketStatus.is_open ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'
                     }`}
                   />
-                  {marketStatus.session_label}
+                  <GlossaryTooltip term="Market Status" glossaryKey="marketStatus">{marketStatus.session_label}</GlossaryTooltip>
                 </span>
               )}
             </div>
             <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
               <Clock className="h-3 w-3" />
-              {marketStatus?.current_time_ist || 'Indian Standard Time'} • Hours: 09:15 - 15:30 IST
+              {marketStatus?.current_time_ist || 'Indian Standard Time'} • <GlossaryTooltip term="Trading Hours" glossaryKey="marketHours">Hours: 09:15 - 15:30 IST</GlossaryTooltip>
             </p>
           </div>
         </div>
@@ -167,32 +177,34 @@ export const NiftyLiveWidget: React.FC = () => {
             const isSel = idx.symbol === selectedSymbol
             const isPos = idx.change >= 0
             return (
-              <button
-                key={idx.symbol}
-                onClick={() => setSelectedSymbol(idx.symbol)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-left border transition whitespace-nowrap cursor-pointer ${
-                  isSel
-                    ? 'bg-blue-600/15 border-blue-500/40 text-white shadow-md shadow-blue-500/10'
-                    : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                }`}
-              >
-                <div>
-                  <div className="text-xs font-semibold">{idx.name}</div>
-                  <div className="text-sm font-mono font-bold text-slate-100">
-                    {idx.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-                <span
-                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                    isPos
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-rose-500/20 text-rose-400'
+              <GlossaryTooltip key={idx.symbol} term={idx.name} glossaryKey={getIndexGlossaryKey(idx.name)} asChild>
+                <button
+                  key={idx.symbol}
+                  onClick={() => setSelectedSymbol(idx.symbol)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-left border transition whitespace-nowrap cursor-pointer ${
+                    isSel
+                      ? 'bg-blue-600/15 border-blue-500/40 text-white shadow-md shadow-blue-500/10'
+                      : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                   }`}
                 >
-                  {isPos ? '+' : ''}
-                  {idx.change_percent.toFixed(2)}%
-                </span>
-              </button>
+                  <div>
+                    <div className="text-xs font-semibold underline decoration-dotted decoration-blue-400/60 underline-offset-2">{idx.name}</div>
+                    <div className="text-sm font-mono font-bold text-slate-100">
+                      {idx.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  <span
+                    className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                      isPos
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-rose-500/20 text-rose-400'
+                    }`}
+                  >
+                    {isPos ? '+' : ''}
+                    {idx.change_percent.toFixed(2)}%
+                  </span>
+                </button>
+              </GlossaryTooltip>
             )
           })
         ) : loading ? (
@@ -216,16 +228,16 @@ export const NiftyLiveWidget: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
                 <Layers className="h-3.5 w-3.5 text-blue-400" />
-                Benchmark Index Quote
+                <GlossaryTooltip term="Index" glossaryKey="indexLevel">Benchmark Index Quote</GlossaryTooltip>
               </div>
               <h3 className="text-2xl font-black text-white tracking-tight mt-1">
-                {selectedQuote.name} ({selectedQuote.symbol})
+                <GlossaryTooltip term={selectedQuote.name} glossaryKey={getIndexGlossaryKey(selectedQuote.name)}>{selectedQuote.name}</GlossaryTooltip> ({selectedQuote.symbol})
               </h3>
 
               {/* Big Price Display */}
               <div className="mt-3 flex items-baseline gap-3">
                 <span className="text-4xl md:text-5xl font-mono font-extrabold tracking-tight text-white">
-                  ₹{selectedQuote.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  ₹<GlossaryTooltip term="Latest Index Level" glossaryKey="indexLevel">{selectedQuote.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</GlossaryTooltip>
                 </span>
                 <span
                   className={`inline-flex items-center gap-1 text-base font-bold px-3 py-1 rounded-xl border ${
@@ -240,37 +252,37 @@ export const NiftyLiveWidget: React.FC = () => {
                     <TrendingDown className="h-4 w-4" />
                   )}
                   {isPositive ? '+' : ''}
-                  {selectedQuote.change.toFixed(2)} ({isPositive ? '+' : ''}
-                  {selectedQuote.change_percent.toFixed(2)}%)
+                  <GlossaryTooltip term="Change" glossaryKey="indexChange">{selectedQuote.change.toFixed(2)}</GlossaryTooltip> ({isPositive ? '+' : ''}
+                  <GlossaryTooltip term="Change %" glossaryKey="indexChangePercent">{selectedQuote.change_percent.toFixed(2)}%</GlossaryTooltip>)
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1 font-mono">
-                Prev Close: ₹{selectedQuote.previous_close.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                <GlossaryTooltip term="Previous Close" glossaryKey="previousClose">Prev Close</GlossaryTooltip>: ₹{selectedQuote.previous_close.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </p>
             </div>
 
             {/* Quick Metrics Grid */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div className="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3">
-                <div className="text-[11px] font-medium text-slate-400">Day's High</div>
+                <div className="text-[11px] font-medium text-slate-400"><GlossaryTooltip term="Day's High" glossaryKey="dayHigh">Day's High</GlossaryTooltip></div>
                 <div className="text-sm font-mono font-bold text-emerald-400 mt-0.5">
                   ₹{selectedQuote.day_high?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '--'}
                 </div>
               </div>
               <div className="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3">
-                <div className="text-[11px] font-medium text-slate-400">Day's Low</div>
+                <div className="text-[11px] font-medium text-slate-400"><GlossaryTooltip term="Day's Low" glossaryKey="dayLow">Day's Low</GlossaryTooltip></div>
                 <div className="text-sm font-mono font-bold text-rose-400 mt-0.5">
                   ₹{selectedQuote.day_low?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '--'}
                 </div>
               </div>
               <div className="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3">
-                <div className="text-[11px] font-medium text-slate-400">52-Week High</div>
+                <div className="text-[11px] font-medium text-slate-400"><GlossaryTooltip term="52-Week High" glossaryKey="yearHigh">52-Week High</GlossaryTooltip></div>
                 <div className="text-sm font-mono font-bold text-slate-200 mt-0.5">
                   ₹{selectedQuote.year_high?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '--'}
                 </div>
               </div>
               <div className="bg-slate-900/80 border border-slate-800/90 rounded-xl p-3">
-                <div className="text-[11px] font-medium text-slate-400">52-Week Low</div>
+                <div className="text-[11px] font-medium text-slate-400"><GlossaryTooltip term="52-Week Low" glossaryKey="yearLow">52-Week Low</GlossaryTooltip></div>
                 <div className="text-sm font-mono font-bold text-slate-200 mt-0.5">
                   ₹{selectedQuote.year_low?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) ?? '--'}
                 </div>
@@ -281,8 +293,8 @@ export const NiftyLiveWidget: React.FC = () => {
             {yearHigh > 0 && yearLow > 0 && (
               <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3">
                 <div className="flex justify-between text-[11px] text-slate-400 font-medium mb-1.5">
-                  <span>52W Low (₹{yearLow.toLocaleString('en-IN')})</span>
-                  <span>52W High (₹{yearHigh.toLocaleString('en-IN')})</span>
+                  <span><GlossaryTooltip term="52-Week Low" glossaryKey="yearLow">52W Low</GlossaryTooltip> (₹{yearLow.toLocaleString('en-IN')})</span>
+                  <span><GlossaryTooltip term="52-Week High" glossaryKey="yearHigh">52W High</GlossaryTooltip> (₹{yearHigh.toLocaleString('en-IN')})</span>
                 </div>
                 <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative">
                   <div
@@ -291,7 +303,7 @@ export const NiftyLiveWidget: React.FC = () => {
                   />
                 </div>
                 <div className="text-[10px] text-right text-slate-500 mt-1">
-                  Currently at {range52wPercent.toFixed(1)}% of 52-week band
+                  <GlossaryTooltip term="52-Week Range Position" glossaryKey="rangePosition">Currently at {range52wPercent.toFixed(1)}% of 52-week band</GlossaryTooltip>
                 </div>
               </div>
             )}
@@ -302,10 +314,10 @@ export const NiftyLiveWidget: React.FC = () => {
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <Activity className="h-3.5 w-3.5 text-blue-400" />
-                Intraday 5-Min Trajectory ({selectedQuote.name})
+                <GlossaryTooltip term="Intraday 5-Min Trajectory" glossaryKey="intradayTrajectory">Intraday 5-Min Trajectory ({selectedQuote.name})</GlossaryTooltip>
               </span>
               <span className="text-[11px] text-slate-500">
-                {chartLoading ? 'Updating chart...' : `${chartPoints.length} candles`}
+                {chartLoading ? 'Updating chart...' : <GlossaryTooltip term="Chart Points" glossaryKey="chartPointCount">{`${chartPoints.length} candles`}</GlossaryTooltip>}
               </span>
             </div>
 
@@ -376,7 +388,7 @@ export const NiftyLiveWidget: React.FC = () => {
             <div className="flex items-center justify-between pt-3 border-t border-slate-900 text-[11px] text-slate-500">
               <span>Feed source: NSE/BSE via YFinance Engine</span>
               <span className="flex items-center gap-1 text-blue-400">
-                Live Data Connected <ChevronRight className="h-3 w-3" />
+                  <GlossaryTooltip term="Market Feed Status" glossaryKey="marketFeedStatus">Live Data Connected</GlossaryTooltip> <ChevronRight className="h-3 w-3" />
               </span>
             </div>
           </div>
