@@ -41,51 +41,67 @@ class SebiRagService:
         return result
 
     @classmethod
-    def search_sebi_corpus(cls, query: str, top_k: int = 3) -> List[Dict]:
-        """Semantic & keyword vector similarity search over installed SEBI rulebook chunks."""
-        stopwords = {"what", "is", "the", "to", "in", "and", "a", "an", "of", "for", "on", "with", "or", "how", "can", "does", "are", "do", "about"}
-        raw_tokens = re.findall(r"\w+", query.lower())
-        q_tokens = set(raw_tokens)
-        meaningful_tokens = {t for t in q_tokens if t not in stopwords and len(t) >= 3}
+    def search_sebi_corpus(cls, query: str, top_k: int = 3, category: Optional[str] = None) -> List[Dict]:
+        """Rank chunks by actual query coverage; never promote unrelated chunks."""
+        stopwords = {
+            "what", "which", "who", "when", "where", "why", "is", "the", "to", "in", "and", "a", "an",
+            "of", "for", "on", "with", "or", "how", "can", "does", "are", "do", "about", "under",
+            "sebi", "regulation", "regulations", "rule", "rules", "guideline", "guidelines",
+        }
+
+        def tokens(value: str) -> set[str]:
+            result = set()
+            for token in re.findall(r"[a-z0-9]+", value.lower()):
+                if token in stopwords or len(token) < 3:
+                    continue
+                # Small normalization handles common question/corpus inflections.
+                token = re.sub(r"(ies|ing|ed|s)$", "", token)
+                result.add(token)
+            return result
+
+        original_query_tokens = tokens(query)
+        query_tokens = set(original_query_tokens)
+        if not query_tokens:
+            return []
 
         scored_chunks = []
         q_lower = query.lower()
-
-        # Key phrases for regulatory retrieval
-        key_phrases = [
-            "minimum age", "18 years", "minor account", "demat", "kyc",
-            "risk profiling", "suitability", "advisory fee", "fee cap",
-            "upsi", "insider trading", "scores", "dispute", "smart odr",
-            "algo", "artificial intelligence", "f&o", "derivatives",
-        ]
+        phrase_aliases = {
+            "risk profiling": {"risk", "profile", "suitability"},
+            "risk tolerance": {"risk", "profile", "tolerance"},
+            "advisory fee": {"fee", "client", "aua"},
+            "fee cap": {"fee", "cap", "aua"},
+            "insider trading": {"insider", "trade", "upsi"},
+            "minimum age": {"age", "minor", "demat"},
+            "investor complaint": {"investor", "complaint", "scores"},
+            "smart odr": {"smart", "odr", "dispute"},
+            "pump and dump": {"pump", "dump", "fraud"},
+            "algorithmic trading": {"algorithm", "trade", "risk"},
+        }
+        for phrase, aliases in phrase_aliases.items():
+            if phrase in q_lower:
+                query_tokens.update(aliases)
 
         for doc in SEBI_REGULATORY_DOCUMENTS:
+            if category and category.lower() not in {doc["category"].lower(), doc["doc_id"].lower()}:
+                continue
             for sec in doc["sections"]:
-                text_to_search = f"{doc['title']} {doc['category']} {sec['section']} {sec['summary']} {sec['text']}".lower()
-                doc_tokens = set(re.findall(r"\w+", text_to_search))
+                searchable = f"{doc['title']} {doc['category']} {sec['section']} {sec['summary']} {sec['text']}"
+                doc_tokens = tokens(searchable)
+                overlap = query_tokens & doc_tokens
+                if not overlap:
+                    continue
+                # A single coincidental word (for example, "capital" in a
+                # question about France) is not enough to claim regulatory relevance.
+                original_overlap = original_query_tokens & doc_tokens
+                if len(original_query_tokens) > 1 and len(original_overlap) < 2:
+                    continue
 
-                # Overlap on meaningful tokens
-                if meaningful_tokens:
-                    overlap = len(meaningful_tokens.intersection(doc_tokens))
-                    base_score = (overlap / len(meaningful_tokens)) * 0.5
-                else:
-                    overlap = len(q_tokens.intersection(doc_tokens))
-                    base_score = (overlap / len(q_tokens)) * 0.3 if q_tokens else 0.1
-
-                # Exact phrase matching boost
-                phrase_boost = 0.0
-                for phrase in key_phrases:
-                    if phrase in q_lower and phrase in text_to_search:
-                        phrase_boost += 0.35
-
-                # Exact multi-token sequence matching from query
-                for i in range(len(raw_tokens) - 1):
-                    bigram = f"{raw_tokens[i]} {raw_tokens[i+1]}"
-                    if len(bigram) > 6 and bigram in text_to_search and bigram not in stopwords:
-                        phrase_boost += 0.15
-
-                total_score = base_score + phrase_boost
-
+                # Measure how much of the question is covered. Section/title hits
+                # add weight while generic matches in long legal text add less.
+                score = 0.72 * len(overlap) / len(query_tokens)
+                title_section_tokens = tokens(f"{doc['title']} {sec['section']} {sec['summary']}")
+                score += 0.18 * len(query_tokens & title_section_tokens) / len(query_tokens)
                 scored_chunks.append({
                     "doc_id": doc["doc_id"],
                     "title": doc["title"],
@@ -94,11 +110,12 @@ class SebiRagService:
                     "official_url": doc["official_url"],
                     "text": sec["text"],
                     "summary": sec["summary"],
-                    "score": round(min(0.99, max(0.40, total_score)), 2),
+                    "score": round(min(0.99, score), 2),
                 })
 
-        scored_chunks.sort(key=lambda x: x["score"], reverse=True)
-        return scored_chunks[:top_k]
+        scored_chunks.sort(key=lambda item: item["score"], reverse=True)
+        # The old 0.40 score floor made every corpus section appear relevant.
+        return [item for item in scored_chunks if item["score"] >= 0.22][:top_k]
 
     @classmethod
     def answer_query(cls, request: SebiQueryRequest) -> SebiQueryResponse:
@@ -106,7 +123,10 @@ class SebiRagService:
         query = request.query.strip()
         session_id = request.session_id or str(uuid.uuid4())
 
-        top_chunks = cls.search_sebi_corpus(query=query, top_k=2)
+        retrieved_chunks = cls.search_sebi_corpus(query=query, top_k=3, category=request.category)
+        primary = retrieved_chunks[0] if retrieved_chunks else None
+        top_chunks = ([primary] + [chunk for chunk in retrieved_chunks[1:]
+                                    if chunk["doc_id"] != primary["doc_id"] and chunk["score"] >= 0.35]) if primary else []
 
         # Synthesize authoritative answer referencing the retrieved statutory sections
         primary_chunk = top_chunks[0] if top_chunks else None
@@ -125,64 +145,28 @@ class SebiRagService:
                 )
             )
 
-        q_lower = query.lower()
-        market_keywords = ["nifty", "market", "live", "sensex", "index", "current price", "today", "movement", "real time", "real-time"]
-        is_market_query = any(k in q_lower for k in market_keywords)
-
-        live_market_text = ""
-        if is_market_query:
-            try:
-                from app.integrations.market_data.market_service import MarketDataService
-                indices_res = MarketDataService.get_indices()
-                nifty_quote = next((i for i in indices_res.indices if i.symbol == "^NSEI"), None)
-                if not nifty_quote and indices_res.indices:
-                    nifty_quote = indices_res.indices[0]
-
-                if nifty_quote:
-                    sign = "+" if nifty_quote.change >= 0 else ""
-                    live_market_text = (
-                        f"### 📊 Live Real-Time Market Feed (NSE & BSE):\n"
-                        f"- **Benchmark Index ({nifty_quote.name}):** ₹{nifty_quote.current_price:,.2f} "
-                        f"({sign}{nifty_quote.change:,.2f} / {sign}{nifty_quote.change_percent:.2f}%)\n"
-                        f"- **Session Status:** {indices_res.market_status.session_label} "
-                        f"({indices_res.market_status.current_time_ist})\n"
-                        f"- **Day's High / Low:** ₹{nifty_quote.day_high:,.2f} / ₹{nifty_quote.day_low:,.2f}\n"
-                        f"- **52-Week High / Low:** ₹{nifty_quote.year_high:,.2f} / ₹{nifty_quote.year_low:,.2f}\n\n"
-                    )
-            except Exception:
-                pass
-
         if primary_chunk:
             ans_lead = (
-                f"{live_market_text}"
                 f"Under the **{primary_chunk['title']}** ({primary_chunk['section']}), "
-                f"the Securities and Exchange Board of India (SEBI) stipulates the following statutory requirements:\n\n"
+                f"the relevant rule is:\n\n"
             )
             ans_body = f"{primary_chunk['text']}\n\n"
 
-            if len(top_chunks) > 1:
+            if len(top_chunks) > 1 and top_chunks[1]["doc_id"] != primary_chunk["doc_id"] and top_chunks[1]["score"] >= 0.35:
                 sec_chunk = top_chunks[1]
                 ans_secondary = (
-                    f"### Key Regulatory Corroboration:\n"
-                    f"Furthermore, per **{sec_chunk['title']}** (*{sec_chunk['section']}*):\n"
+                    f"Related provision from **{sec_chunk['title']}** (*{sec_chunk['section']}*):\n"
                     f"{sec_chunk['text']}\n\n"
                 )
             else:
                 ans_secondary = ""
 
-            ans_footer = (
-                f"### Compliance Guidelines for Investors:\n"
-                f"- Intermediaries must maintain auditable written records.\n"
-                f"- Guaranteed return claims are strictly illegal and punishable under SEBI PFUTP regulations.\n"
-                f"- Any grievance can be registered on SEBI SCORES 2.0 with a statutory 21-day resolution mandate."
-            )
-            final_answer = ans_lead + ans_body + ans_secondary + ans_footer
+            final_answer = ans_lead + ans_body + ans_secondary.strip()
         else:
             final_answer = (
-                f"{live_market_text}"
-                "SEBI regulations require all market participants, intermediaries, and investors to operate with transparency, "
-                "proper suitability assessment, and strict conflict disclosure. For specific statutory text, please query "
-                "Investment Advisory (IA), Insider Trading (PIT), Fraudulent Practices (PFUTP), or SCORES Grievance mechanisms."
+                "I couldn’t find a sufficiently relevant passage in the installed SEBI material to answer that reliably. "
+                "Try asking about investment adviser risk profiling or fees, UPSI and insider trading, market manipulation, "
+                "SCORES grievances, demat eligibility, or retail derivatives disclosures."
             )
 
         return SebiQueryResponse(

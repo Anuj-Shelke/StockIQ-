@@ -20,11 +20,21 @@ def get_dashboard(
     db: Session = Depends(get_db),
 ):
     """Retrieve consolidated overview metrics and user portfolio performance."""
+    portfolio_query = db.query(Portfolio).filter(Portfolio.user_id == current_user.id)
     user_portfolios = []
-    try:
-        user_portfolios = db.query(Portfolio).filter(Portfolio.user_id == current_user.id).all()
-    except Exception as exc:
-        raise DatabaseUnavailableError() from exc
+    for attempt in range(2):
+        try:
+            user_portfolios = portfolio_query.all()
+            break
+        except Exception as exc:
+            # A failed SQLAlchemy transaction cannot be reused until rolled back.
+            # Retry once to recover from a transient pooled-connection failure.
+            try:
+                db.rollback()
+            except Exception:
+                pass
+            if attempt == 1:
+                raise DatabaseUnavailableError() from exc
 
     if user_portfolios:
         responses = [PortfolioService._build_portfolio_response(db, p) for p in user_portfolios]

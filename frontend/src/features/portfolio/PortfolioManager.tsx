@@ -64,7 +64,7 @@ export function PortfolioManager() {
         })
       } else {
         await apiFetch(`/portfolios/${activePortfolio.id}/holdings`, {
-          method: 'POST', body: { symbol: formData.symbol, asset_type: assetType, quantity: formData.quantity, buy_price: formData.buy_price, current_price: formData.current_price },
+          method: 'POST', body: { symbol: formData.symbol, name: formData.name, asset_type: assetType, quantity: formData.quantity, buy_price: formData.buy_price, current_price: formData.current_price },
         })
       }
       setEditingHolding(null)

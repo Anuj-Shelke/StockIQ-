@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { AuthProvider } from './features/auth/AuthProvider.tsx'
 import { ThemeProvider } from './context/ThemeContext.tsx'
 import { MOCK_AUTH } from './services/api.ts'
+import { GlossaryTooltipProvider } from './components/ui/GlossaryTooltip.tsx'
 
 async function bootstrap() {
   // DEV ONLY: serve the auth endpoints from a mock until the FastAPI backend implements them.
@@ -18,9 +19,11 @@ async function bootstrap() {
     <StrictMode>
       <BrowserRouter>
         <ThemeProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <GlossaryTooltipProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </GlossaryTooltipProvider>
         </ThemeProvider>
       </BrowserRouter>
     </StrictMode>,

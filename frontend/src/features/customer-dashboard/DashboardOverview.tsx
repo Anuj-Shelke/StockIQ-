@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { NiftyLiveWidget } from '@/components/dashboard/NiftyLiveWidget'
 import { Badge } from '@/components/ui/Badge'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 import { useAuth } from '@/hooks/useAuth'
 import { fetchNextDayOpeningPredictions, type NextDayOpeningOverviewResponse } from '@/services/api'
 import { NAV_ITEMS } from './navItems'
@@ -55,8 +56,21 @@ export function DashboardOverview() {
       })()
     : 'Next Session · 09:15 AM'
 
-  if (profileLoading) return <div className="card-surface mx-auto max-w-6xl p-8 text-center text-text-muted">Loading your dashboard…</div>
-  if (!dashboard) return <div role="alert" className="card-surface mx-auto max-w-6xl p-8 text-center text-text-primary">{profileError || 'Could not load your dashboard.'}<button onClick={() => void reloadProfile()} className="ml-3 text-gold underline">Retry</button></div>
+  if (profileLoading) return (
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div className="card-surface p-8 text-center text-text-muted">Loading your dashboard…</div>
+      <NiftyLiveWidget />
+    </div>
+  )
+  if (!dashboard) return (
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div role="alert" className="card-surface p-8 text-center text-text-primary">
+        <p className="font-medium">Your portfolio summary is temporarily unavailable.</p>
+        <p className="mt-1 text-sm text-text-muted">Live market information is available below. Your portfolio data has not been changed.</p>
+      </div>
+      <NiftyLiveWidget />
+    </div>
+  )
   if (dashboard.portfolios.length === 0) return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
       <header className="border-b border-[var(--border-subtle)] pb-6"><p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--gold-primary)]">StockIQ Financial Intelligence</p><h1 className="mt-2 font-display text-3xl font-semibold text-[var(--text-primary)]">Welcome, {name}</h1></header>
@@ -137,10 +151,10 @@ export function DashboardOverview() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--gold-primary)]">
-                  Consolidated Portfolio Asset Value
+                  <GlossaryTooltip term="Portfolio Value" glossaryKey="portfolioValue">Consolidated Portfolio Asset Value</GlossaryTooltip>
                 </span>
                 <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-mono text-slate-300">
-                  NSE & BSE
+                  <GlossaryTooltip term="NSE and BSE" glossaryKey="nseBse">NSE &amp; BSE</GlossaryTooltip>
                 </span>
               </div>
 
@@ -161,21 +175,21 @@ export function DashboardOverview() {
                     {isPositive ? '+' : ''}
                     {inr.format(portfolioGain)} ({portfolioGainPercent.toFixed(2)}%)
                   </span>
-                  <span className="text-[10px] opacity-80">All-time</span>
+                  <span className="text-[10px] opacity-80"><GlossaryTooltip term="All-time P&L" glossaryKey="allTimePnl">All-time</GlossaryTooltip></span>
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-6 text-xs text-slate-300">
                 <div>
-                  <span className="text-slate-400">Invested Capital: </span>
+                  <span className="text-slate-400"><GlossaryTooltip term="Invested Capital" glossaryKey="investedCapital">Invested Capital</GlossaryTooltip>: </span>
                   <span className="font-semibold text-white tabular-nums">{inr.format(portfolioInvestedValue)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Equity Weight: </span>
+                  <span className="text-slate-400"><GlossaryTooltip term="Equity Weight" glossaryKey="equityWeight">Equity Weight</GlossaryTooltip>: </span>
                   <span className="font-semibold text-white">76.1%</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Defensive Buffer: </span>
+                  <span className="text-slate-400"><GlossaryTooltip term="Defensive Buffer" glossaryKey="defensiveBuffer">Defensive Buffer</GlossaryTooltip>: </span>
                   <span className="font-semibold text-white">23.9% (Gold & Cash)</span>
                 </div>
               </div>
@@ -244,7 +258,7 @@ export function DashboardOverview() {
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                Historical Scenario
+                <GlossaryTooltip term="Historical Scenario" glossaryKey="historicalScenario">Historical Scenario</GlossaryTooltip>
               </span>
               <p className="mt-1 font-semibold text-[var(--text-primary)]">COVID-19 Crash (2020)</p>
               <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">Fastest 30% drop in market history</p>
@@ -252,17 +266,17 @@ export function DashboardOverview() {
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                Simulated Drawdown
+                <GlossaryTooltip term="Simulated Drawdown" glossaryKey="dashboardDrawdown">Simulated Drawdown</GlossaryTooltip>
               </span>
               <p className="mt-1 font-display text-2xl font-bold text-[var(--color-danger)] tabular-nums">
                 {simulatedDrawdownPct}%
               </p>
-              <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">Nifty fell -38.4% during peak</p>
+              <p className="mt-0.5 text-[11px] text-[var(--text-muted)]"><GlossaryTooltip term="Nifty 50" glossaryKey="nifty50">Nifty fell</GlossaryTooltip> -38.4% during peak</p>
             </div>
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                Estimated Capital At Risk
+                <GlossaryTooltip term="Estimated Capital At Risk" glossaryKey="estimatedCapitalAtRisk">Estimated Capital At Risk</GlossaryTooltip>
               </span>
               <p className="mt-1 font-display text-2xl font-bold text-[var(--color-danger)] tabular-nums">
                 {inr.format(estimatedRupeeImpact)}
@@ -274,7 +288,7 @@ export function DashboardOverview() {
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                Historical Recovery Time
+                <GlossaryTooltip term="Historical Recovery Time" glossaryKey="historicalRecoveryTime">Historical Recovery Time</GlossaryTooltip>
               </span>
               <div className="mt-1 flex items-center gap-2">
                 <Clock className="h-5 w-5 text-[var(--gold-primary)]" />
@@ -302,7 +316,7 @@ export function DashboardOverview() {
               <div className="flex flex-col sm:flex-row sm:items-start gap-2">
                 <Badge variant="verified">1. Verified Data</Badge>
                 <p className="text-[var(--text-secondary)]">
-                  Portfolio beta of <strong className="text-[var(--text-primary)]">1.08</strong> with{' '}
+                  <GlossaryTooltip term="Portfolio beta" glossaryKey="portfolioBeta">Portfolio beta of <strong className="text-[var(--text-primary)]">1.08</strong></GlossaryTooltip> with{' '}
                   <strong className="text-[var(--text-primary)]">76.1%</strong> equity allocation concentrated heavily in
                   Reliance Industries (42.5%) and TCS (33.6%).
                 </p>
@@ -348,7 +362,7 @@ export function DashboardOverview() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)] font-display">
-                    Next-Day Market Opening Forecast
+                    <GlossaryTooltip term="Next-Day Market Opening Forecast" glossaryKey="nextDayForecast">Next-Day Market Opening Forecast</GlossaryTooltip>
                   </h2>
                   <span className="badge-ai text-[10px] font-mono">Quantile ML v2.1</span>
                 </div>
@@ -377,18 +391,18 @@ export function DashboardOverview() {
             {/* NIFTY 50 Prediction */}
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
-                <span className="font-semibold text-[var(--text-primary)]">NIFTY 50 (^NSEI)</span>
+                <span className="font-semibold text-[var(--text-primary)]"><GlossaryTooltip term="NIFTY 50" glossaryKey="nifty50">NIFTY 50</GlossaryTooltip> (^NSEI)</span>
                 <span className="text-[10px] uppercase">NSE Index</span>
               </div>
               <div className="mt-2 flex items-baseline justify-between">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Predicted Open</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Predicted Open" glossaryKey="nextDayForecast">Predicted Open</GlossaryTooltip></span>
                   <span className="text-xl font-bold font-mono text-[var(--text-primary)]">
                     ₹{(niftyPrediction?.predicted_open_price ?? 22448).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Expected Gap</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Expected Gap" glossaryKey="expectedGap">Expected Gap</GlossaryTooltip></span>
                   <span className="text-xs font-bold font-mono text-[var(--color-success)]">
                     +{(niftyPrediction?.expected_gap_points ?? 84.65).toFixed(2)} pts (+{(niftyPrediction?.expected_gap_pct ?? 0.38).toFixed(2)}%)
                   </span>
@@ -399,18 +413,18 @@ export function DashboardOverview() {
             {/* BSE SENSEX Prediction */}
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
               <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
-                <span className="font-semibold text-[var(--text-primary)]">BSE SENSEX (^BSESN)</span>
+                <span className="font-semibold text-[var(--text-primary)]"><GlossaryTooltip term="BSE SENSEX" glossaryKey="sensex">BSE SENSEX</GlossaryTooltip> (^BSESN)</span>
                 <span className="text-[10px] uppercase">BSE Index</span>
               </div>
               <div className="mt-2 flex items-baseline justify-between">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Predicted Open</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Predicted Open" glossaryKey="nextDayForecast">Predicted Open</GlossaryTooltip></span>
                   <span className="text-xl font-bold font-mono text-[var(--text-primary)]">
                     ₹{(sensexPrediction?.predicted_open_price ?? 74156.15).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Expected Gap</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Expected Gap" glossaryKey="expectedGap">Expected Gap</GlossaryTooltip></span>
                   <span className="text-xs font-bold font-mono text-[var(--color-success)]">
                     +{(sensexPrediction?.expected_gap_points ?? 266.0).toFixed(2)} pts (+{(sensexPrediction?.expected_gap_pct ?? 0.36).toFixed(2)}%)
                   </span>
@@ -421,18 +435,18 @@ export function DashboardOverview() {
             {/* Overnight Sentiment & GIFT Nifty */}
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
-                <span>GIFT Nifty Overnight</span>
+                <span><GlossaryTooltip term="GIFT Nifty" glossaryKey="giftNifty">GIFT Nifty Overnight</GlossaryTooltip></span>
                 <span className="text-[10px] uppercase text-gold font-bold">Live Lead</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">Implied Open</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Implied Open" glossaryKey="impliedOpen">Implied Open</GlossaryTooltip></span>
                   <span className="text-xl font-bold font-mono text-[var(--color-success)]">
                     ₹{(openingPredictions?.gift_nifty_implied_open ?? 22448.0).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block">P(Gap-Up)</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-mono block"><GlossaryTooltip term="Gap-Up Probability" glossaryKey="gapUpProbability">P(Gap-Up)</GlossaryTooltip></span>
                   <span className="text-xs font-bold font-mono text-gold">
                     {((niftyPrediction?.p_gap_up ?? 0.74) * 100).toFixed(0)}% Probability
                   </span>

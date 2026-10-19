@@ -18,15 +18,18 @@ import { AdminLayout } from '@/layouts/AdminLayout'
 import { MyReviews } from '@/features/review-requests/MyReviews'
 import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/CustomerDashboardLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
+import { WelcomeExperience } from '@/features/auth/components/WelcomeExperience'
 
 // Route-level code splitting: the landing page pulls in three.js; auth pages share it; the dashboard stays light.
 const Landing = lazy(() => import('@/pages/Landing'))
 const Login = lazy(() => import('@/pages/Login'))
 const Signup = lazy(() => import('@/pages/Signup'))
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
+const FnoArenaPage = lazy(() => import('@/features/fno-arena/FnoArenaPage'))
 
 export const App = () => (
   <Suspense fallback={<SplashScreen />}>
+    <>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route element={<PublicOnlyRoute />}>
@@ -34,6 +37,16 @@ export const App = () => (
         <Route path="/signup" element={<Signup />} />
       </Route>
       <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      <Route path="/fno-arena" element={<ProtectedRoute requiredRole="investor" />}>
+        <Route index element={<FnoArenaPage />} />
+      </Route>
+
+      <Route path="/welcome" element={<ProtectedRoute requiredRole="investor" />}>
+        <Route element={<CustomerDashboardLayout />}>
+          <Route index element={<DashboardOverview />} />
+        </Route>
+      </Route>
 
       <Route path="/dashboard" element={<ProtectedRoute requiredRole="investor" />}>
         <Route element={<CustomerDashboardLayout />}>
@@ -67,6 +80,8 @@ export const App = () => (
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <WelcomeExperience />
+    </>
   </Suspense>
 )
 

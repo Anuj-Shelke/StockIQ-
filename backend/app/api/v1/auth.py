@@ -17,6 +17,8 @@ from app.core.security import (
 )
 from app.db.session import get_db
 from app.models.user import User
+from app.services.local_auth_store import ensure_configured_admin, get_user_by_email, get_user_by_id, save_user
+from app.services.notification_service import NotificationService
 from app.schemas.auth import (
     AuthSuccessResponse,
     GoogleAuthRequest,
@@ -35,7 +37,12 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
         existing_user = db.query(User).filter(User.email == request.email).first()
     except Exception as exc:
         db.rollback()
-        raise DatabaseUnavailableError() from exc
+        existing_user = get_user_by_email(request.email)
+        if existing_user:
+            raise ConflictError("An account with this email already exists.") from exc
+
+    if existing_user is None:
+        existing_user = get_user_by_email(request.email)
 
     if existing_user:
         raise ConflictError("An account with this email already exists.")
@@ -61,11 +68,15 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
         raise ConflictError("An account with this email already exists.") from exc
     except Exception as exc:
         db.rollback()
-        raise DatabaseUnavailableError() from exc
+        save_user(new_user)
 
     claims = {"email": new_user.email, "role": new_user.role, "full_name": new_user.full_name}
     access_token = create_access_token(subject=str(new_user.id), claims=claims)
     refresh_token = create_refresh_token(subject=str(new_user.id))
+
+    # Mirror accounts so local authentication survives a later Postgres outage.
+    save_user(new_user)
+    NotificationService.send_welcome_email(new_user.email, new_user.full_name)
 
     return AuthSuccessResponse(
         user_id=str(new_user.id),
@@ -85,8 +96,10 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
 def login(request: UserLoginRequest, db: Session = Depends(get_db)):
     """Authenticate existing user and return JWT access and refresh tokens."""
     user = None
+    primary_db_available = False
     try:
         user = db.query(User).filter(User.email == request.email).first()
+        primary_db_available = True
     except DBAPIError as exc:
         # A connection can be dropped after pool_pre_ping succeeds but before
         # the query reaches Postgres. Since this lookup is read-only, retry it
@@ -104,7 +117,8 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
                     type(original).__name__,
                     getattr(original, "sqlstate", None),
                 )
-                raise DatabaseUnavailableError() from retry_exc
+                ensure_configured_admin()
+                user = get_user_by_email(request.email)
         else:
             db.rollback()
             original = getattr(exc, "orig", exc)
@@ -113,11 +127,31 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
                 type(original).__name__,
                 getattr(original, "sqlstate", None),
             )
-            raise DatabaseUnavailableError() from exc
+            ensure_configured_admin()
+            user = get_user_by_email(request.email)
     except Exception as exc:
         db.rollback()
         logger.error("Login database lookup failed (error_type=%s).", type(exc).__name__)
-        raise DatabaseUnavailableError() from exc
+        ensure_configured_admin()
+        user = get_user_by_email(request.email)
+
+    # Locally created outage accounts are intentionally allowed to log in after
+    # Postgres recovers, before they have been copied into the primary database.
+    if user is None:
+        ensure_configured_admin()
+        user = get_user_by_email(request.email)
+        if user and primary_db_available:
+            # Promote a local-only account after the primary DB returns so its
+            # database-backed services become available again.
+            try:
+                db.add(User(
+                    id=uuid.UUID(str(user.id)), email=user.email, password_hash=user.password_hash,
+                    full_name=user.full_name, role=user.role, is_active=user.is_active,
+                    is_superuser=getattr(user, "is_superuser", False),
+                ))
+                db.commit()
+            except Exception:
+                db.rollback()
 
     if not user or not verify_password(request.password, user.hashed_password):
         raise AuthenticationError("Invalid email or password.")
@@ -133,6 +167,8 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
             else "This is an administrator account. Please continue as Admin."
         )
         raise PermissionDeniedError(message)
+
+    save_user(user)
 
     claims = {"email": user.email, "role": user.role, "full_name": user.full_name}
     access_token = create_access_token(subject=str(user.id), claims=claims)
@@ -166,9 +202,12 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
     user = None
     try:
         user = db.query(User).filter(User.id == user_id).first()
-    except Exception as exc:
+    except Exception:
         db.rollback()
-        raise DatabaseUnavailableError() from exc
+        user = get_user_by_email(email)
+
+    if user is None:
+        user = get_user_by_id(user_id)
 
     if not user or not user.is_active:
         raise AuthenticationError("Please log in to continue.")
@@ -228,9 +267,9 @@ def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
 
     try:
         user = db.query(User).filter(func.lower(User.email) == email).first()
-    except Exception as exc:
+    except Exception:
         db.rollback()
-        raise DatabaseUnavailableError() from exc
+        user = get_user_by_email(email)
 
     if not user:
         user_id = str(uuid.uuid4())
@@ -248,7 +287,7 @@ def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
             db.refresh(user)
         except Exception:
             db.rollback()
-            raise DatabaseUnavailableError()
+            save_user(user)
     else:
         if user.role == "admin":
             raise PermissionDeniedError("Administrator accounts must sign in with their admin password.")
@@ -261,10 +300,11 @@ def google_login(request: GoogleAuthRequest, db: Session = Depends(get_db)):
             user.full_name = full_name
             try:
                 db.commit()
-            except Exception as exc:
+            except Exception:
                 db.rollback()
-                raise DatabaseUnavailableError() from exc
+                save_user(user)
 
+    save_user(user)
     claims = {"email": user.email, "role": user.role, "full_name": user.full_name}
     access_token = create_access_token(subject=str(user.id), claims=claims)
     refresh_token = create_refresh_token(subject=str(user.id))

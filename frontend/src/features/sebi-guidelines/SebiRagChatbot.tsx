@@ -285,21 +285,7 @@ export function SebiRagChatbot() {
         ]
       } else {
         botResponse =
-          'Under **SEBI (Investment Advisers) Regulations, 2013 (Regulation 17)**:\n\n' +
-          '- **Mandatory Suitability Assessment:** Registered entities must assess an investor’s age, annual income, existing asset allocation, and investment horizon before recommending any security.\n' +
-          '- **Written Rationale:** A written rationale explaining why the stock fits the client’s risk capacity (Conservative, Moderate, Aggressive) is legally required.\n' +
-          '- **Prohibition on Guarantees:** Promising guaranteed returns or zero-risk equity investments is illegal under SEBI PFUTP regulations.'
-        citations = [
-          {
-            docId: 'SEBI-IA-2013',
-            title: 'SEBI (Investment Advisers) Regulations, 2013',
-            section: 'Regulation 17 - Risk Profiling & Suitability',
-            circularNo: 'SEBI/L-NRO/GN/2012-13/31/3472',
-            officialUrl: 'https://www.sebi.gov.in/legal/regulations/jan-2013/securities-and-exchange-board-of-india-investment-advisers-regulations-2013_24155.html',
-            excerpt: 'Statutory mandate for age, income, and horizon risk profiling before giving advice.',
-            relevanceScore: 0.92,
-          },
-        ]
+          'I couldn’t find a sufficiently relevant passage in the available SEBI material to answer that reliably. Try asking about investment adviser risk profiling or fees, UPSI and insider trading, market manipulation, SCORES grievances, demat eligibility, or retail derivatives disclosures.'
       }
 
       const botMsg: ChatMessage = {

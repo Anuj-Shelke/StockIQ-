@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { AUTH_LOGOUT_EVENT } from '@/services/api'
+import { apiFetch, AUTH_LOGOUT_EVENT } from '@/services/api'
 import * as authService from '@/services/auth'
 import type { AuthStatus, DashboardResponse, LoginRequest, RegisterRequest, UserMe } from '@/types/auth'
 import { AuthContext, type AuthContextValue } from './AuthContext'
+import { clearArenaSessionStorage } from '@/features/fno-arena/arenaSessionStorage'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
@@ -22,6 +23,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileLoading(false)
   }, [])
 
+  const clearWelcomeSession = useCallback(() => {
+    clearArenaSessionStorage()
+    try {
+      sessionStorage.removeItem('stockiq_welcome_pending')
+      sessionStorage.removeItem('stockiq_welcome_seen')
+    } catch {
+      // Storage may be unavailable; signing out must still complete.
+    }
+  }, [])
+
   const loadProfile = useCallback(async () => {
     const id = ++loadId.current
     setProfileLoading(true)
@@ -30,8 +41,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [me, dash] = await Promise.allSettled([authService.fetchMe(), authService.fetchDashboard()])
     if (id !== loadId.current) return
     if (me.status === 'fulfilled') setUser(me.value)
-    if (dash.status === 'fulfilled') setDashboard(dash.value)
-    const failure = me.status === 'rejected' ? me.reason : dash.status === 'rejected' ? dash.reason : null
+    let dashboardFailure = dash.status === 'rejected' ? dash.reason : null
+    if (dash.status === 'fulfilled') {
+      setDashboard(dash.value)
+    } else {
+      // The overview endpoint can fail independently while the portfolio API
+      // remains available. Rebuild the fields this dashboard needs from that
+      // source so a transient overview query failure does not blank the page.
+      try {
+        const portfolios = await apiFetch<Array<{
+          id: string
+          name: string
+          total_value: number
+          total_invested: number
+          total_gain_loss: number
+          return_percentage: number
+        }>>('/portfolios')
+        if (id !== loadId.current) return
+        setDashboard({
+          metrics: [],
+          portfolios: portfolios.map((p) => ({
+            portfolio_id: p.id,
+            portfolio_name: p.name,
+            current_value: p.total_value,
+            invested_value: p.total_invested,
+            total_gain_loss: p.total_gain_loss,
+            return_percentage: p.return_percentage,
+          })),
+          recent_activity: [],
+        })
+        dashboardFailure = null
+      } catch {
+        // Keep the original dashboard error only if both overview sources fail.
+      }
+    }
+    const failure = me.status === 'rejected' ? me.reason : dashboardFailure
     if (failure) {
       // Non-fatal: pages show an inline error with a retry.
       setProfileError(failure instanceof Error ? failure.message : 'Could not load your dashboard.')
@@ -55,12 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // The API layer announces unrecoverable 401s (refresh failed).
   useEffect(() => {
     const onLogout = () => {
+      clearWelcomeSession()
       clearProfile()
       setStatus('unauthenticated')
     }
     window.addEventListener(AUTH_LOGOUT_EVENT, onLogout)
     return () => window.removeEventListener(AUTH_LOGOUT_EVENT, onLogout)
-  }, [clearProfile])
+  }, [clearProfile, clearWelcomeSession])
 
   const login = useCallback(
     async (credentials: LoginRequest) => {
@@ -91,9 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     authService.logout()
+    clearWelcomeSession()
     clearProfile()
     setStatus('unauthenticated')
-  }, [clearProfile])
+  }, [clearProfile, clearWelcomeSession])
 
   const value = useMemo<AuthContextValue>(
     () => ({ status, user, dashboard, profileError, profileLoading, reloadProfile: loadProfile, login, loginWithGoogle, register, logout }),
