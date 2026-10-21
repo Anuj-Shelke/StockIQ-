@@ -9,6 +9,7 @@ from app.models.knowledge_base import KBDocument, KBChunk
 from app.models.system import AuditLog, LLMUsage, AssetRate, FeatureFlag
 from app.models.review import ReviewRequest
 from app.models.tax import TaxTransaction, TaxCalculationRecord
+from app.models.investment_planner import PlannerProfile, InvestmentPlanRecord
 
 __all__ = [
     "User",
@@ -32,4 +33,6 @@ __all__ = [
     "ReviewRequest",
     "TaxTransaction",
     "TaxCalculationRecord",
+    "PlannerProfile",
+    "InvestmentPlanRecord",
 ]

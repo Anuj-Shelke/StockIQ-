@@ -20,6 +20,7 @@ import { MyReviews } from '@/features/review-requests/MyReviews'
 import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/CustomerDashboardLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
 import { WelcomeExperience } from '@/features/auth/components/WelcomeExperience'
+import { InvestmentPlannerView } from '@/features/investment-planner/InvestmentPlannerView'
 
 // Route-level code splitting: the landing page pulls in three.js; auth pages share it; the dashboard stays light.
 const Landing = lazy(() => import('@/pages/Landing'))
@@ -52,6 +53,7 @@ export const App = () => (
       <Route path="/dashboard" element={<ProtectedRoute requiredRole="investor" />}>
         <Route element={<CustomerDashboardLayout />}>
           <Route index element={<DashboardOverview />} />
+          <Route path="investment-planner" element={<InvestmentPlannerView />} />
           <Route path="next-day-open" element={<NextDayOpenPredictor />} />
           <Route path="recommendations" element={<RecommendationsView />} />
           <Route path="portfolio" element={<PortfolioManager />} />

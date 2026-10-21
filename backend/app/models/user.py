@@ -15,6 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, synonym
 
 from app.db.base import Base, GUID
+import app.models.investment_planner  # noqa: F401 - ensure mappers resolve
 
 
 class User(Base):
@@ -40,6 +41,8 @@ class User(Base):
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     tax_transactions = relationship("TaxTransaction", back_populates="user", cascade="all, delete-orphan")
     tax_calculations = relationship("TaxCalculationRecord", back_populates="user", cascade="all, delete-orphan")
+    planner_profiles = relationship("PlannerProfile", back_populates="user", cascade="all, delete-orphan")
+    investment_plans = relationship("InvestmentPlanRecord", back_populates="user", cascade="all, delete-orphan")
 
 
 class InvestorProfile(Base):
