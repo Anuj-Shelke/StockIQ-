@@ -1,4 +1,4 @@
-import { Activity, Briefcase, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
+import { Activity, Briefcase, Calculator, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -13,6 +13,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard/next-day-open', label: 'Next-Day Open', icon: TrendingUp, blurb: 'Machine learning forecast of tomorrow’s 9:15 AM opening prices and gap probabilities for NSE & BSE.' },
   { to: '/dashboard/recommendations', label: 'AI Recommendations', icon: Sparkles, blurb: 'Personalized stock and asset allocation recommendations tailored to your age, income, and goals.' },
   { to: '/dashboard/portfolio', label: 'Portfolio', icon: Briefcase, blurb: 'Build and review your holdings, with allocation and concentration at a glance.' },
+  { to: '/dashboard/tax', label: 'Tax Intelligence', icon: Calculator, blurb: 'Statutory capital gains tax engine, FIFO lot allocation, Budget 2024 rules, and XAI explanations.' },
   { to: '/dashboard/risk-check', label: 'Risk Reality Check', icon: ShieldAlert, blurb: 'Stress-test a portfolio against historical scenarios and see what could hurt.' },
   { to: '/fno-arena', label: 'F&O Arena', icon: Activity, blurb: 'Practice a simulated derivatives scenario with fictional points and a deterministic engine.' },
   { to: '/dashboard/compare', label: 'Compare Assets', icon: Scale, blurb: 'Put stocks, gold and fixed deposits side by side on the same footing.' },
