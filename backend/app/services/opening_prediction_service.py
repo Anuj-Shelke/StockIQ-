@@ -1,6 +1,7 @@
 """Machine Learning Next-Day Opening Price & Gap Prediction Engine for NSE and BSE."""
 
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from typing import Dict, List, Optional
 from app.schemas.opening_prediction import (
     NextDayOpeningQuote,
@@ -290,8 +291,61 @@ class OpeningPredictionService:
     """Service providing next-day opening prices and gap analytics for NSE & BSE."""
 
     @classmethod
+    def get_next_session_info(cls) -> tuple[datetime, str, str]:
+        """Calculate the target market opening date and human-readable label based on IST."""
+        try:
+            kolkata_tz = ZoneInfo("Asia/Kolkata")
+            now_ist = datetime.now(kolkata_tz)
+        except Exception:
+            kolkata_tz = timezone.utc
+            now_ist = datetime.now(timezone.utc)
+
+        weekday = now_ist.weekday()  # 0=Monday, ..., 4=Friday, 5=Sat, 6=Sun
+        hour = now_ist.hour
+        minute = now_ist.minute
+
+        # NSE & BSE normal trading sessions open at 09:15 AM IST (Mon-Fri)
+        if weekday < 5:  # Monday to Friday
+            if (hour < 9) or (hour == 9 and minute < 15):
+                target_date = now_ist.date()
+                label = "Today's Session (09:15 IST)"
+            elif weekday == 4:  # Friday post-open -> Next session is Monday
+                target_date = (now_ist + timedelta(days=3)).date()
+                label = "Next Session · Monday (09:15 IST)"
+            else:  # Monday - Thursday post-open -> Next session is tomorrow
+                target_date = (now_ist + timedelta(days=1)).date()
+                label = "Next Session · Tomorrow (09:15 IST)"
+        elif weekday == 5:  # Saturday -> Next session is Monday
+            target_date = (now_ist + timedelta(days=2)).date()
+            label = "Next Session · Monday (09:15 IST)"
+        else:  # Sunday -> Next session is Monday
+            target_date = (now_ist + timedelta(days=1)).date()
+            label = "Next Session · Monday (09:15 IST)"
+
+        target_date_str = target_date.strftime("%Y-%m-%d")
+        return now_ist, target_date_str, label
+
+    @classmethod
+    def _get_live_price(cls, symbol: str, fallback_price: float) -> float:
+        """Fetch cached real-time market price if available; fallback instantaneously with zero network lag."""
+        try:
+            from app.integrations.market_data.market_service import _quotes_cache, FALLBACK_QUOTES
+            clean_sym = symbol.strip().upper()
+            cache_key = f"quote_{clean_sym}"
+            if cache_key in _quotes_cache:
+                q = _quotes_cache[cache_key]
+                if q and q.current_price > 0:
+                    return round(q.current_price, 2)
+            if clean_sym in FALLBACK_QUOTES:
+                return round(FALLBACK_QUOTES[clean_sym]["current_price"], 2)
+        except Exception:
+            pass
+        return fallback_price
+
+    @classmethod
     def _build_quote(cls, item: Dict, target_date_str: str) -> NextDayOpeningQuote:
-        last_close = item["last_close_price"]
+        fallback_close = item["last_close_price"]
+        last_close = cls._get_live_price(item["symbol"], fallback_close)
         gap_pct = item["base_gap_pct"]
         vol_pct = item["daily_volatility_pct"]
 
@@ -300,7 +354,7 @@ class OpeningPredictionService:
         open_p50 = round(last_close + gap_points, 2)
 
         # Quantile regression bands based on overnight volatility (p10, p90)
-        band_spread = last_close * (vol_pct / 100.0) * 0.75
+        band_spread = round(last_close * (vol_pct / 100.0) * 0.75, 2)
         open_p10 = round(open_p50 - band_spread, 2)
         open_p90 = round(open_p50 + band_spread, 2)
 
@@ -340,32 +394,38 @@ class OpeningPredictionService:
 
     @classmethod
     def get_overview(cls) -> NextDayOpeningOverviewResponse:
-        now = datetime.now(timezone.utc)
-        target_date = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+        _, target_date_str, session_label = cls.get_next_session_info()
+        now_utc = datetime.now(timezone.utc)
 
-        indices = [cls._build_quote(item, target_date) for item in BENCHMARK_PROFILES]
-        stocks = [cls._build_quote(item, target_date) for item in STOCK_PROFILES]
+        indices = [cls._build_quote(item, target_date_str) for item in BENCHMARK_PROFILES]
+        stocks = [cls._build_quote(item, target_date_str) for item in STOCK_PROFILES]
+
+        # Calculate live GIFT Nifty implied open dynamically from NIFTY 50
+        nifty_quote = next((idx for idx in indices if idx.symbol == "^NSEI"), None)
+        gift_open = nifty_quote.predicted_open_price if nifty_quote else 22448.0
+        gift_gap = nifty_quote.expected_gap_points if nifty_quote else 84.65
+
+        sentiment = "BULLISH_GAP" if gift_gap > 10 else ("BEARISH_GAP" if gift_gap < -10 else "NEUTRAL")
 
         return NextDayOpeningOverviewResponse(
-            market_sentiment="BULLISH_GAP",
-            gift_nifty_implied_open=22448.0,
-            gift_nifty_gap_points=84.65,
+            market_sentiment=sentiment,
+            gift_nifty_implied_open=gift_open,
+            gift_nifty_gap_points=gift_gap,
             usd_inr_drift_pct=0.04,
             us_markets_summary="S&P 500 closed +0.65%, Nasdaq Composite +0.82% driven by technology earnings strength.",
             indices=indices,
             top_stocks=stocks,
             disclaimer="Next-day opening prices are derived from Quantile XGBoost ML algorithms factoring GIFT Nifty, global macro indicators, and overnight order book imbalances. Informational only.",
-            timestamp=now,
+            timestamp=now_utc,
         )
 
     @classmethod
     def get_symbol_opening(cls, symbol: str) -> Optional[NextDayOpeningQuote]:
         sym = symbol.strip().upper()
-        now = datetime.now(timezone.utc)
-        target_date = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+        _, target_date_str, _ = cls.get_next_session_info()
 
         all_items = BENCHMARK_PROFILES + STOCK_PROFILES
         for it in all_items:
             if it["symbol"].upper() == sym or it["symbol"].split(".")[0].upper() == sym.split(".")[0]:
-                return cls._build_quote(it, target_date)
+                return cls._build_quote(it, target_date_str)
         return None

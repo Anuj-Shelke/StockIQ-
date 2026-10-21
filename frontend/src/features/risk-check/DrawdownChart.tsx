@@ -9,6 +9,7 @@ import {
 } from 'recharts'
 import type { DrawdownDataPoint } from '@/types/riskCheck'
 import { useThemeTokens } from '@/hooks/useThemeTokens'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 
 interface DrawdownChartProps {
   data: DrawdownDataPoint[]
@@ -24,7 +25,7 @@ export function DrawdownChart({ data, scenarioName }: DrawdownChartProps) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-[var(--text-primary)] text-base">
-              Underwater Drawdown Trajectory
+              <GlossaryTooltip term="Underwater Drawdown" glossaryKey="underwaterDrawdown">Underwater Drawdown</GlossaryTooltip> Trajectory
             </h3>
             <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] border border-[var(--border-subtle)] rounded px-1.5 py-0.5">
               Peak-to-Trough Simulation

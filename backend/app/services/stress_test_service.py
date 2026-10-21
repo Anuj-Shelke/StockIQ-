@@ -271,13 +271,25 @@ class StressTestService:
             clean_pid = str(portfolio_id).strip()
             # Retrieve portfolio
             p_obj = None
-            try:
-                p_obj = db.query(Portfolio).filter(
-                    Portfolio.id == clean_pid,
-                    Portfolio.user_id == str(user_id),
-                ).first()
-            except Exception as exc:
-                raise DatabaseUnavailableError() from exc
+            query = db.query(Portfolio).filter(
+                Portfolio.id == clean_pid,
+                Portfolio.user_id == str(user_id),
+            )
+            for attempt in range(2):
+                try:
+                    p_obj = query.first()
+                    break
+                except Exception as exc:
+                    # SQLAlchemy sessions must be rolled back before they can be
+                    # reused after a connection error. A single retry covers a
+                    # transient pooled-connection failure without hiding a real
+                    # database outage.
+                    try:
+                        db.rollback()
+                    except Exception:
+                        pass
+                    if attempt == 1:
+                        raise DatabaseUnavailableError() from exc
 
             if p_obj:
                 portfolio_name = p_obj.name

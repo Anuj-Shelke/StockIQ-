@@ -1,5 +1,6 @@
 import { Calendar, TrendingDown, Clock, ShieldCheck, Activity } from 'lucide-react'
 import type { StressScenario } from '@/types/riskCheck'
+import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 
 interface ScenarioSelectorProps {
   scenarios: StressScenario[]
@@ -62,7 +63,7 @@ export function ScenarioSelector({
 
           <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-canvas)] px-3.5 py-2 rounded-xl border border-[var(--border-subtle)] self-start md:self-auto">
             <Calendar className="h-4 w-4 text-[var(--gold-primary)]" />
-            <span>Nifty 50 Peak Decline: </span>
+            <span><GlossaryTooltip term="Nifty 50 Peak Decline" glossaryKey="niftyPeakDecline">Nifty 50 Peak Decline</GlossaryTooltip>: </span>
             <span className="font-mono font-bold text-[var(--color-danger)]">
               {activeScenario.benchmarkDrawdown}%
             </span>
@@ -74,7 +75,7 @@ export function ScenarioSelector({
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
               <TrendingDown className="h-4 w-4 text-[var(--color-danger)]" />
-              <span className="font-semibold uppercase tracking-wider text-[11px]">Simulated Drawdown</span>
+              <span className="font-semibold uppercase tracking-wider text-[11px]"><GlossaryTooltip term="Simulated Drawdown" glossaryKey="simulatedDrawdown">Simulated Drawdown</GlossaryTooltip></span>
             </div>
             <div className="mt-2 text-2xl font-bold font-display text-[var(--color-danger)] tabular-nums">
               {activeScenario.portfolioImpact.estimatedDrawdown}%
@@ -85,7 +86,7 @@ export function ScenarioSelector({
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
               <ShieldCheck className="h-4 w-4 text-[var(--gold-primary)]" />
-              <span className="font-semibold uppercase tracking-wider text-[11px]">Value at Risk (₹ VaR)</span>
+              <span className="font-semibold uppercase tracking-wider text-[11px]"><GlossaryTooltip term="Value at Risk (₹ VaR)" glossaryKey="valueAtRisk">Value at Risk (₹ VaR)</GlossaryTooltip></span>
             </div>
             <div className="mt-2 text-2xl font-bold font-display text-[var(--text-primary)] tabular-nums">
               ₹{activeScenario.portfolioImpact.valueAtRisk.toLocaleString('en-IN')}
@@ -96,7 +97,7 @@ export function ScenarioSelector({
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
               <Clock className="h-4 w-4 text-[var(--blue-primary)]" />
-              <span className="font-semibold uppercase tracking-wider text-[11px]">Estimated Recovery</span>
+              <span className="font-semibold uppercase tracking-wider text-[11px]"><GlossaryTooltip term="Estimated Recovery" glossaryKey="estimatedRecovery">Estimated Recovery</GlossaryTooltip></span>
             </div>
             <div className="mt-2 text-2xl font-bold font-display text-[var(--text-primary)] tabular-nums">
               {activeScenario.portfolioImpact.recoveryMonths} Months
@@ -107,7 +108,7 @@ export function ScenarioSelector({
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] p-4">
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
               <Activity className="h-4 w-4 text-[var(--color-warning)]" />
-              <span className="font-semibold uppercase tracking-wider text-[11px]">Stress Volatility</span>
+              <span className="font-semibold uppercase tracking-wider text-[11px]"><GlossaryTooltip term="Stress Volatility" glossaryKey="stressVolatility">Stress Volatility</GlossaryTooltip></span>
             </div>
             <div className="mt-2 text-2xl font-bold font-display text-[var(--text-primary)] tabular-nums">
               {activeScenario.portfolioImpact.volatilityIndex}%

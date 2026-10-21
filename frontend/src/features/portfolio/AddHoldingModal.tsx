@@ -27,6 +27,7 @@ export function AddHoldingModal({
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [isCustomStock, setIsCustomStock] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Update form if editingHolding changes
@@ -39,6 +40,7 @@ export function AddHoldingModal({
       setBuyPrice(editingHolding.buy_price.toString())
       setCurrentPrice((editingHolding.current_price || editingHolding.buy_price).toString())
       setSearchQuery(editingHolding.symbol)
+      setIsCustomStock(false)
     } else {
       setSymbol('')
       setName('')
@@ -47,6 +49,7 @@ export function AddHoldingModal({
       setBuyPrice('')
       setCurrentPrice('')
       setSearchQuery('')
+      setIsCustomStock(false)
     }
     setErrors({})
   }, [editingHolding, isOpen])
@@ -69,6 +72,24 @@ export function AddHoldingModal({
     }
     setSearchQuery(item.symbol)
     setShowDropdown(false)
+    setIsCustomStock(false)
+  }
+
+  const handleAddNseTicker = () => {
+    const enteredTicker = searchQuery.trim().toUpperCase().replace(/^NSE:/, '')
+    const ticker = enteredTicker.replace(/\.NS$/, '')
+    if (!/^[A-Z0-9&_-]{1,20}$/.test(ticker)) {
+      setErrors({ symbol: 'Enter a valid NSE ticker symbol, for example SBIN or TATAPOWER.' })
+      return
+    }
+    setSymbol(`${ticker}.NS`)
+    setName('')
+    setAssetType('EQUITY')
+    setCurrentPrice('')
+    setBuyPrice('')
+    setIsCustomStock(true)
+    setShowDropdown(false)
+    setErrors({})
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,6 +97,7 @@ export function AddHoldingModal({
     const errs: Record<string, string> = {}
 
     if (!symbol.trim()) errs.symbol = 'Symbol is required'
+    if (isCustomStock && !name.trim()) errs.name = 'Company name is required for a custom NSE ticker'
     const q = parseFloat(quantity)
     if (isNaN(q) || q <= 0) errs.quantity = 'Quantity must be greater than 0'
     const bp = parseFloat(buyPrice)
@@ -125,7 +147,7 @@ export function AddHoldingModal({
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
               <input
                 type="text"
-                placeholder="e.g. RELIANCE, TCS, INFY"
+              placeholder="Search or enter an NSE symbol, e.g. SBIN"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -154,8 +176,23 @@ export function AddHoldingModal({
                 ))}
               </div>
             )}
+            {showDropdown && searchQuery.trim() && filteredCatalog.length === 0 && (
+              <div className="absolute z-20 mt-1 w-full rounded-lg border border-theme-default bg-surface-elevated p-3 shadow-xl">
+                <p className="mb-2 text-[11px] text-text-muted">Not in the starter list? Add any NSE ticker and enter its company name and reference prices.</p>
+                <button type="button" onClick={handleAddNseTicker} className="w-full rounded-md px-3 py-2 text-left text-xs font-semibold text-gold transition hover:bg-surface-hover">
+                  Add “{searchQuery.trim().toUpperCase()}” as an NSE share
+                </button>
+              </div>
+            )}
             {errors.symbol && <p className="mt-1 text-xs text-loss">{errors.symbol}</p>}
           </div>
+
+          {isCustomStock && <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">Company Name</label>
+            <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter the listed company name" className="input-default" maxLength={255} />
+            <p className="mt-1 text-[11px] text-text-muted">Ticker: {symbol}. Confirm the NSE symbol and use your own reference prices for this demo holding.</p>
+            {errors.name && <p className="mt-1 text-xs text-loss">{errors.name}</p>}
+          </div>}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

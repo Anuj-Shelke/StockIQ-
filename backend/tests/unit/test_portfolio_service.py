@@ -106,3 +106,41 @@ def test_portfolio_full_crud_and_weights(client, auth_headers):
     # Verify 404 when retrieving deleted portfolio
     get_deleted = client.get(f"/api/v1/portfolios/{p_id}", headers=auth_headers)
     assert get_deleted.status_code == 404
+
+
+def test_portfolio_accepts_an_unlisted_nse_catalog_symbol(client, auth_headers, monkeypatch):
+    from app.integrations.market_data.market_service import MarketDataService
+
+    monkeypatch.setattr(
+        MarketDataService,
+        "get_quote",
+        staticmethod(lambda _symbol: (_ for _ in ()).throw(RuntimeError("quote unavailable in test"))),
+    )
+    portfolio_response = client.post(
+        "/api/v1/portfolios",
+        json={"name": "Demo Portfolio", "holdings": []},
+        headers=auth_headers,
+    )
+    assert portfolio_response.status_code == 201
+    portfolio_id = portfolio_response.json()["id"]
+
+    response = client.post(
+        f"/api/v1/portfolios/{portfolio_id}/holdings",
+        json={
+            "symbol": "DEMOPOWER",
+            "name": "Demo Power Limited",
+            "asset_type": "stock",
+            "quantity": 12,
+            "buy_price": 125.5,
+            "current_price": 128.25,
+        },
+        headers=auth_headers,
+    )
+    assert response.status_code == 201
+    holding = response.json()
+    assert holding["symbol"] == "DEMOPOWER.NS"
+    assert holding["current_price"] == 128.25
+
+    catalog_response = client.get("/api/v1/stocks?search=DEMOPOWER")
+    assert catalog_response.status_code == 200
+    assert any(item["symbol"] == "DEMOPOWER.NS" for item in catalog_response.json()["items"])

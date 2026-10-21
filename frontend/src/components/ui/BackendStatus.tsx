@@ -8,8 +8,8 @@ export function BackendStatus() {
   const [loading, setLoading] = useState(!MOCK_AUTH)
   const [error, setError] = useState<string | null>(null)
 
-  const verify = useCallback(async () => {
-    setLoading(true)
+  const verify = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(null)
     try {
       setHealth(await checkBackendHealth())
@@ -17,13 +17,21 @@ export function BackendStatus() {
       setHealth(null)
       setError(err instanceof Error ? err.message : 'Unable to connect to backend')
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
 
   useEffect(() => {
     if (!MOCK_AUTH) void verify()
   }, [verify])
+
+  useEffect(() => {
+    if (MOCK_AUTH || health?.status === 'ok') return
+    const timer = window.setInterval(() => {
+      if (!document.hidden) void verify(true)
+    }, 5000)
+    return () => window.clearInterval(timer)
+  }, [health?.status, verify])
 
   if (MOCK_AUTH)
     return (
@@ -49,7 +57,7 @@ export function BackendStatus() {
     )
   return (
     <button
-      onClick={verify}
+      onClick={() => void verify()}
       title={error ?? 'Click to retry connecting to the FastAPI backend'}
       className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-warning transition hover:bg-warning/20"
     >

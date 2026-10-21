@@ -1,4 +1,4 @@
-import { Briefcase, Calculator, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
+import { Activity, Briefcase, Calculator, ClipboardCheck, GraduationCap, History, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -15,6 +15,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard/portfolio', label: 'Portfolio', icon: Briefcase, blurb: 'Build and review your holdings, with allocation and concentration at a glance.' },
   { to: '/dashboard/tax', label: 'Tax Intelligence', icon: Calculator, blurb: 'Statutory capital gains tax engine, FIFO lot allocation, Budget 2024 rules, and XAI explanations.' },
   { to: '/dashboard/risk-check', label: 'Risk Reality Check', icon: ShieldAlert, blurb: 'Stress-test a portfolio against historical scenarios and see what could hurt.' },
+  { to: '/fno-arena', label: 'F&O Arena', icon: Activity, blurb: 'Practice a simulated derivatives scenario with fictional points and a deterministic engine.' },
   { to: '/dashboard/compare', label: 'Compare Assets', icon: Scale, blurb: 'Put stocks, gold and fixed deposits side by side on the same footing.' },
   { to: '/dashboard/explainability', label: 'Explainability', icon: Sparkles, blurb: 'See the reasoning and sources behind every analysis.' },
   { to: '/dashboard/education', label: 'Financial Education', icon: GraduationCap, blurb: 'Plain-language, source-backed explanations of financial concepts.' },

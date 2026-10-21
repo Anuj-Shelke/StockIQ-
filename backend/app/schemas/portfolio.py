@@ -7,6 +7,7 @@ from app.schemas.common import APIBaseModel
 class HoldingCreate(APIBaseModel):
     """Payload to add a holding to a portfolio."""
     symbol: str
+    name: Optional[str] = Field(default=None, max_length=255)
     asset_type: str = Field(default="stock", pattern="^(stock|gold|fd)$")
     quantity: float = Field(gt=0)
     buy_price: float = Field(ge=0)
