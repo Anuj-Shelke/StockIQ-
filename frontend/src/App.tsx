@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { SplashScreen } from '@/components/ui/SplashScreen'
 import { DashboardOverview } from '@/features/customer-dashboard/DashboardOverview'
 import { PortfolioManager } from '@/features/portfolio/PortfolioManager'
+import { TaxIntelligenceView } from '@/features/tax-intelligence/TaxIntelligenceView'
 import { NextDayOpenPredictor } from '@/features/market-predictions/NextDayOpenPredictor'
 import { RecommendationsView } from '@/features/recommendations/RecommendationsView'
 import { RiskRealityCheck } from '@/features/risk-check/RiskRealityCheck'
@@ -41,6 +42,7 @@ export const App = () => (
           <Route path="next-day-open" element={<NextDayOpenPredictor />} />
           <Route path="recommendations" element={<RecommendationsView />} />
           <Route path="portfolio" element={<PortfolioManager />} />
+          <Route path="tax" element={<TaxIntelligenceView />} />
           <Route path="risk-check" element={<RiskRealityCheck />} />
           <Route path="compare" element={<AssetComparison />} />
           <Route path="explainability" element={<ExplainabilityVisualizer />} />
@@ -71,4 +73,5 @@ export const App = () => (
 )
 
 export default App
+
 

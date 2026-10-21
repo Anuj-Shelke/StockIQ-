@@ -108,6 +108,7 @@ def seed_default_data(db: Session) -> None:
         from app.models.stock import Stock
         from app.models.user import User, InvestorProfile
         from app.models.portfolio import Portfolio, Holding
+        from app.models.tax import TaxTransaction, TaxCalculationRecord
         from app.core.security import get_password_hash
 
         # Seed stocks
@@ -119,6 +120,7 @@ def seed_default_data(db: Session) -> None:
                 Stock(symbol="HDFCBANK.NS", name="HDFC Bank Ltd.", exchange="NSE", sector="Banking & Financial Services", current_price=1650.80, is_active=True),
                 Stock(symbol="ICICIBANK.NS", name="ICICI Bank Ltd.", exchange="NSE", sector="Banking & Financial Services", current_price=1210.45, is_active=True),
                 Stock(symbol="TATAMOTORS.NS", name="Tata Motors Ltd.", exchange="NSE", sector="Automotive", current_price=975.30, is_active=True),
+                Stock(symbol="GOLD", name="Gold ETF / Commodity", exchange="MCX", sector="Commodities", current_price=7540.0, is_active=True),
             ]
             db.add_all(default_stocks)
             db.commit()

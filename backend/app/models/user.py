@@ -38,6 +38,8 @@ class User(Base):
     portfolios = relationship("Portfolio", back_populates="user", cascade="all, delete-orphan")
     recommendations = relationship("Recommendation", back_populates="user", cascade="all, delete-orphan")
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
+    tax_transactions = relationship("TaxTransaction", back_populates="user", cascade="all, delete-orphan")
+    tax_calculations = relationship("TaxCalculationRecord", back_populates="user", cascade="all, delete-orphan")
 
 
 class InvestorProfile(Base):
