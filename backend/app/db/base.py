@@ -107,6 +107,8 @@ from app.models import (  # noqa: E402, F401
     FeatureFlag,
     TaxTransaction,
     TaxCalculationRecord,
+    PlannerProfile,
+    InvestmentPlanRecord,
 )
 
 __all__ = ["Base", "GUID", "TimestampMixin", "UUIDMixin"]

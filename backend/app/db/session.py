@@ -109,6 +109,7 @@ def seed_default_data(db: Session) -> None:
         from app.models.user import User, InvestorProfile
         from app.models.portfolio import Portfolio, Holding
         from app.models.tax import TaxTransaction, TaxCalculationRecord
+        from app.models.investment_planner import PlannerProfile, InvestmentPlanRecord
         from app.core.security import get_password_hash
 
         # Seed stocks
