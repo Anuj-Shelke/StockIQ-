@@ -53,11 +53,11 @@ class InvestmentPlannerService:
         # 2. Constraint-Based Multi-Asset Allocation (summing to 100%)
         allocations = AssetAllocationEngine.compute_allocation(profile_input, suitability)
 
-        # Amounts allocated to specific asset classes
-        equity_amount = sum(a.allocated_amount for a in allocations if a.asset_class == "Stocks")
-        fund_amount = sum(a.allocated_amount for a in allocations if a.asset_class == "Diversified Index Funds")
-        fd_amount = sum(a.allocated_amount for a in allocations if a.asset_class == "Fixed Deposits")
-        gold_amount = sum(a.allocated_amount for a in allocations if a.asset_class == "Gold")
+        # Amounts allocated to specific asset classes (robust matching)
+        equity_amount = sum(a.allocated_amount for a in allocations if "stock" in a.asset_class.lower() or "equity" in a.asset_class.lower())
+        fund_amount = sum(a.allocated_amount for a in allocations if "fund" in a.asset_class.lower() or "index" in a.asset_class.lower())
+        fd_amount = sum(a.allocated_amount for a in allocations if "deposit" in a.asset_class.lower() or "fd" in a.asset_class.lower())
+        gold_amount = sum(a.allocated_amount for a in allocations if "gold" in a.asset_class.lower())
 
         # 3. Stock Selection with SHAP Explainability
         stocks = PlannerStockEngine.select_stock_allocations(

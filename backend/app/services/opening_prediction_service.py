@@ -327,17 +327,13 @@ class OpeningPredictionService:
 
     @classmethod
     def _get_live_price(cls, symbol: str, fallback_price: float) -> float:
-        """Fetch cached real-time market price if available; fallback instantaneously with zero network lag."""
+        """Fetch live real-time market price via MarketDataService with fallback."""
         try:
-            from app.integrations.market_data.market_service import _quotes_cache, FALLBACK_QUOTES
+            from app.integrations.market_data.market_service import MarketDataService
             clean_sym = symbol.strip().upper()
-            cache_key = f"quote_{clean_sym}"
-            if cache_key in _quotes_cache:
-                q = _quotes_cache[cache_key]
-                if q and q.current_price > 0:
-                    return round(q.current_price, 2)
-            if clean_sym in FALLBACK_QUOTES:
-                return round(FALLBACK_QUOTES[clean_sym]["current_price"], 2)
+            price = MarketDataService.get_realtime_price(clean_sym, fallback_default=fallback_price)
+            if price and price > 0:
+                return round(price, 2)
         except Exception:
             pass
         return fallback_price
@@ -402,17 +398,54 @@ class OpeningPredictionService:
 
         # Calculate live GIFT Nifty implied open dynamically from NIFTY 50
         nifty_quote = next((idx for idx in indices if idx.symbol == "^NSEI"), None)
-        gift_open = nifty_quote.predicted_open_price if nifty_quote else 22448.0
-        gift_gap = nifty_quote.expected_gap_points if nifty_quote else 84.65
+        gift_open = nifty_quote.predicted_open_price if nifty_quote else 22670.0
+        gift_gap = nifty_quote.expected_gap_points if nifty_quote else 85.0
+        gift_pct = nifty_quote.expected_gap_pct if nifty_quote else 0.38
+
+        # Real-time global macro indicators
+        from app.integrations.market_data.market_service import MarketDataService
+        sp500_chg = 0.65
+        nasdaq_chg = 0.82
+        crude_val = 78.40
+        crude_chg = -1.10
+
+        try:
+            sp_q = MarketDataService.get_quote("^GSPC")
+            if sp_q and sp_q.change_percent != 0:
+                sp500_chg = round(sp_q.change_percent, 2)
+        except Exception:
+            pass
+
+        try:
+            nq_q = MarketDataService.get_quote("^IXIC")
+            if nq_q and nq_q.change_percent != 0:
+                nasdaq_chg = round(nq_q.change_percent, 2)
+        except Exception:
+            pass
+
+        try:
+            cl_q = MarketDataService.get_quote("CL=F")
+            if cl_q and cl_q.current_price > 0:
+                crude_val = round(cl_q.current_price, 2)
+                crude_chg = round(cl_q.change_percent, 2)
+        except Exception:
+            pass
 
         sentiment = "BULLISH_GAP" if gift_gap > 10 else ("BEARISH_GAP" if gift_gap < -10 else "NEUTRAL")
+        us_summary = f"S&P 500 {sp500_chg:+.2f}%, Nasdaq Composite {nasdaq_chg:+.2f}% global technology sentiment."
 
         return NextDayOpeningOverviewResponse(
             market_sentiment=sentiment,
             gift_nifty_implied_open=gift_open,
             gift_nifty_gap_points=gift_gap,
+            gift_nifty_percentage=gift_pct,
             usd_inr_drift_pct=0.04,
-            us_markets_summary="S&P 500 closed +0.65%, Nasdaq Composite +0.82% driven by technology earnings strength.",
+            us_markets_summary=us_summary,
+            sp500_change_pct=sp500_chg,
+            nasdaq_change_pct=nasdaq_chg,
+            brent_crude_price=crude_val,
+            brent_crude_change_pct=crude_chg,
+            target_date_label=session_label,
             indices=indices,
             top_stocks=stocks,
             disclaimer="Next-day opening prices are derived from Quantile XGBoost ML algorithms factoring GIFT Nifty, global macro indicators, and overnight order book imbalances. Informational only.",

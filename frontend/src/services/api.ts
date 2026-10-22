@@ -430,8 +430,14 @@ export interface NextDayOpeningOverviewResponse {
   market_sentiment: string
   gift_nifty_implied_open: number
   gift_nifty_gap_points: number
+  gift_nifty_percentage?: number
   usd_inr_drift_pct: number
   us_markets_summary: string
+  sp500_change_pct?: number
+  nasdaq_change_pct?: number
+  brent_crude_price?: number
+  brent_crude_change_pct?: number
+  target_date_label?: string
   indices: NextDayOpeningQuote[]
   top_stocks: NextDayOpeningQuote[]
   disclaimer: string

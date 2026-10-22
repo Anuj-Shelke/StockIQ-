@@ -388,8 +388,11 @@ export function NextDayOpenPredictor() {
 
   // Live forecast target session formatted string
   const targetSessionLabel = useMemo(() => {
+    if (apiOverview?.target_date_label) {
+      return apiOverview.target_date_label
+    }
     const rawDate = apiOverview?.indices?.[0]?.prediction_for_date
-    if (!rawDate) return 'Next Session (09:15 IST)'
+    if (!rawDate) return 'Next Session · 09:15 AM IST'
     try {
       const [year, month, day] = rawDate.split('-').map(Number)
       const d = new Date(year, month - 1, day)
@@ -404,7 +407,7 @@ export function NextDayOpenPredictor() {
   // Benchmark baseline for GIFT Nifty proportional adjustments
   const niftyRefPrice = useMemo(() => {
     const nifty = baseQuotes.find((q) => q.symbol === '^NSEI')
-    return nifty?.lastClosePrice || 22363.35
+    return nifty?.lastClosePrice || 22670.0
   }, [baseQuotes])
 
   // Instant zero-lag recalculation based on filter and slider
@@ -430,12 +433,17 @@ export function NextDayOpenPredictor() {
       })
   }, [baseQuotes, filterType, giftNiftyShift, niftyRefPrice])
 
-  // Live macro ribbon indicators
-  const giftNiftyOpen = apiOverview?.gift_nifty_implied_open ?? 22448.0
-  const giftNiftyGap = apiOverview?.gift_nifty_gap_points ?? 84.65
+  // Live macro ribbon indicators from real-time API
+  const giftNiftyOpen = apiOverview?.gift_nifty_implied_open ?? 22670.0
+  const giftNiftyGap = apiOverview?.gift_nifty_gap_points ?? 85.0
   const isGiftPositive = giftNiftyGap >= 0
   const marketBias = apiOverview?.market_sentiment ?? 'BULLISH_GAP'
   const isBullishBias = marketBias === 'BULLISH_GAP'
+  const sp500Change = apiOverview?.sp500_change_pct ?? 0.65
+  const nasdaqChange = apiOverview?.nasdaq_change_pct ?? 0.82
+  const crudePrice = apiOverview?.brent_crude_price ?? 78.40
+  const crudeChange = apiOverview?.brent_crude_change_pct ?? -1.10
+  const historicalOdds = Math.round((baseQuotes[0]?.pGapUp || 0.74) * 100)
 
   return (
     <div className="space-y-6">
@@ -481,34 +489,41 @@ export function NextDayOpenPredictor() {
             {isGiftPositive ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
           </div>
           <p className="mt-1 text-[11px] text-text-muted font-mono">
-            {isGiftPositive ? `+${giftNiftyGap}` : giftNiftyGap} pts Premium
+            {isGiftPositive ? `+${giftNiftyGap.toFixed(1)}` : giftNiftyGap.toFixed(1)} pts Premium
           </p>
         </div>
 
         <div className="card-surface p-4">
           <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Wall Street Overnight</span>
           <div className="mt-1 text-xl font-bold font-mono text-text-primary flex items-center gap-1.5">
-            <span>S&P +0.65%</span>
+            <span className={sp500Change >= 0 ? 'text-gain' : 'text-loss'}>
+              S&amp;P {sp500Change >= 0 ? `+${sp500Change}%` : `${sp500Change}%`}
+            </span>
+            {sp500Change >= 0 ? <ArrowUpRight className="h-4 w-4 text-gain" /> : <ArrowDownRight className="h-4 w-4 text-loss" />}
           </div>
-          <p className="mt-1 text-[11px] text-text-muted font-mono">Nasdaq +0.82% Tech Rally</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
+            Nasdaq {nasdaqChange >= 0 ? `+${nasdaqChange}%` : `${nasdaqChange}%`} Global Tech
+          </p>
         </div>
 
         <div className="card-surface p-4">
           <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Brent Crude Oil</span>
           <div className="mt-1 text-xl font-bold font-mono text-blue flex items-center gap-1.5">
-            <span>$78.40 / bbl</span>
-            <ArrowDownRight className="h-4 w-4" />
+            <span>${crudePrice.toFixed(2)} / bbl</span>
+            {crudeChange >= 0 ? <ArrowUpRight className="h-4 w-4 text-loss" /> : <ArrowDownRight className="h-4 w-4 text-gain" />}
           </div>
-          <p className="mt-1 text-[11px] text-text-muted font-mono">-1.1% Overnight Easing</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">
+            {crudeChange >= 0 ? `+${crudeChange}%` : `${crudeChange}%`} Overnight Movement
+          </p>
         </div>
 
         <div className="card-surface p-4">
           <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Market Opening Bias</span>
           <div className={`mt-1 text-xl font-bold flex items-center gap-1.5 font-display ${isBullishBias ? 'text-gain' : 'text-loss'}`}>
-            <span>{isBullishBias ? 'Bullish Gap Up' : 'Bearish Gap Down'}</span>
+            <span>{isBullishBias ? 'Bullish Gap Up' : (marketBias === 'BEARISH_GAP' ? 'Bearish Gap Down' : 'Neutral Open')}</span>
             {isBullishBias ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
           </div>
-          <p className="mt-1 text-[11px] text-text-muted font-mono">74% Historical Gap-Up Odds</p>
+          <p className="mt-1 text-[11px] text-text-muted font-mono">{historicalOdds}% Historical Gap-Up Odds</p>
         </div>
       </div>
 

@@ -135,8 +135,8 @@ class MarketDataService:
     def get_quote(cls, symbol: str = "^NSEI") -> IndexQuote:
         """Retrieve real-time quote for an index or stock with caching."""
         clean_symbol = symbol.strip().upper()
-        # Auto-append .NS for plain tickers if not indices and not containing .
-        if not clean_symbol.startswith("^") and "." not in clean_symbol and len(clean_symbol) <= 12 and clean_symbol not in ("GOLD", "SILVER"):
+        # Auto-append .NS for plain tickers if not indices, commodities or currencies
+        if not clean_symbol.startswith("^") and "." not in clean_symbol and "=" not in clean_symbol and len(clean_symbol) <= 12 and clean_symbol not in ("GOLD", "SILVER"):
             clean_symbol = f"{clean_symbol}.NS"
 
         cache_key = f"quote_{clean_symbol}"
