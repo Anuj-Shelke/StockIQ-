@@ -11,161 +11,32 @@ from app.schemas.recommendation import (
     NonEquityAllocation,
 )
 
-# Stock Catalog with ML Forecasting Predictions and SHAP Feature Insights
-STOCK_CATALOG_UNIVERSE: List[Dict[str, Any]] = [
-    {
-        "symbol": "TCS.NS",
-        "company_name": "Tata Consultancy Services Ltd.",
-        "sector": "Information Technology",
-        "market_cap_category": "Mega Cap",
-        "current_price": 4120.25,
-        "ml_predicted_target": 4345.50,
-        "projected_return_pct": 5.47,
-        "beta": 0.82,
-        "volatility_risk": "Low",
-        "ml_confidence": 0.88,
-        "key_shap_drivers": [
-            "Q3 margin expansion (+140 bps)",
-            "USD/INR forex tailwinds",
-            "High return on equity (48%) and debt-free balance sheet",
-        ],
-        "defensive_score": 92,
-        "growth_score": 68,
-    },
-    {
-        "symbol": "HDFCBANK.NS",
-        "company_name": "HDFC Bank Ltd.",
-        "sector": "Banking & Financials",
-        "market_cap_category": "Mega Cap",
-        "current_price": 1650.80,
-        "ml_predicted_target": 1820.00,
-        "projected_return_pct": 10.25,
-        "beta": 0.88,
-        "volatility_risk": "Low",
-        "ml_confidence": 0.91,
-        "key_shap_drivers": [
-            "Post-merger deposit growth normalization",
-            "Lowest non-performing asset (NPA) ratio in peer group",
-            "Institutional foreign portfolio buying rebound",
-        ],
-        "defensive_score": 88,
-        "growth_score": 78,
-    },
-    {
-        "symbol": "RELIANCE.NS",
-        "company_name": "Reliance Industries Ltd.",
-        "sector": "Energy & Conglomerate",
-        "market_cap_category": "Mega Cap",
-        "current_price": 2980.50,
-        "ml_predicted_target": 3210.00,
-        "projected_return_pct": 7.70,
-        "beta": 0.95,
-        "volatility_risk": "Moderate",
-        "ml_confidence": 0.87,
-        "key_shap_drivers": [
-            "Telecom ARPU expansion in Jio 5G subscriber base",
-            "Retail segment EBIDTA margin growth",
-            "Downstream refining margin stability",
-        ],
-        "defensive_score": 80,
-        "growth_score": 82,
-    },
-    {
-        "symbol": "INFY.NS",
-        "company_name": "Infosys Ltd.",
-        "sector": "Information Technology",
-        "market_cap_category": "Large Cap",
-        "current_price": 1890.10,
-        "ml_predicted_target": 2010.00,
-        "projected_return_pct": 6.34,
-        "beta": 0.92,
-        "volatility_risk": "Moderate",
-        "ml_confidence": 0.85,
-        "key_shap_drivers": [
-            "Generative AI enterprise deal wins",
-            "Strong North America BFSI contract renewals",
-            "Healthy cash flow conversion ratio (>85%)",
-        ],
-        "defensive_score": 82,
-        "growth_score": 75,
-    },
-    {
-        "symbol": "ICICIBANK.NS",
-        "company_name": "ICICI Bank Ltd.",
-        "sector": "Banking & Financials",
-        "market_cap_category": "Large Cap",
-        "current_price": 1210.45,
-        "ml_predicted_target": 1335.00,
-        "projected_return_pct": 10.29,
-        "beta": 1.05,
-        "volatility_risk": "Moderate",
-        "ml_confidence": 0.89,
-        "key_shap_drivers": [
-            "Industry-leading Return on Assets (RoA > 2.3%)",
-            "Digital retail loan origination velocity",
-            "Consistent double-digit loan book expansion",
-        ],
-        "defensive_score": 75,
-        "growth_score": 88,
-    },
-    {
-        "symbol": "BHARTIARTL.NS",
-        "company_name": "Bharti Airtel Ltd.",
-        "sector": "Telecommunications",
-        "market_cap_category": "Large Cap",
-        "current_price": 1480.00,
-        "ml_predicted_target": 1585.00,
-        "projected_return_pct": 7.09,
-        "beta": 0.78,
-        "volatility_risk": "Low",
-        "ml_confidence": 0.86,
-        "key_shap_drivers": [
-            "Tariff hikes compounding into strong ARPU accretion",
-            "African business currency stabilization",
-            "Duopoly pricing power in domestic wireless market",
-        ],
-        "defensive_score": 86,
-        "growth_score": 79,
-    },
-    {
-        "symbol": "TATAMOTORS.NS",
-        "company_name": "Tata Motors Ltd.",
-        "sector": "Automotive & EV",
-        "market_cap_category": "Large Cap",
-        "current_price": 975.30,
-        "ml_predicted_target": 1100.00,
-        "projected_return_pct": 12.79,
-        "beta": 1.28,
-        "volatility_risk": "High",
-        "ml_confidence": 0.82,
-        "key_shap_drivers": [
-            "Domestic EV passenger vehicle leadership (>70% share)",
-            "JLR order book backlog and luxury margin expansion",
-            "Net debt reduction towards zero-debt target",
-        ],
-        "defensive_score": 58,
-        "growth_score": 94,
-    },
-    {
-        "symbol": "SBIN.NS",
-        "company_name": "State Bank of India",
-        "sector": "Banking (PSU)",
-        "market_cap_category": "Large Cap",
-        "current_price": 825.60,
-        "ml_predicted_target": 915.00,
-        "projected_return_pct": 10.83,
-        "beta": 1.15,
-        "volatility_risk": "Moderate",
-        "ml_confidence": 0.84,
-        "key_shap_drivers": [
-            "Net interest margin resilience and corporate capex pickup",
-            "Gross NPA at 10-year historic lows (<2.3%)",
-            "Attractive P/B multiple vs private sector peers",
-        ],
-        "defensive_score": 72,
-        "growth_score": 85,
-    },
-]
+from app.db.stock_universe_data import COMPREHENSIVE_STOCK_UNIVERSE
+
+# Normalized Stock Catalog with ML Forecasting Predictions and SHAP Feature Insights
+STOCK_CATALOG_UNIVERSE: List[Dict[str, Any]] = []
+for s in COMPREHENSIVE_STOCK_UNIVERSE:
+    if s["symbol"] in ("GOLD", "SILVER"):
+        continue
+    vol = s.get("volatility", 18.0)
+    vol_risk = "Low" if vol <= 17.0 else "Moderate" if vol <= 24.0 else "High"
+    STOCK_CATALOG_UNIVERSE.append({
+        "symbol": s["symbol"],
+        "company_name": s.get("name") or s.get("company_name", s["symbol"]),
+        "sector": s.get("sector", "Equities"),
+        "exchange": s.get("exchange", "NSE"),
+        "market_cap_category": s.get("market_cap_category", "Large Cap"),
+        "current_price": float(s.get("current_price", 1000.0)),
+        "ml_predicted_target": float(s.get("ml_predicted_target", round(s.get("current_price", 1000.0) * 1.12, 2))),
+        "projected_return_pct": float(s.get("projected_return_pct", 12.0)),
+        "beta": float(s.get("beta", 1.0)),
+        "volatility_risk": vol_risk,
+        "ml_confidence": float(s.get("ml_confidence", 0.88)),
+        "key_shap_drivers": s.get("key_shap_drivers", ["Strong balance sheet", "Sector tailwinds", "Institutional inflows"]),
+        "defensive_score": int(s.get("defensive_score", 75)),
+        "growth_score": int(s.get("growth_score", 80)),
+    })
+
 
 
 class RecommendationService:
@@ -283,20 +154,39 @@ class RecommendationService:
                 "personalized_rationale": rationale,
             })
 
-        # Sort by suitability descending and take top 5
+        # Sort by suitability descending and take top 5 with sector diversification
         scored_stocks.sort(key=lambda s: s["suitability_score"], reverse=True)
-        top_picks = scored_stocks[:5]
+        seen_sector_counts: Dict[str, int] = {}
+        top_picks = []
+        for s in scored_stocks:
+            sec = s.get("sector", "Other")
+            if seen_sector_counts.get(sec, 0) < 2:
+                top_picks.append(s)
+                seen_sector_counts[sec] = seen_sector_counts.get(sec, 0) + 1
+            if len(top_picks) >= 5:
+                break
+        if len(top_picks) < 5:
+            top_picks = scored_stocks[:5]
 
-        # 5. Position Sizing & Allocation Weights across Equity Capital
+        # 5. Position Sizing & Allocation Weights across Equity Capital with Real-Time Prices
+        from app.integrations.market_data.market_service import MarketDataService
+
         total_equity_capital = capital * (equity_pct / 100.0)
         # Weights normalized across top 5
         total_fit = sum(s["suitability_score"] for s in top_picks)
 
         recommended_items: List[RecommendedStockItem] = []
         for stock in top_picks:
+            live_price = MarketDataService.get_realtime_price(
+                stock["symbol"],
+                fallback_default=stock["current_price"],
+            )
+            stock["current_price"] = live_price
+            stock["ml_predicted_target"] = round(live_price * (1.0 + (stock["projected_return_pct"] / 100.0)), 2)
+
             stock_weight = round((stock["suitability_score"] / total_fit) * equity_pct, 1)
             allocated_amount = round(capital * (stock_weight / 100.0), 2)
-            shares = int(allocated_amount // stock["current_price"])
+            shares = int(allocated_amount // max(1.0, live_price))
 
             recommended_items.append(
                 RecommendedStockItem(
@@ -304,7 +194,7 @@ class RecommendationService:
                     company_name=stock["company_name"],
                     sector=stock["sector"],
                     market_cap_category=stock["market_cap_category"],
-                    current_price=stock["current_price"],
+                    current_price=live_price,
                     ml_predicted_target=stock["ml_predicted_target"],
                     projected_return_pct=stock["projected_return_pct"],
                     suitability_score=stock["suitability_score"],

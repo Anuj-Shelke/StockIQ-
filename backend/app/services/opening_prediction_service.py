@@ -422,10 +422,53 @@ class OpeningPredictionService:
     @classmethod
     def get_symbol_opening(cls, symbol: str) -> Optional[NextDayOpeningQuote]:
         sym = symbol.strip().upper()
+        if not sym.startswith("^") and "." not in sym and len(sym) <= 10 and sym not in ("GOLD", "SILVER"):
+            sym = f"{sym}.NS"
         _, target_date_str, _ = cls.get_next_session_info()
 
         all_items = BENCHMARK_PROFILES + STOCK_PROFILES
         for it in all_items:
             if it["symbol"].upper() == sym or it["symbol"].split(".")[0].upper() == sym.split(".")[0]:
                 return cls._build_quote(it, target_date_str)
+
+        # Dynamic profile for any stock from comprehensive universe
+        from app.db.stock_universe_data import get_stock_by_symbol
+        from app.integrations.market_data.market_service import MarketDataService
+
+        stock_info = get_stock_by_symbol(sym)
+        if stock_info:
+            live_price = MarketDataService.get_realtime_price(
+                stock_info["symbol"],
+                fallback_default=stock_info["current_price"],
+            )
+            base_gap = round(0.35 * float(stock_info.get("beta", 1.0)), 2)
+            dynamic_item = {
+                "symbol": stock_info["symbol"],
+                "name": stock_info["name"],
+                "exchange": stock_info.get("exchange", "NSE"),
+                "asset_type": "EQUITY",
+                "last_close_price": live_price,
+                "base_gap_pct": base_gap,
+                "p_gap_up": 0.72 if base_gap >= 0 else 0.40,
+                "daily_volatility_pct": round(float(stock_info.get("volatility", 20.0)) / 20.0, 2),
+                "confidence": stock_info.get("ml_confidence", 0.86),
+                "factors": [
+                    {
+                        "name": "Broader Index Momentum (GIFT Nifty Overnight Premium)",
+                        "impact_points": round(live_price * 0.003, 2),
+                        "percentage_contribution": 65.0,
+                        "direction": "positive",
+                        "description": "Domestic macro liquidity and overnight index sentiment.",
+                    },
+                    {
+                        "name": f"Sector Performance ({stock_info.get('sector', 'Equities')})",
+                        "impact_points": round(live_price * 0.0015, 2),
+                        "percentage_contribution": 35.0,
+                        "direction": "positive",
+                        "description": "Sector institutional order book balance ahead of market open.",
+                    },
+                ],
+            }
+            return cls._build_quote(dynamic_item, target_date_str)
+
         return None

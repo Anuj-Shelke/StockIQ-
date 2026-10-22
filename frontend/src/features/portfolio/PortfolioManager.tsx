@@ -29,7 +29,7 @@ export function PortfolioManager() {
     try {
       const [portfolios, stocks] = await Promise.all([
         apiFetch<ApiPortfolio[]>('/portfolios'),
-        apiFetch<{ items: ApiStock[] }>('/stocks?limit=50'),
+        apiFetch<{ items: ApiStock[] }>('/stocks?limit=300'),
       ])
       const current = portfolios[0] ?? null
       setPortfolio(current)

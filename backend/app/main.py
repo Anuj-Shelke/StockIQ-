@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import time
 import uuid
 from fastapi import FastAPI, Request, Response
@@ -8,8 +9,15 @@ from app.api.v1 import api_router
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import logger, set_request_id
-from app.db.session import check_db_connection
+from app.db.session import check_db_connection, maybe_seed_default_data
 from app.schemas.common import HealthResponse, ReadinessResponse
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context for startup and shutdown tasks."""
+    maybe_seed_default_data()
+    yield
 
 
 class RequestLoggingAndIDMiddleware(BaseHTTPMiddleware):
@@ -48,6 +56,7 @@ class RequestLoggingAndIDMiddleware(BaseHTTPMiddleware):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
+    lifespan=lifespan,
     description=(
         "### StockIQ: AI-Based Investment Research & Risk Analysis Platform\n\n"
         "StockIQ provides modular REST APIs for:\n"

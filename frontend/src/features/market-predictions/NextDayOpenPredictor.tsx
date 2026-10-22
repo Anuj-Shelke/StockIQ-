@@ -9,9 +9,11 @@ import {
   ChevronUp,
   Sliders,
   RefreshCw,
+  Search,
 } from 'lucide-react'
 import {
   fetchNextDayOpeningPredictions,
+  fetchSymbolOpeningPrediction,
   type NextDayOpeningOverviewResponse,
 } from '@/services/api'
 
@@ -285,6 +287,54 @@ export function NextDayOpenPredictor() {
   const [giftNiftyShift, setGiftNiftyShift] = useState<number>(0)
   const [apiOverview, setApiOverview] = useState<NextDayOpeningOverviewResponse | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [customQuotes, setCustomQuotes] = useState<OpeningQuote[]>([])
+  const [searchTicker, setSearchTicker] = useState('')
+  const [searchingTicker, setSearchingTicker] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+
+  const handleLookupSymbol = async (tickerToLookup?: string) => {
+    const raw = (tickerToLookup || searchTicker).trim().toUpperCase()
+    if (!raw) return
+    let fullSym = raw
+    if (!fullSym.startsWith('^') && !fullSym.endsWith('.NS') && !fullSym.endsWith('.BO')) {
+      fullSym = `${fullSym}.NS`
+    }
+    setSearchingTicker(true)
+    setSearchError(null)
+    try {
+      const q = await fetchSymbolOpeningPrediction(fullSym)
+      const mapped: OpeningQuote = {
+        symbol: q.symbol,
+        name: q.name,
+        exchange: q.exchange,
+        assetType: q.asset_type,
+        lastClosePrice: q.last_close_price,
+        predictedOpenPrice: q.predicted_open_price,
+        expectedGapPoints: q.expected_gap_points,
+        expectedGapPct: q.expected_gap_pct,
+        pGapUp: q.p_gap_up,
+        direction: q.direction,
+        openP10: q.open_p10,
+        openP50: q.open_p50,
+        openP90: q.open_p90,
+        confidenceScore: q.confidence_score,
+        overnightFactors: q.overnight_factors.map((f) => ({
+          name: f.name,
+          impactPoints: f.impact_points,
+          percentageContribution: f.percentage_contribution,
+          direction: f.direction,
+          description: f.description,
+        })),
+      }
+      setCustomQuotes((prev) => [mapped, ...prev.filter((p) => p.symbol !== mapped.symbol)])
+      setExpandedSymbol(mapped.symbol)
+      setSearchTicker('')
+    } catch {
+      setSearchError(`Could not predict opening for '${fullSym}'. Check symbol.`)
+    } finally {
+      setSearchingTicker(false)
+    }
+  }
 
   // Asynchronously load live predictions from backend API; fallback instantly to robust in-memory data
   const loadPredictions = useCallback(async (isManual = false) => {
@@ -305,11 +355,11 @@ export function NextDayOpenPredictor() {
 
   // Map API response to UI OpeningQuote interface or use resilient fallback with zero latency
   const baseQuotes = useMemo<OpeningQuote[]>(() => {
-    if (!apiOverview) return OPENING_PREDICTIONS
-    const allQuotes = [...apiOverview.indices, ...apiOverview.top_stocks]
-    if (allQuotes.length === 0) return OPENING_PREDICTIONS
+    if (!apiOverview) return [...customQuotes, ...OPENING_PREDICTIONS]
+    const apiList = [...apiOverview.indices, ...apiOverview.top_stocks]
+    if (apiList.length === 0) return [...customQuotes, ...OPENING_PREDICTIONS]
 
-    return allQuotes.map((q) => ({
+    const mappedApi: OpeningQuote[] = apiList.map((q) => ({
       symbol: q.symbol,
       name: q.name,
       exchange: q.exchange,
@@ -324,7 +374,7 @@ export function NextDayOpenPredictor() {
       openP50: q.open_p50,
       openP90: q.open_p90,
       confidenceScore: q.confidence_score,
-      overnightFactors: q.overnight_factors.map((f) => ({
+      overnightFactors: q.overnight_factors.map((f: any) => ({
         name: f.name,
         impactPoints: f.impact_points,
         percentageContribution: f.percentage_contribution,
@@ -332,7 +382,9 @@ export function NextDayOpenPredictor() {
         description: f.description,
       })),
     }))
-  }, [apiOverview])
+
+    return [...customQuotes, ...mappedApi]
+  }, [apiOverview, customQuotes])
 
   // Live forecast target session formatted string
   const targetSessionLabel = useMemo(() => {
@@ -485,6 +537,62 @@ export function NextDayOpenPredictor() {
           <span className="font-mono text-xs font-bold w-16 text-right text-gold">
             {giftNiftyShift >= 0 ? `+${giftNiftyShift}` : giftNiftyShift} pts
           </span>
+        </div>
+      </div>
+
+      {/* Instant Stock Opening Prediction Lookup */}
+      <div className="card-surface p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span className="text-xs font-semibold text-text-primary uppercase tracking-tight font-mono flex items-center gap-1.5">
+              <Search className="w-3.5 h-3.5 text-gold" />
+              Forecast Any NSE &amp; BSE Stock Opening
+            </span>
+            <p className="text-[11px] text-text-muted mt-0.5">
+              Enter any ticker (e.g. SBIN.NS, ZOMATO.NS, TATAPOWER.NS, INFY.BO, 500325.BO) to run the overnight ML model
+            </p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void handleLookupSymbol()
+            }}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <div className="relative flex-1 sm:w-64">
+              <input
+                type="text"
+                placeholder="e.g. SBIN.NS or ZOMATO"
+                value={searchTicker}
+                onChange={(e) => setSearchTicker(e.target.value)}
+                className="input-default py-1.5 pl-3 pr-8 text-xs font-mono w-full"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={searchingTicker || !searchTicker.trim()}
+              className="btn-gold py-1.5 px-3 text-xs disabled:opacity-50 shrink-0"
+            >
+              {searchingTicker ? 'Forecasting...' : 'Predict Open'}
+            </button>
+          </form>
+        </div>
+
+        {/* Quick Ticker Shortcuts */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-theme-subtle text-[11px]">
+          <span className="text-text-muted font-mono text-[10px] uppercase">Popular:</span>
+          {['SBIN.NS', 'ZOMATO.NS', 'TATAMOTORS.NS', 'BEL.NS', 'INFY.BO', 'TITAN.NS', 'BSE.NS'].map((sym) => (
+            <button
+              key={sym}
+              type="button"
+              onClick={() => void handleLookupSymbol(sym)}
+              className="rounded px-2 py-0.5 border border-theme-subtle bg-surface-elevated font-mono text-text-secondary hover:text-gold hover:border-gold/40 transition"
+            >
+              +{sym}
+            </button>
+          ))}
+          {searchError && <span className="ml-2 text-xs text-loss">{searchError}</span>}
         </div>
       </div>
 

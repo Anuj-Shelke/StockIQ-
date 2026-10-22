@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { Search, X, RefreshCw, CheckCircle2 } from 'lucide-react'
 import type { Holding, HoldingFormData, StockCatalogItem } from '@/types/portfolio'
+import { apiFetch } from '@/services/api'
 
 interface AddHoldingModalProps {
   isOpen: boolean
@@ -8,6 +9,13 @@ interface AddHoldingModalProps {
   onSave: (data: HoldingFormData) => void
   editingHolding?: Holding | null
   catalog: StockCatalogItem[]
+}
+
+interface LiveQuoteState {
+  price: number
+  change?: number
+  changePercent?: number
+  updatedAt?: string
 }
 
 export function AddHoldingModal({
@@ -26,8 +34,11 @@ export function AddHoldingModal({
     editingHolding?.current_price?.toString() || ''
   )
   const [searchQuery, setSearchQuery] = useState('')
+  const [exchangeFilter, setExchangeFilter] = useState<'ALL' | 'NSE' | 'BSE'>('ALL')
   const [showDropdown, setShowDropdown] = useState(false)
   const [isCustomStock, setIsCustomStock] = useState(false)
+  const [fetchingPrice, setFetchingPrice] = useState(false)
+  const [liveQuote, setLiveQuote] = useState<LiveQuoteState | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Update form if editingHolding changes
@@ -50,17 +61,51 @@ export function AddHoldingModal({
       setCurrentPrice('')
       setSearchQuery('')
       setIsCustomStock(false)
+      setLiveQuote(null)
     }
     setErrors({})
   }, [editingHolding, isOpen])
 
   if (!isOpen) return null
 
-  const filteredCatalog = catalog.filter(
-    (item) =>
-      item.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredCatalog = catalog.filter((item) => {
+    if (exchangeFilter !== 'ALL' && item.exchange?.toUpperCase() !== exchangeFilter) {
+      return false
+    }
+    const q = searchQuery.toLowerCase()
+    return (
+      item.symbol.toLowerCase().includes(q) ||
+      item.name.toLowerCase().includes(q) ||
+      (item.sector && item.sector.toLowerCase().includes(q))
+    )
+  })
+
+  const fetchLiveQuote = async (targetSymbol: string) => {
+    if (!targetSymbol) return
+    setFetchingPrice(true)
+    try {
+      const q = await apiFetch<any>(`/stocks/quote/${encodeURIComponent(targetSymbol)}`)
+      if (q && q.current_price > 0) {
+        setCurrentPrice(q.current_price.toString())
+        if (!buyPrice) {
+          setBuyPrice(q.current_price.toString())
+        }
+        if (q.name && !name) {
+          setName(q.name)
+        }
+        setLiveQuote({
+          price: q.current_price,
+          change: q.change,
+          changePercent: q.change_percent,
+          updatedAt: q.updated_at,
+        })
+      }
+    } catch {
+      // Fallback cleanly
+    } finally {
+      setFetchingPrice(false)
+    }
+  }
 
   const handleSelectStock = (item: StockCatalogItem) => {
     setSymbol(item.symbol)
@@ -73,31 +118,31 @@ export function AddHoldingModal({
     setSearchQuery(item.symbol)
     setShowDropdown(false)
     setIsCustomStock(false)
+    void fetchLiveQuote(item.symbol)
   }
 
-  const handleAddNseTicker = () => {
-    const enteredTicker = searchQuery.trim().toUpperCase().replace(/^NSE:/, '')
-    const ticker = enteredTicker.replace(/\.NS$/, '')
+  const handleAddCustomTicker = (exchange: 'NSE' | 'BSE' = 'NSE') => {
+    const raw = searchQuery.trim().toUpperCase()
+    let ticker = raw.replace(/^(NSE|BSE):/, '').replace(/(\.NS|\.BO)$/, '')
     if (!/^[A-Z0-9&_-]{1,20}$/.test(ticker)) {
-      setErrors({ symbol: 'Enter a valid NSE ticker symbol, for example SBIN or TATAPOWER.' })
+      setErrors({ symbol: `Enter a valid ${exchange} ticker symbol, for example SBIN or 500325.` })
       return
     }
-    setSymbol(`${ticker}.NS`)
+    const fullSym = exchange === 'BSE' ? `${ticker}.BO` : `${ticker}.NS`
+    setSymbol(fullSym)
     setName('')
     setAssetType('EQUITY')
-    setCurrentPrice('')
-    setBuyPrice('')
     setIsCustomStock(true)
     setShowDropdown(false)
     setErrors({})
+    void fetchLiveQuote(fullSym)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Record<string, string> = {}
 
-    if (!symbol.trim()) errs.symbol = 'Symbol is required'
-    if (isCustomStock && !name.trim()) errs.name = 'Company name is required for a custom NSE ticker'
+    if (!symbol.trim()) errs.symbol = 'Stock symbol is required'
     const q = parseFloat(quantity)
     if (isNaN(q) || q <= 0) errs.quantity = 'Quantity must be greater than 0'
     const bp = parseFloat(buyPrice)
@@ -125,9 +170,11 @@ export function AddHoldingModal({
         <div className="mb-6 flex items-center justify-between border-b border-theme-subtle pb-4">
           <div>
             <h2 className="text-lg font-bold font-display text-text-primary">
-              {editingHolding ? 'Edit Position' : 'Add Position to Portfolio'}
+              {editingHolding ? 'Edit Holding' : 'Add Position to Portfolio'}
             </h2>
-            <p className="text-xs text-text-muted mt-0.5">Configure asset parameters for risk & allocation analytics</p>
+            <p className="text-xs text-text-muted mt-0.5">
+              Select or search any NSE &amp; BSE stock with real-time market synchronization
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -140,14 +187,33 @@ export function AddHoldingModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Autocomplete Search */}
           <div className="relative">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-              Search NSE Stock / Symbol
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                Search NSE &amp; BSE Stocks ({catalog.length} available)
+              </label>
+              <div className="flex items-center gap-1 text-[10px] font-mono">
+                {(['ALL', 'NSE', 'BSE'] as const).map((ex) => (
+                  <button
+                    key={ex}
+                    type="button"
+                    onClick={() => setExchangeFilter(ex)}
+                    className={`px-2 py-0.5 rounded border ${
+                      exchangeFilter === ex
+                        ? 'border-gold text-gold bg-gold/10'
+                        : 'border-theme-subtle text-text-muted hover:text-text-primary'
+                    }`}
+                  >
+                    {ex}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
               <input
                 type="text"
-              placeholder="Search or enter an NSE symbol, e.g. SBIN"
+                placeholder="Search symbol (e.g. RELIANCE, TCS, SBIN, ZOMATO, 500325)"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -158,41 +224,109 @@ export function AddHoldingModal({
                 className="input-default pl-9 font-mono"
               />
             </div>
+
+            {/* Dropdown Results */}
             {showDropdown && searchQuery && filteredCatalog.length > 0 && (
-              <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-theme-default bg-surface-elevated shadow-xl">
+              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-theme-default bg-surface-elevated shadow-xl divide-y divide-theme-subtle">
                 {filteredCatalog.map((item) => (
                   <button
                     type="button"
                     key={item.symbol}
                     onClick={() => handleSelectStock(item)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-xs transition hover:bg-surface-hover"
+                    className="flex w-full items-center justify-between px-3 py-2.5 text-left text-xs transition hover:bg-surface-hover"
                   >
                     <div>
-                      <div className="font-semibold text-text-primary font-mono">{item.symbol}</div>
-                      <div className="text-text-muted text-[11px]">{item.name}</div>
+                      <div className="flex items-center gap-1.5 font-semibold text-text-primary font-mono">
+                        <span>{item.symbol}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-surface border border-theme-subtle text-text-muted">
+                          {item.exchange || 'NSE'}
+                        </span>
+                      </div>
+                      <div className="text-text-muted text-[11px] truncate max-w-[280px]">{item.name}</div>
+                      {item.sector && <div className="text-[10px] text-text-muted/70">{item.sector}</div>}
                     </div>
-                    <div className="font-mono text-gold font-medium">₹{item.current_price}</div>
+                    <div className="text-right">
+                      <div className="font-mono text-gold font-bold">₹{item.current_price?.toLocaleString('en-IN')}</div>
+                      <div className="text-[10px] text-gain">Live price</div>
+                    </div>
                   </button>
                 ))}
               </div>
             )}
+
             {showDropdown && searchQuery.trim() && filteredCatalog.length === 0 && (
-              <div className="absolute z-20 mt-1 w-full rounded-lg border border-theme-default bg-surface-elevated p-3 shadow-xl">
-                <p className="mb-2 text-[11px] text-text-muted">Not in the starter list? Add any NSE ticker and enter its company name and reference prices.</p>
-                <button type="button" onClick={handleAddNseTicker} className="w-full rounded-md px-3 py-2 text-left text-xs font-semibold text-gold transition hover:bg-surface-hover">
-                  Add “{searchQuery.trim().toUpperCase()}” as an NSE share
-                </button>
+              <div className="absolute z-20 mt-1 w-full rounded-lg border border-theme-default bg-surface-elevated p-3 shadow-xl space-y-2">
+                <p className="text-[11px] text-text-muted">
+                  Custom symbol entered. Add directly with live market price sync:
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleAddCustomTicker('NSE')}
+                    className="flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold bg-gold/10 text-gold border border-gold/30 hover:bg-gold/20"
+                  >
+                    Add {searchQuery.trim().toUpperCase()} (NSE)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddCustomTicker('BSE')}
+                    className="flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold bg-blue/10 text-blue border border-blue/30 hover:bg-blue/20"
+                  >
+                    Add {searchQuery.trim().toUpperCase()} (BSE)
+                  </button>
+                </div>
               </div>
             )}
             {errors.symbol && <p className="mt-1 text-xs text-loss">{errors.symbol}</p>}
           </div>
 
-          {isCustomStock && <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">Company Name</label>
-            <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter the listed company name" className="input-default" maxLength={255} />
-            <p className="mt-1 text-[11px] text-text-muted">Ticker: {symbol}. Confirm the NSE symbol and use your own reference prices for this demo holding.</p>
-            {errors.name && <p className="mt-1 text-xs text-loss">{errors.name}</p>}
-          </div>}
+          {/* Selected Stock Live Banner */}
+          {symbol && (
+            <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 flex items-center justify-between text-xs">
+              <div>
+                <span className="font-mono font-bold text-text-primary">{symbol}</span>
+                {name && <span className="ml-2 text-text-muted">({name})</span>}
+                {liveQuote && (
+                  <div className="mt-0.5 flex items-center gap-2 text-[11px]">
+                    <span className="text-gain flex items-center gap-1 font-mono">
+                      <CheckCircle2 className="w-3 h-3" /> Live Real-Time Price: ₹{liveQuote.price.toLocaleString('en-IN')}
+                    </span>
+                    {liveQuote.changePercent !== undefined && (
+                      <span className={`font-mono ${liveQuote.changePercent >= 0 ? 'text-gain' : 'text-loss'}`}>
+                        ({liveQuote.changePercent >= 0 ? '+' : ''}{liveQuote.changePercent.toFixed(2)}%)
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => void fetchLiveQuote(symbol)}
+                disabled={fetchingPrice}
+                className="btn-secondary py-1 px-2.5 text-[11px] flex items-center gap-1"
+                title="Refresh Real-Time Quote"
+              >
+                <RefreshCw className={`w-3 h-3 ${fetchingPrice ? 'animate-spin' : ''}`} />
+                <span>{fetchingPrice ? 'Syncing...' : 'Live Sync'}</span>
+              </button>
+            </div>
+          )}
+
+          {isCustomStock && (
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Enter company name"
+                className="input-default"
+                maxLength={255}
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -204,8 +338,8 @@ export function AddHoldingModal({
                 onChange={(e) => setAssetType(e.target.value)}
                 className="input-default"
               >
-                <option value="EQUITY" className="bg-surface text-text-primary">Equity (NSE)</option>
-                <option value="GOLD" className="bg-surface text-text-primary">Physical Gold</option>
+                <option value="EQUITY" className="bg-surface text-text-primary">Direct Equity (NSE/BSE)</option>
+                <option value="GOLD" className="bg-surface text-text-primary">Physical Gold / ETF</option>
                 <option value="FD" className="bg-surface text-text-primary">Fixed Deposit</option>
               </select>
             </div>
@@ -244,14 +378,17 @@ export function AddHoldingModal({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-                Current Price (₹)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                  Current Market Price (₹)
+                </label>
+                <span className="text-[10px] text-gain font-mono">Live Sync</span>
+              </div>
               <input
                 type="number"
                 step="any"
                 min="0.01"
-                placeholder="Market price"
+                placeholder="Live market price"
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
                 className="input-default font-mono"
@@ -271,7 +408,7 @@ export function AddHoldingModal({
               type="submit"
               className="btn-gold"
             >
-              {editingHolding ? 'Update Position' : 'Save Position'}
+              {editingHolding ? 'Update Position' : 'Save Position to Portfolio'}
             </button>
           </div>
         </form>

@@ -445,3 +445,12 @@ export async function fetchNextDayOpeningPredictions(): Promise<NextDayOpeningOv
   }
   return await response.json()
 }
+
+export async function fetchSymbolOpeningPrediction(symbol: string): Promise<NextDayOpeningQuote> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/opening-predictions/${encodeURIComponent(symbol)}`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch opening prediction for ${symbol}: ${response.statusText}`)
+  }
+  return await response.json()
+}
+
