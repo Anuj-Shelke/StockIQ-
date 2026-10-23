@@ -60,7 +60,7 @@ export function PortfolioManager() {
       const assetType = formData.asset_type === 'EQUITY' ? 'stock' : formData.asset_type.toLowerCase()
       if (editingHolding) {
         await apiFetch(`/portfolios/${activePortfolio.id}/holdings/${editingHolding.id}`, {
-          method: 'PATCH', body: { quantity: formData.quantity, buy_price: formData.buy_price, current_price: formData.current_price },
+          method: 'PATCH', body: { name: formData.name, quantity: formData.quantity, buy_price: formData.buy_price, current_price: formData.current_price },
         })
       } else {
         await apiFetch(`/portfolios/${activePortfolio.id}/holdings`, {
@@ -100,7 +100,7 @@ export function PortfolioManager() {
         </section>
       ) : !error && <>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="card-black p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono text-gold/90">Total Value</span><div className="mt-2 text-2xl font-bold font-mono text-text-primary">₹{totalCurrentValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div className="mt-1 text-xs text-text-muted">Invested: ₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div></div>
+          <div className="card-black p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono text-[var(--accent-on-dark)]">Total Value</span><div className="mt-2 text-2xl font-bold font-mono text-[var(--text-on-dark)]">₹{totalCurrentValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div className="mt-1 text-xs text-[var(--text-on-dark-secondary)]">Invested: ₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div></div>
           <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Unrealized P&amp;L</span><div className={`mt-2 text-2xl font-bold font-mono ${isOverallProfit ? 'text-gain' : 'text-loss'}`}>{isOverallProfit ? '+' : ''}₹{totalPnL.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div className="mt-1 text-xs text-text-muted">Return: {totalPnLPercent.toFixed(2)}%</div></div>
           <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Total Holdings</span><div className="mt-2 text-2xl font-bold font-mono">{holdings.length}</div><PieIcon className="h-4 w-4 text-blue" /></div>
           <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Top Concentration</span><div className="mt-2 text-xl font-bold truncate font-mono">{[...holdings].sort((a,b) => b.quantity * b.current_price - a.quantity * a.current_price)[0]?.symbol ?? 'N/A'}</div><ArrowUpRight className="h-4 w-4 text-gold" /></div>

@@ -54,5 +54,9 @@ function ScrollStory() {
 
 export default function Landing() {
   const reduced = useReducedMotion()
-  return reduced ? <AuthStage variant="login" /> : <ScrollStory />
+  return (
+    <div className="landing-original-palette">
+      {reduced ? <AuthStage variant="login" /> : <ScrollStory />}
+    </div>
+  )
 }

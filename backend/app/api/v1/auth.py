@@ -97,8 +97,9 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
     """Authenticate existing user and return JWT access and refresh tokens."""
     user = None
     primary_db_available = False
+    normalized_email = str(request.email).strip().lower()
     try:
-        user = db.query(User).filter(User.email == request.email).first()
+        user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
         primary_db_available = True
     except DBAPIError as exc:
         # A connection can be dropped after pool_pre_ping succeeds but before
@@ -108,7 +109,7 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
             db.rollback()
             logger.warning("Login database connection was invalidated; retrying the user lookup once.")
             try:
-                user = db.query(User).filter(User.email == request.email).first()
+                user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
             except Exception as retry_exc:
                 db.rollback()
                 original = getattr(retry_exc, "orig", retry_exc)
@@ -118,7 +119,7 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
                     getattr(original, "sqlstate", None),
                 )
                 ensure_configured_admin()
-                user = get_user_by_email(request.email)
+                user = get_user_by_email(normalized_email)
         else:
             db.rollback()
             original = getattr(exc, "orig", exc)
@@ -128,18 +129,18 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
                 getattr(original, "sqlstate", None),
             )
             ensure_configured_admin()
-            user = get_user_by_email(request.email)
+            user = get_user_by_email(normalized_email)
     except Exception as exc:
         db.rollback()
         logger.error("Login database lookup failed (error_type=%s).", type(exc).__name__)
         ensure_configured_admin()
-        user = get_user_by_email(request.email)
+        user = get_user_by_email(normalized_email)
 
     # Locally created outage accounts are intentionally allowed to log in after
     # Postgres recovers, before they have been copied into the primary database.
     if user is None:
         ensure_configured_admin()
-        user = get_user_by_email(request.email)
+        user = get_user_by_email(normalized_email)
         if user and primary_db_available:
             # Promote a local-only account after the primary DB returns so its
             # database-backed services become available again.

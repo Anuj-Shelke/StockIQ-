@@ -49,7 +49,7 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative rounded-lg p-2 text-slate-300 hover:bg-white/10 hover:text-white transition"
+        className="relative rounded-lg p-2 text-text-secondary hover:bg-hover hover:text-text-primary transition"
         aria-label="Notification center"
       >
         <Bell className="h-5 w-5" />
@@ -61,7 +61,7 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 z-50 w-80 sm:w-96 rounded-xl border border-white/10 bg-ink-950 p-4 shadow-2xl backdrop-blur-md">
+        <div className="theme-dark-surface absolute right-0 mt-2 z-50 w-80 sm:w-96 rounded-xl border border-white/10 p-4 shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-white text-sm">Notifications</span>

@@ -138,7 +138,7 @@ export const InvestmentPlannerView: React.FC = () => {
     ?.reduce((sum, a) => sum + a.allocated_amount, 0) || 0
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="investment-planner min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div>
@@ -148,7 +148,7 @@ export const InvestmentPlannerView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight text-white">
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-100">
                   AI Personal Investment Planner
                 </h1>
                 <span className="rounded-full bg-indigo-500/10 border border-indigo-500/30 px-3 py-0.5 text-2xs font-bold text-indigo-300">
@@ -170,7 +170,7 @@ export const InvestmentPlannerView: React.FC = () => {
               loadHistory(false)
               setIsHistoryOpen(true)
             }}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/80 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
           >
             <History className="h-4 w-4 text-indigo-400" />
             Saved Plans {historyList.length > 0 && `(${historyList.length})`}

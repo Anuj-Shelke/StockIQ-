@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ShieldAlert,
@@ -9,20 +9,38 @@ import {
   Sparkles,
   RefreshCw,
   AlertTriangle,
-  ArrowUpRight,
+  Briefcase,
+  Activity,
+  ChevronDown,
 } from 'lucide-react'
 import { NiftyLiveWidget } from '@/components/dashboard/NiftyLiveWidget'
 import { Badge } from '@/components/ui/Badge'
 import { GlossaryTooltip } from '@/components/ui/GlossaryTooltip'
 import { useAuth } from '@/hooks/useAuth'
 import { fetchNextDayOpeningPredictions, type NextDayOpeningOverviewResponse } from '@/services/api'
-import { NAV_ITEMS } from './navItems'
 
 const inr = new Intl.NumberFormat('en-IN', {
   style: 'currency',
   currency: 'INR',
   maximumFractionDigits: 0,
 })
+
+function MarketOutlook({ children }: { children: ReactNode }) {
+  return (
+    <details className="group overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+        <span>
+          <span className="block text-sm font-semibold text-[var(--text-primary)]">Market outlook</span>
+          <span className="mt-0.5 block text-xs text-[var(--text-muted)]">Live indices and next-session view</span>
+        </span>
+        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="space-y-6 border-t border-[var(--border-subtle)] p-4 sm:p-5">
+        {children}
+      </div>
+    </details>
+  )
+}
 
 export function DashboardOverview() {
   const { user, dashboard, profileError, profileLoading, reloadProfile } = useAuth()
@@ -59,7 +77,7 @@ export function DashboardOverview() {
   if (profileLoading) return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
       <div className="card-surface p-8 text-center text-text-muted">Loading your dashboard…</div>
-      <NiftyLiveWidget />
+      <MarketOutlook><NiftyLiveWidget /></MarketOutlook>
     </div>
   )
   if (!dashboard) return (
@@ -68,14 +86,14 @@ export function DashboardOverview() {
         <p className="font-medium">Your portfolio summary is temporarily unavailable.</p>
         <p className="mt-1 text-sm text-text-muted">Live market information is available below. Your portfolio data has not been changed.</p>
       </div>
-      <NiftyLiveWidget />
+      <MarketOutlook><NiftyLiveWidget /></MarketOutlook>
     </div>
   )
   if (dashboard.portfolios.length === 0) return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
       <header className="border-b border-[var(--border-subtle)] pb-6"><p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--gold-primary)]">StockIQ Financial Intelligence</p><h1 className="mt-2 font-display text-3xl font-semibold text-[var(--text-primary)]">Welcome, {name}</h1></header>
       <section className="card-black space-y-4 p-8 text-center"><h2 className="text-2xl font-semibold text-white">Your portfolio is empty.</h2><p className="text-sm text-slate-300">Add your holdings to see your risk analysis.</p><Link to="/dashboard/portfolio" className="btn-gold inline-flex">Add holdings</Link></section>
-      <NiftyLiveWidget />
+      <MarketOutlook><NiftyLiveWidget /></MarketOutlook>
     </div>
   )
 
@@ -95,29 +113,41 @@ export function DashboardOverview() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 pb-12">
-      {/* Editorial Welcome Header */}
+      {/* Clear orientation and direct access to the most common tasks */}
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-[var(--border-subtle)] pb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold-primary)]" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--gold-primary)]">
-              StockIQ Financial Intelligence
-            </p>
-          </div>
           <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-4xl">
             Welcome back, {name}
           </h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Continuous risk monitoring and historical stress reality check for your Indian equity portfolio.
+            Before the upside, understand the downside. Your holdings, markets and risk—together.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="gold">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold-primary)] animate-pulse" />
-            Active Portfolio: Primary
+            Current portfolio
           </Badge>
         </div>
       </header>
+
+      <section aria-label="Quick actions" className="grid gap-3 sm:grid-cols-3">
+        <Link to="/dashboard/portfolio" className="dashboard-action group flex min-h-20 items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition hover:border-[var(--border-focus)] hover:bg-[var(--bg-hover)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--gold-soft)] text-[var(--gold-primary)]"><Briefcase className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">See what you own</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Review or add holdings</span></span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gold-primary)]" />
+        </Link>
+        <Link to="/dashboard/risk-check" className="dashboard-action group flex min-h-20 items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition hover:border-[var(--border-focus)] hover:bg-[var(--bg-hover)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--color-danger-soft)] text-[var(--color-danger)]"><ShieldAlert className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">Stress-test your portfolio</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Explore historical downside scenarios</span></span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gold-primary)]" />
+        </Link>
+        <Link to="/fno-arena" className="dashboard-action group flex min-h-20 items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition hover:border-[var(--border-focus)] hover:bg-[var(--bg-hover)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--blue-soft)] text-[var(--blue-primary)]"><Activity className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">Practice before the stakes</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Learn F&amp;O in a points-based simulator</span></span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gold-primary)]" />
+        </Link>
+      </section>
 
       {/* Profile Error State */}
       {profileError && (
@@ -307,7 +337,7 @@ export function DashboardOverview() {
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-[var(--gold-primary)]" />
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
-                Explainable AI Risk Diagnostic
+                Why this matters
               </span>
             </div>
 
@@ -344,6 +374,7 @@ export function DashboardOverview() {
         </div>
       </section>
 
+      <MarketOutlook>
       {/* Live Market Bar */}
       <section aria-label="Indian Market Live Benchmarks">
         <NiftyLiveWidget />
@@ -456,39 +487,7 @@ export function DashboardOverview() {
           </div>
         </div>
       </section>
-
-      {/* Supporting Tools Grid */}
-      <section aria-label="Analytical Navigation Suite" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-            Analytical Intelligence Modules
-          </h2>
-          <span className="text-xs text-[var(--text-muted)]">Research & Education Tools</span>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {NAV_ITEMS.filter((n) => !n.end && n.to !== '/dashboard/admin').slice(0, 6).map(({ to, label, icon: Icon, blurb }) => (
-            <Link
-              key={to}
-              to={to}
-              className="group block rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 transition-all duration-200 hover:border-[var(--border-focus)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <span className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-canvas)] text-[var(--gold-primary)] group-hover:scale-105 transition">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <ArrowUpRight className="h-4 w-4 text-[var(--text-muted)] group-hover:text-[var(--gold-primary)] transition" />
-              </div>
-              <h3 className="font-semibold text-[var(--text-primary)] text-sm group-hover:text-[var(--gold-primary)] transition">
-                {label}
-              </h3>
-              <p className="mt-1 text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-                {blurb}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
+      </MarketOutlook>
     </div>
   )
 }

@@ -26,10 +26,10 @@ const item: Variants = {
 function Field({ label, error, children }: { label: string; error?: string | null; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-mono uppercase tracking-wider text-text-secondary">{label}</span>
+      <span className="mb-1.5 block text-sm font-semibold text-text-primary">{label}</span>
       {children}
       {error && (
-        <span role="alert" className="mt-1 block text-xs text-loss font-mono">
+        <span role="alert" className="mt-1 block text-sm text-loss">
           {error}
         </span>
       )}
@@ -118,7 +118,7 @@ export function AuthPanel({ variant, revealed }: Props) {
       animate={revealed ? 'show' : 'hide'}
       variants={panel}
       inert={!revealed}
-      className={`card-black absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-6 md:p-8
+      className={`auth-panel card-black absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-5 sm:p-6 md:p-8
         inset-x-3 bottom-3
         md:inset-x-auto md:bottom-auto md:right-[5vw] md:top-1/2 md:w-[26rem] md:-translate-y-1/2
         shadow-2xl border border-gold/30 backdrop-blur-xl
@@ -148,7 +148,7 @@ export function AuthPanel({ variant, revealed }: Props) {
           </>
         )}
       </motion.h2>
-      <motion.p variants={item} className="mb-5 mt-2 text-xs md:text-sm text-text-muted leading-relaxed">
+      <motion.p variants={item} className="mb-5 mt-2 text-sm leading-relaxed text-text-secondary">
         {variant === 'forgot' ? 'Password reset is not available yet.' : 'Understand the risk. Explore the data. Know the reasoning.'}
       </motion.p>
 
@@ -197,7 +197,7 @@ export function AuthPanel({ variant, revealed }: Props) {
             <motion.div variants={item}>
               <Field label="Email" error={errors.email}>
                 <input
-                  className="input-default font-mono"
+                  className="input-default"
                   type="email"
                   autoComplete="email"
                   inputMode="email"
@@ -212,7 +212,7 @@ export function AuthPanel({ variant, revealed }: Props) {
               <Field label="Password" error={errors.password}>
                 <span className="relative block">
                   <input
-                    className="input-default pr-11 font-mono"
+                    className="input-default pr-11"
                     type={showPw ? 'text' : 'password'}
                     autoComplete={signup ? 'new-password' : 'current-password'}
                     value={password}

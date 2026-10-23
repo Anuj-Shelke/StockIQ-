@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { motion, useTransform, type MotionValue } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Disclaimer } from './Disclaimer'
 
 type Win = [number, number, number, number]
@@ -33,9 +32,9 @@ function Stage({ progress, win, className, children }: { progress: MotionValue<n
   )
 }
 
-function Kicker({ n, children }: { n: string; children: ReactNode }) {
+function Kicker({ n, children, align = 'left' }: { n: string; children: ReactNode; align?: 'left' | 'right' }) {
   return (
-    <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-300">
+    <p className={`mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-300 ${align === 'right' ? 'flex-row-reverse justify-end' : ''}`}>
       <span className="h-px w-8 bg-gold-400/80" />
       {n} · {children}
     </p>
@@ -69,6 +68,8 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
   const cueOpacity = useTransform(progress, [0, 0.04], [1, 0])
   const captionOpacity = useTransform(progress, [0.34, 0.42, 0.74, 0.8], [0, 1, 1, 0])
   const discOpacity = useTransform(progress, [0.9, 0.96], [1, 0])
+  const storyLineHeight = useTransform(progress, [0, 1], ['0%', '100%'])
+  const storyDotTop = useTransform(progress, [0, 1], ['0%', '100%'])
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
@@ -79,7 +80,6 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
           <span className="font-display text-xl tracking-tight text-white">StockIQ</span>
         </Link>
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <Link
             to="/login"
             className="rounded-full border border-white/20 bg-ink-950/60 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-sm transition hover:border-gold-300 hover:text-gold-300"
@@ -104,7 +104,7 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
         <h1 className="mt-3 font-display text-2xl leading-[1.12] tracking-tight text-white md:mt-4 md:text-4xl">
           Money talks. <span className="text-gold-300">Learn the language.</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-md text-sm font-medium text-slate-100 md:text-base">Understand the risk. Explore the data. Know the reasoning.</p>
+        <p className="mx-auto mt-4 max-w-lg text-sm font-medium leading-relaxed text-slate-100 md:text-base">A portfolio is more than a number. See what moves it—and what could pull it down.</p>
         <div className="pointer-events-auto mt-5 flex items-center justify-center gap-3">
           <Link
             to="/login"
@@ -121,36 +121,48 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
         </div>
       </Stage>
 
-      {/* 02 GROWTH */}
-      <Stage progress={progress} win={[0.14, 0.2, 0.3, 0.35]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[6vw] md:top-1/2 md:-translate-y-1/2">
+      {/* 02 THE HOLDINGS */}
+      <Stage progress={progress} win={[0.14, 0.2, 0.3, 0.35]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[7vw] md:top-1/2 md:-translate-y-1/2">
         <Scrim className="-inset-8 md:-inset-x-14 md:-inset-y-12" />
-        <Kicker n="02">Growth</Kicker>
-        <h2 className={H}>Where money moves, complexity follows.</h2>
-        <p className={P}>Watch the picture grow. Every figure sits inside a bigger system.</p>
+        <span aria-hidden className="absolute -left-2 -top-12 -z-10 font-display text-8xl font-semibold text-white/[0.06] md:-left-8 md:-top-20 md:text-[10rem]">02</span>
+        <Kicker n="02">Holdings</Kicker>
+        <div className="max-w-lg border-l border-gold-300/50 pl-5 md:pl-7">
+          <h2 className={H}>The green days tell one story.</h2>
+          <p className={P}>The holdings underneath tell another. See how the pieces of a portfolio fit together.</p>
+        </div>
       </Stage>
 
-      {/* 03 DATA */}
-      <Stage progress={progress} win={[0.34, 0.4, 0.5, 0.56]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[6vw] md:top-1/2 md:-translate-y-1/2">
+      {/* 03 THE TURN */}
+      <Stage progress={progress} win={[0.34, 0.4, 0.5, 0.56]} className="bottom-[22vh] left-6 md:bottom-auto md:left-auto md:right-[7vw] md:top-1/2 md:-translate-y-1/2 md:text-right">
         <Scrim className="-inset-8 md:-inset-x-14 md:-inset-y-12" />
-        <Kicker n="03">Data</Kicker>
-        <h2 className={H}>Explore the data.</h2>
-        <p className={P}>Markets move in patterns and surprises. See them clearly, in context.</p>
+        <span aria-hidden className="absolute -right-2 -top-12 -z-10 font-display text-8xl font-semibold text-white/[0.06] md:-right-8 md:-top-20 md:text-[10rem]">03</span>
+        <Kicker n="03" align="right">When markets turn</Kicker>
+        <div className="max-w-lg border-l border-gold-300/50 pl-5 text-left md:border-l-0 md:border-r md:pl-0 md:pr-7 md:text-right">
+          <h2 className={H}>A shock travels through the whole portfolio.</h2>
+          <p className={`${P} md:ml-auto`}>See how historical market stress could affect a portfolio like yours.</p>
+        </div>
       </Stage>
 
-      {/* 04 ANALYSIS */}
-      <Stage progress={progress} win={[0.56, 0.62, 0.7, 0.76]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[6vw] md:top-1/2 md:-translate-y-1/2">
+      {/* 04 THE QUESTION */}
+      <Stage progress={progress} win={[0.56, 0.62, 0.7, 0.76]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[7vw] md:top-1/2 md:-translate-y-1/2">
         <Scrim className="-inset-8 md:-inset-x-14 md:-inset-y-12" />
-        <Kicker n="04">Analysis</Kicker>
-        <h2 className={H}>Understand the risk.</h2>
-        <p className={P}>Allocation, exposure and connections, made legible.</p>
+        <span aria-hidden className="absolute -left-2 -top-12 -z-10 font-display text-8xl font-semibold text-white/[0.06] md:-left-8 md:-top-20 md:text-[10rem]">04</span>
+        <Kicker n="04">The harder question</Kicker>
+        <div className="max-w-lg border-l border-gold-300/50 pl-5 md:pl-7">
+          <h2 className={H}>What could you lose?</h2>
+          <p className={P}>Risk Reality Check puts possible downside beside the numbers you already watch.</p>
+        </div>
       </Stage>
 
-      {/* 05 INSIGHT */}
-      <Stage progress={progress} win={[0.76, 0.8, 0.87, 0.92]} className="bottom-[22vh] left-6 md:bottom-auto md:left-[6vw] md:top-1/2 md:-translate-y-1/2">
+      {/* 05 YOUR CALL */}
+      <Stage progress={progress} win={[0.76, 0.8, 0.87, 0.92]} className="bottom-[22vh] left-6 md:bottom-auto md:left-auto md:right-[7vw] md:top-1/2 md:-translate-y-1/2 md:text-right">
         <Scrim className="-inset-8 md:-inset-x-14 md:-inset-y-12" />
-        <Kicker n="05">Insight</Kicker>
-        <h2 className={H}>Know the reasoning.</h2>
-        <p className={P}>Money → Data → Analysis → Insight</p>
+        <span aria-hidden className="absolute -right-2 -top-12 -z-10 font-display text-8xl font-semibold text-white/[0.06] md:-right-8 md:-top-20 md:text-[10rem]">05</span>
+        <Kicker n="05" align="right">Your decision</Kicker>
+        <div className="max-w-lg border-l border-gold-300/50 pl-5 text-left md:border-l-0 md:border-r md:pl-0 md:pr-7 md:text-right">
+          <h2 className={H}>Clarity before conviction.</h2>
+          <p className={`${P} md:ml-auto`}>Explore the data. Understand the reasoning. The decision stays yours.</p>
+        </div>
       </Stage>
 
       {/* illustrative-data caption */}
@@ -167,10 +179,19 @@ export function StoryOverlay({ progress }: { progress: MotionValue<number> }) {
         <span className="h-10 w-px animate-pulse bg-gradient-to-b from-gold-300 to-transparent" />
       </motion.div>
 
+      {/* A fine progress mark gives the scroll story a quiet sense of movement. */}
+      <div aria-hidden className="pointer-events-none absolute bottom-[26vh] left-[3.2vw] top-[26vh] hidden w-px bg-white/20 md:block">
+        <motion.div style={{ height: storyLineHeight }} className="w-px bg-gold-300" />
+        <motion.span style={{ top: storyDotTop }} className="absolute -left-[3px] h-[7px] w-[7px] -translate-y-1/2 rounded-full border border-gold-300 bg-ink-950" />
+      </div>
+
       {/* timeline rail */}
-      <motion.nav style={{ opacity: railOpacity }} aria-hidden className="absolute inset-x-0 bottom-9 flex justify-center gap-5 md:bottom-11 md:gap-8">
+      <motion.nav style={{ opacity: railOpacity }} aria-hidden className="absolute inset-x-0 bottom-9 flex justify-center gap-3 md:bottom-11 md:gap-7">
         {RAIL.map((r) => (
-          <RailItem key={r.label} progress={progress} label={r.label} win={r.win} />
+          <span key={r.label} className="flex items-center gap-3 md:gap-7">
+            <RailItem progress={progress} label={r.label} win={r.win} />
+            {r.label !== RAIL[RAIL.length - 1].label && <span aria-hidden className="h-px w-3 bg-white/20 md:w-6" />}
+          </span>
         ))}
       </motion.nav>
 
