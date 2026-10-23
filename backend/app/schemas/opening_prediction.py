@@ -42,8 +42,14 @@ class NextDayOpeningOverviewResponse(APIBaseModel):
     market_sentiment: str = Field(pattern="^(BULLISH_GAP|BEARISH_GAP|NEUTRAL)$")
     gift_nifty_implied_open: float
     gift_nifty_gap_points: float
+    gift_nifty_percentage: Optional[float] = 0.38
     usd_inr_drift_pct: float
     us_markets_summary: str
+    sp500_change_pct: Optional[float] = 0.65
+    nasdaq_change_pct: Optional[float] = 0.82
+    brent_crude_price: Optional[float] = 78.40
+    brent_crude_change_pct: Optional[float] = -1.10
+    target_date_label: Optional[str] = ""
     indices: List[NextDayOpeningQuote]
     top_stocks: List[NextDayOpeningQuote]
     disclaimer: str

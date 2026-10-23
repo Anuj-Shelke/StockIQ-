@@ -1,5 +1,4 @@
-"""Database session and connection management with automatic PostgreSQL / SQLite fallback."""
-
+from pathlib import Path
 import socket
 from typing import AsyncGenerator, Generator
 from urllib.parse import urlparse
@@ -13,6 +12,9 @@ from pgvector.sqlalchemy import Vector
 from app.core.config import settings
 from app.core.logging import logger
 from app.db.base import Base
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+DEFAULT_SQLITE_PATH = (BACKEND_DIR / "stockiq.db").resolve()
 
 # Register SQLite compilers for PostgreSQL-specific types when running in SQLite fallback
 @compiles(TSVECTOR, "sqlite")
@@ -48,7 +50,7 @@ postgres_available = is_postgres_available() if not explicit_sqlite else False
 use_sqlite = explicit_sqlite or (not postgres_available and settings.ALLOW_SQLITE_FALLBACK)
 
 if use_sqlite:
-    sqlite_url = configured_url if explicit_sqlite else "sqlite:///./stockiq.db"
+    sqlite_url = configured_url if explicit_sqlite else f"sqlite:///{DEFAULT_SQLITE_PATH.as_posix()}"
     engine = create_engine(
         sqlite_url,
         echo=False,
@@ -113,17 +115,24 @@ def seed_default_data(db: Session) -> None:
         from app.core.security import get_password_hash
 
         # Seed stocks
-        if db.query(Stock).count() == 0:
-            default_stocks = [
-                Stock(symbol="RELIANCE.NS", name="Reliance Industries Ltd.", exchange="NSE", sector="Energy & Conglomerate", current_price=2980.50, is_active=True),
-                Stock(symbol="TCS.NS", name="Tata Consultancy Services Ltd.", exchange="NSE", sector="Information Technology", current_price=4120.25, is_active=True),
-                Stock(symbol="INFY.NS", name="Infosys Ltd.", exchange="NSE", sector="Information Technology", current_price=1890.10, is_active=True),
-                Stock(symbol="HDFCBANK.NS", name="HDFC Bank Ltd.", exchange="NSE", sector="Banking & Financial Services", current_price=1650.80, is_active=True),
-                Stock(symbol="ICICIBANK.NS", name="ICICI Bank Ltd.", exchange="NSE", sector="Banking & Financial Services", current_price=1210.45, is_active=True),
-                Stock(symbol="TATAMOTORS.NS", name="Tata Motors Ltd.", exchange="NSE", sector="Automotive", current_price=975.30, is_active=True),
-                Stock(symbol="GOLD", name="Gold ETF / Commodity", exchange="MCX", sector="Commodities", current_price=7540.0, is_active=True),
-            ]
-            db.add_all(default_stocks)
+        from app.db.stock_universe_data import COMPREHENSIVE_STOCK_UNIVERSE
+        existing_symbols = {s[0] for s in db.query(Stock.symbol).all()}
+        stocks_to_add = []
+        for stock_def in COMPREHENSIVE_STOCK_UNIVERSE:
+            if stock_def["symbol"] not in existing_symbols:
+                stocks_to_add.append(
+                    Stock(
+                        symbol=stock_def["symbol"],
+                        name=stock_def["name"],
+                        exchange=stock_def.get("exchange", "NSE"),
+                        sector=stock_def.get("sector"),
+                        beta=stock_def.get("beta"),
+                        current_price=stock_def.get("current_price", 0.0),
+                        is_active=stock_def.get("is_active", True),
+                    )
+                )
+        if stocks_to_add:
+            db.add_all(stocks_to_add)
             db.commit()
 
         # Seed demo user
@@ -180,9 +189,14 @@ def seed_default_data(db: Session) -> None:
 
 
 # Demo data seeding is opt-in and disabled by default.
-if settings.SEED_DEFAULT_DATA:
-    with SessionLocal() as init_db:
-        seed_default_data(init_db)
+def maybe_seed_default_data() -> None:
+    """Seed initial stocks and demo user if database is currently empty and enabled in settings."""
+    if settings.SEED_DEFAULT_DATA:
+        try:
+            with SessionLocal() as init_db:
+                seed_default_data(init_db)
+        except Exception as exc:
+            logger.warning("Could not auto-seed default data: %s", str(exc))
 
 
 def get_db() -> Generator[Session, None, None]:

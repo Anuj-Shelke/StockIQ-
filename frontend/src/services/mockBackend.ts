@@ -113,7 +113,8 @@ export function installMockBackend() {
       })
     }
 
-    return fail(404, 'NOT_FOUND', 'Not found (mock)')
+    // For any endpoint outside auth/dashboard mock coverage, pass through to real backend
+    return realFetch(input, init)
   }
   console.info('[StockIQ] Dev mock backend enabled (set VITE_AUTH_MOCK=false to use the real FastAPI backend).')
 }

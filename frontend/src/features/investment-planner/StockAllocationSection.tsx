@@ -62,7 +62,10 @@ export const StockAllocationSection: React.FC<StockAllocationSectionProps> = ({
   }
 
   const avgConfidence = (
-    stocks.reduce((sum, s) => sum + s.ml_confidence, 0) / stocks.length
+    stocks.reduce((sum, s) => {
+      const conf = s.ml_confidence <= 1 ? s.ml_confidence * 100 : s.ml_confidence
+      return sum + conf
+    }, 0) / Math.max(1, stocks.length)
   ).toFixed(1)
 
   return (

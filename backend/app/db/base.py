@@ -85,30 +85,4 @@ class UUIDMixin:
     )
 
 
-# Import all models to ensure Base.metadata is fully populated for Alembic
-from app.models import (  # noqa: E402, F401
-    User,
-    InvestorProfile,
-    Stock,
-    PriceHistory,
-    Portfolio,
-    Holding,
-    Simulation,
-    Prediction,
-    ShapExplanation,
-    Recommendation,
-    ChatSession,
-    ChatMessage,
-    KBDocument,
-    KBChunk,
-    AuditLog,
-    LLMUsage,
-    AssetRate,
-    FeatureFlag,
-    TaxTransaction,
-    TaxCalculationRecord,
-    PlannerProfile,
-    InvestmentPlanRecord,
-)
-
 __all__ = ["Base", "GUID", "TimestampMixin", "UUIDMixin"]

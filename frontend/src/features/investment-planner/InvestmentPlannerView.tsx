@@ -67,11 +67,16 @@ export const InvestmentPlannerView: React.FC = () => {
       const list = await getInvestmentPlanHistory()
       setHistoryList(list || [])
       if (autoLoadLatest && list && list.length > 0 && !activePlan) {
-        // Load the most recent plan
-        const latest = await getInvestmentPlanById(list[0].plan_id)
-        setActivePlan(latest)
+        try {
+          const latest = await getInvestmentPlanById(list[0].plan_id)
+          if (latest) {
+            setActivePlan(latest)
+          }
+        } catch {
+          // If latest plan was deleted or not found, fall back smoothly
+        }
       }
-    } catch (e) {
+    } catch {
       // Silently fall back if empty history or error
     } finally {
       setHistoryLoading(false)
@@ -98,28 +103,38 @@ export const InvestmentPlannerView: React.FC = () => {
     try {
       setHistoryLoading(true)
       const plan = await getInvestmentPlanById(planId)
-      setActivePlan(plan)
-      setIsHistoryOpen(false)
-      setIsFormOpen(false)
-      setActiveTab('overview')
-    } catch (err: any) {
+      if (plan) {
+        setActivePlan(plan)
+        setIsHistoryOpen(false)
+        setIsFormOpen(false)
+        setActiveTab('overview')
+      } else {
+        setError('Selected investment plan was not found.')
+      }
+    } catch {
       setError('Failed to load selected plan.')
     } finally {
       setHistoryLoading(false)
     }
   }
 
-  // Calculate totals for sub-components
+  // Calculate totals for sub-components with robust asset class matching
   const totalEquityAllocated = activePlan?.asset_allocation
-    ?.filter(a => a.asset_class === 'EQUITY_STOCKS')
+    ?.filter(a => {
+      const cls = (a.asset_class || '').toLowerCase()
+      return cls.includes('stock') || cls.includes('equity')
+    })
     ?.reduce((sum, a) => sum + a.allocated_amount, 0) || 0
 
   const totalFdAllocated = activePlan?.asset_allocation
-    ?.filter(a => a.asset_class === 'FIXED_DEPOSIT')
+    ?.filter(a => {
+      const cls = (a.asset_class || '').toLowerCase()
+      return cls.includes('deposit') || cls.includes('fd')
+    })
     ?.reduce((sum, a) => sum + a.allocated_amount, 0) || 0
 
   const totalGoldAllocated = activePlan?.asset_allocation
-    ?.filter(a => a.asset_class === 'GOLD')
+    ?.filter(a => (a.asset_class || '').toLowerCase().includes('gold'))
     ?.reduce((sum, a) => sum + a.allocated_amount, 0) || 0
 
   return (
