@@ -130,61 +130,61 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
   return (
     <div className="space-y-6">
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Unrealized Portfolio Gains">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        <div className="card-surface p-3.5 min-w-0 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Unrealized Portfolio Gains">
             Unrealized Portfolio Gains
           </span>
           <p
-            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-emerald-400 truncate tabular-nums"
+            className="mt-1 font-mono text-sm sm:text-base font-bold text-emerald-400 whitespace-nowrap tabular-nums"
             title={formatINR(summary.unrealized_portfolio_gains)}
           >
             {formatINR(summary.unrealized_portfolio_gains)}
           </p>
           <span
-            className="mt-1 block text-[11px] text-[var(--text-muted)] truncate tabular-nums"
+            className="mt-1 block text-[10px] text-[var(--text-muted)] truncate tabular-nums font-mono"
             title={`Realized FY Gains: ${formatINR(summary.realized_capital_gains)}`}
           >
             Realized FY Gains: {formatINR(summary.realized_capital_gains)}
           </span>
         </div>
 
-        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Est. Exit Tax Liability Today">
+        <div className="card-surface p-3.5 min-w-0 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Est. Exit Tax Liability Today">
             Est. Exit Tax Liability Today
           </span>
           <p
-            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-rose-400 truncate tabular-nums"
+            className="mt-1 font-mono text-sm sm:text-base font-bold text-rose-400 whitespace-nowrap tabular-nums"
             title={formatINR(summary.estimated_capital_gains_tax)}
           >
             {formatINR(summary.estimated_capital_gains_tax)}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
+          <span className="mt-1 block text-[10px] text-[var(--text-muted)] truncate">
             If all positions liquidated now
           </span>
         </div>
 
-        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Estimated In-Hand Profit">
+        <div className="card-surface p-3.5 min-w-0 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Estimated In-Hand Profit">
             Estimated In-Hand Profit
           </span>
           <p
-            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-[var(--text-primary)] truncate tabular-nums"
+            className="mt-1 font-mono text-sm sm:text-base font-bold text-[var(--text-primary)] whitespace-nowrap tabular-nums"
             title={formatINR(summary.estimated_net_profit_after_tax)}
           >
             {formatINR(summary.estimated_net_profit_after_tax)}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
+          <span className="mt-1 block text-[10px] text-[var(--text-muted)] truncate">
             After 20% STCG / 12.5% LTCG
           </span>
         </div>
 
-        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Data Quality & Completeness">
-            Data Quality & Completeness
+        <div className="card-surface p-3.5 min-w-0 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Data Quality & Completeness">
+            Data Quality &amp; Completeness
           </span>
           <p
-            className={`mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold truncate ${
+            className={`mt-1 font-mono text-sm sm:text-base font-bold whitespace-nowrap tabular-nums ${
               summary.incomplete_tax_holdings_count > 0 ? 'text-amber-400' : 'text-emerald-400'
             }`}
           >
@@ -192,7 +192,7 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
               ? `${summary.incomplete_tax_holdings_count} Incomplete`
               : '100% Complete'}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
+          <span className="mt-1 block text-[10px] text-[var(--text-muted)] truncate">
             {summary.incomplete_tax_holdings_count > 0
               ? 'Provisional tax applied'
               : 'All cost bases recorded'}
