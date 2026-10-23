@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, AlertTriangle, Check, CircleHelp, Clock3, Pause, Play, Shield, Sparkles } from 'lucide-react'
@@ -81,9 +81,13 @@ function formatPts(value: number): string {
 }
 
 function Header({ exitArena }: { exitArena: () => void }) {
+  const handleBrandExit = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    exitArena()
+  }
   return (
     <header className="arena-header">
-      <Link className="arena-brand" to="/dashboard" onClick={exitArena} aria-label="StockIQ dashboard">
+      <Link className="arena-brand" to="/dashboard" onClick={handleBrandExit} aria-label="StockIQ dashboard">
         <span className="arena-brand-mark">₹</span>
         <span><strong>StockIQ</strong><small>F&amp;O ARENA</small></span>
       </Link>
@@ -133,11 +137,20 @@ export default function FnoArenaPage() {
   const advanceTickRef = useRef<() => void>(() => undefined)
   const [persistenceWarning, setPersistenceWarning] = useState(initialSession.warning)
   const [error, setError] = useState('')
+  const exitStarted = useRef(false)
   const completeTrade: CompletedTrade | undefined = run?.state.completedTrades.at(-1)
   const isComplete = run?.state.status === 'GAME_OVER'
   const baseCycleLength = run ? createArenaScenario(run.market, run.replay, run.seed).ticks.length : 24
   const cycleNumber = run ? Math.floor(run.nextTick / baseCycleLength) + 1 : 1
   const chartHistory = run?.history.slice(-48) ?? []
+
+  const exitArena = () => {
+    if (exitStarted.current) return
+    exitStarted.current = true
+    setIsPlaying(false)
+    clearPersistedArenaRun(userId)
+    navigate('/dashboard', { replace: true })
+  }
 
   const commitRun = (nextRun: PersistedArenaRun | null) => {
     setRun(nextRun)
@@ -284,7 +297,7 @@ export default function FnoArenaPage() {
   return (
     <MotionConfig reducedMotion="user">
       <main className="fno-arena-root">
-        <Header exitArena={() => { clearPersistedArenaRun(userId); navigate('/dashboard') }} />
+        <Header exitArena={exitArena} />
         {persistenceWarning && <p className="arena-score-note" role="status">{persistenceWarning}</p>}
         <div className="arena-main">
           <AnimatePresence mode="wait" initial={false}>
