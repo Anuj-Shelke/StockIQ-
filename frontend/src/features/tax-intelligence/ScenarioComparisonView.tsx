@@ -298,24 +298,24 @@ export function ScenarioComparisonView({ initialHolding }: ScenarioComparisonVie
               return (
                 <div
                   key={outcome.scenario_id}
-                  className={`card-surface flex flex-col justify-between p-5 transition-all ${
+                  className={`card-surface flex flex-col justify-between p-5 min-w-0 overflow-hidden transition-all ${
                     isMaxSavings
                       ? 'border-[var(--gold-primary)]/50 shadow-md ring-1 ring-[var(--gold-primary)]/30'
                       : ''
                   }`}
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  <div className="space-y-4 min-w-0">
+                    <div className="flex items-start justify-between gap-2 min-w-0">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] truncate block">
                           Scenario #{idx + 1}
                         </span>
-                        <h3 className="font-display text-sm font-bold text-[var(--text-primary)] mt-0.5">
+                        <h3 className="font-display text-sm font-bold text-[var(--text-primary)] mt-0.5 truncate" title={outcome.title}>
                           {outcome.title}
                         </h3>
                       </div>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase shrink-0 ${
                           outcome.is_long_term
                             ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                             : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
@@ -326,43 +326,45 @@ export function ScenarioComparisonView({ initialHolding }: ScenarioComparisonVie
                     </div>
 
                     <div className="space-y-2 border-t border-[var(--border-subtle)] pt-3 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Sale Date</span>
-                        <span className="font-medium text-[var(--text-primary)]">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-[var(--text-secondary)] shrink-0">Sale Date</span>
+                        <span className="font-medium text-[var(--text-primary)] truncate">
                           {formatDateIndian(outcome.sale_date)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Sale Price</span>
-                        <span className="font-medium text-[var(--text-primary)]">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-[var(--text-secondary)] shrink-0">Sale Price</span>
+                        <span className="font-medium text-[var(--text-primary)] truncate tabular-nums" title={formatINR(outcome.sale_price)}>
                           {formatINR(outcome.sale_price)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Holding Days</span>
-                        <span className="font-medium text-[var(--text-primary)]">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-[var(--text-secondary)] shrink-0">Holding Days</span>
+                        <span className="font-medium text-[var(--text-primary)] truncate tabular-nums">
                           {outcome.holding_period_days !== null ? `${outcome.holding_period_days} days` : 'N/A'}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Applicable Rate</span>
-                        <span className="font-bold text-amber-400">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-[var(--text-secondary)] shrink-0">Applicable Rate</span>
+                        <span className="font-bold text-amber-400 shrink-0">
                           {outcome.applicable_tax_rate_percent}% + 4% cess
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--text-secondary)]">Gross Capital Gain</span>
-                        <span className="font-semibold text-emerald-400">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-[var(--text-secondary)] shrink-0">Gross Capital Gain</span>
+                        <span className="font-semibold text-emerald-400 truncate tabular-nums" title={formatINR(outcome.gross_capital_gain)}>
                           {formatINR(outcome.gross_capital_gain)}
                         </span>
                       </div>
-                      <div className="flex justify-between border-t border-[var(--border-subtle)] pt-2 font-semibold">
-                        <span className="text-[var(--text-primary)]">Estimated Tax Payable</span>
-                        <span className="text-rose-400">{formatINR(outcome.estimated_tax)}</span>
+                      <div className="flex justify-between items-center gap-2 border-t border-[var(--border-subtle)] pt-2 font-semibold">
+                        <span className="text-[var(--text-primary)] shrink-0">Estimated Tax</span>
+                        <span className="text-rose-400 truncate tabular-nums" title={formatINR(outcome.estimated_tax)}>
+                          {formatINR(outcome.estimated_tax)}
+                        </span>
                       </div>
-                      <div className="flex justify-between font-bold">
-                        <span className="text-[var(--text-primary)]">Net In-Hand Profit</span>
-                        <span className="text-emerald-400 text-sm">
+                      <div className="flex justify-between items-center gap-2 font-bold">
+                        <span className="text-[var(--text-primary)] shrink-0">Net In-Hand</span>
+                        <span className="text-emerald-400 text-sm truncate tabular-nums" title={formatINR(outcome.after_tax_profit)}>
                           {formatINR(outcome.after_tax_profit)}
                         </span>
                       </div>
@@ -375,9 +377,11 @@ export function ScenarioComparisonView({ initialHolding }: ScenarioComparisonVie
                         Base Liquidation Scenario
                       </span>
                     ) : (
-                      <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-2 text-xs font-semibold text-emerald-400">
-                        <span>Tax Savings vs Today:</span>
-                        <span className="font-bold">{formatINR(outcome.tax_savings_vs_base)}</span>
+                      <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-2 text-xs font-semibold text-emerald-400 min-w-0">
+                        <span className="shrink-0">Tax Savings:</span>
+                        <span className="font-bold truncate tabular-nums ml-2" title={formatINR(outcome.tax_savings_vs_base)}>
+                          {formatINR(outcome.tax_savings_vs_base)}
+                        </span>
                       </div>
                     )}
                   </div>
