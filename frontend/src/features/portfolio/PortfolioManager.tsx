@@ -100,10 +100,34 @@ export function PortfolioManager() {
         </section>
       ) : !error && <>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="card-black p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono text-[var(--accent-on-dark)]">Total Value</span><div className="mt-2 text-2xl font-bold font-mono text-[var(--text-on-dark)]">₹{totalCurrentValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div className="mt-1 text-xs text-[var(--text-on-dark-secondary)]">Invested: ₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div></div>
-          <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Unrealized P&amp;L</span><div className={`mt-2 text-2xl font-bold font-mono ${isOverallProfit ? 'text-gain' : 'text-loss'}`}>{isOverallProfit ? '+' : ''}₹{totalPnL.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div><div className="mt-1 text-xs text-text-muted">Return: {totalPnLPercent.toFixed(2)}%</div></div>
-          <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Total Holdings</span><div className="mt-2 text-2xl font-bold font-mono">{holdings.length}</div><PieIcon className="h-4 w-4 text-blue" /></div>
-          <div className="card-surface p-5"><span className="text-xs uppercase font-semibold tracking-wider font-mono">Top Concentration</span><div className="mt-2 text-xl font-bold truncate font-mono">{[...holdings].sort((a,b) => b.quantity * b.current_price - a.quantity * a.current_price)[0]?.symbol ?? 'N/A'}</div><ArrowUpRight className="h-4 w-4 text-gold" /></div>
+          <div className="card-black p-5 min-w-0 overflow-hidden flex flex-col justify-between">
+            <span className="text-xs uppercase font-semibold tracking-wider font-mono text-[var(--accent-on-dark)] truncate">Total Value</span>
+            <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-[var(--text-on-dark)] truncate tabular-nums" title={`₹${totalCurrentValue.toLocaleString('en-IN')}`}>
+              ₹{totalCurrentValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </div>
+            <div className="mt-1 text-xs text-[var(--text-on-dark-secondary)] truncate tabular-nums">
+              Invested: ₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </div>
+          </div>
+          <div className="card-surface p-5 min-w-0 overflow-hidden flex flex-col justify-between">
+            <span className="text-xs uppercase font-semibold tracking-wider font-mono truncate">Unrealized P&amp;L</span>
+            <div className={`mt-2 text-xl sm:text-2xl font-bold font-mono truncate tabular-nums ${isOverallProfit ? 'text-gain' : 'text-loss'}`} title={`₹${totalPnL.toLocaleString('en-IN')}`}>
+              {isOverallProfit ? '+' : ''}₹{totalPnL.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </div>
+            <div className="mt-1 text-xs text-text-muted truncate tabular-nums">Return: {totalPnLPercent.toFixed(2)}%</div>
+          </div>
+          <div className="card-surface p-5 min-w-0 overflow-hidden flex flex-col justify-between">
+            <span className="text-xs uppercase font-semibold tracking-wider font-mono truncate">Total Holdings</span>
+            <div className="mt-2 text-xl sm:text-2xl font-bold font-mono">{holdings.length}</div>
+            <PieIcon className="h-4 w-4 text-blue mt-1" />
+          </div>
+          <div className="card-surface p-5 min-w-0 overflow-hidden flex flex-col justify-between">
+            <span className="text-xs uppercase font-semibold tracking-wider font-mono truncate">Top Concentration</span>
+            <div className="mt-2 text-xl font-bold truncate font-mono">
+              {[...holdings].sort((a,b) => b.quantity * b.current_price - a.quantity * a.current_price)[0]?.symbol ?? 'N/A'}
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-gold mt-1" />
+          </div>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"><div className="lg:col-span-2"><h2 className="mb-3 text-base font-semibold text-text-primary">Position Breakdown ({holdings.length})</h2><HoldingsTable holdings={holdings} totalPortfolioValue={totalCurrentValue} onEdit={(holding) => { setEditingHolding(holding); setIsModalOpen(true) }} onDelete={handleDelete} /></div><div><AllocationChart holdings={holdings} /></div></div>
         <Link className="text-sm text-gold underline" to="/dashboard/risk-check">View portfolio risk analysis</Link>

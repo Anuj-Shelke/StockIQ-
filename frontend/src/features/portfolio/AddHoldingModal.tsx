@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react'
 import { X, Search, CheckCircle2, RefreshCw } from 'lucide-react'
-import type { Holding, StockCatalogItem } from '@/types/portfolio'
+import type { Holding, HoldingFormData, StockCatalogItem } from '@/types/portfolio'
 import { apiFetch } from '@/services/api'
 
 interface AddHoldingModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (holding: {
-    symbol: string
-    name?: string
-    asset_type?: string
-    quantity: number
-    buy_price: number
-    current_price?: number
-  }) => void
+  onSave: (holding: HoldingFormData) => void
   catalog: StockCatalogItem[]
   editingHolding?: Holding | null
 }

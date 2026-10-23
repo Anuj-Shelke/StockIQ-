@@ -130,49 +130,61 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
   return (
     <div className="space-y-6">
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card-surface p-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Unrealized Portfolio Gains">
             Unrealized Portfolio Gains
           </span>
-          <p className="mt-1 font-display text-2xl font-bold text-emerald-400">
+          <p
+            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-emerald-400 truncate tabular-nums"
+            title={formatINR(summary.unrealized_portfolio_gains)}
+          >
             {formatINR(summary.unrealized_portfolio_gains)}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)]">
+          <span
+            className="mt-1 block text-[11px] text-[var(--text-muted)] truncate tabular-nums"
+            title={`Realized FY Gains: ${formatINR(summary.realized_capital_gains)}`}
+          >
             Realized FY Gains: {formatINR(summary.realized_capital_gains)}
           </span>
         </div>
 
-        <div className="card-surface p-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Est. Exit Tax Liability Today">
             Est. Exit Tax Liability Today
           </span>
-          <p className="mt-1 font-display text-2xl font-bold text-rose-400">
+          <p
+            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-rose-400 truncate tabular-nums"
+            title={formatINR(summary.estimated_capital_gains_tax)}
+          >
             {formatINR(summary.estimated_capital_gains_tax)}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)]">
+          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
             If all positions liquidated now
           </span>
         </div>
 
-        <div className="card-surface p-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Estimated In-Hand Profit">
             Estimated In-Hand Profit
           </span>
-          <p className="mt-1 font-display text-2xl font-bold text-[var(--text-primary)]">
+          <p
+            className="mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold text-[var(--text-primary)] truncate tabular-nums"
+            title={formatINR(summary.estimated_net_profit_after_tax)}
+          >
             {formatINR(summary.estimated_net_profit_after_tax)}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)]">
+          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
             After 20% STCG / 12.5% LTCG
           </span>
         </div>
 
-        <div className="card-surface p-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="card-surface p-4 min-w-0 overflow-hidden flex flex-col justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] truncate" title="Data Quality & Completeness">
             Data Quality & Completeness
           </span>
           <p
-            className={`mt-1 font-display text-2xl font-bold ${
+            className={`mt-1 font-display text-lg sm:text-xl xl:text-2xl font-bold truncate ${
               summary.incomplete_tax_holdings_count > 0 ? 'text-amber-400' : 'text-emerald-400'
             }`}
           >
@@ -180,7 +192,7 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
               ? `${summary.incomplete_tax_holdings_count} Incomplete`
               : '100% Complete'}
           </p>
-          <span className="mt-1 block text-[11px] text-[var(--text-muted)]">
+          <span className="mt-1 block text-[11px] text-[var(--text-muted)] truncate">
             {summary.incomplete_tax_holdings_count > 0
               ? 'Provisional tax applied'
               : 'All cost bases recorded'}
@@ -254,22 +266,22 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
                         </span>
                       )}
                     </td>
-                    <td className="p-3">{h.quantity}</td>
-                    <td className="p-3">{formatINR(h.invested_value)}</td>
-                    <td className="p-3 font-medium text-[var(--text-primary)]">
+                    <td className="p-3 whitespace-nowrap tabular-nums">{h.quantity}</td>
+                    <td className="p-3 whitespace-nowrap tabular-nums">{formatINR(h.invested_value)}</td>
+                    <td className="p-3 font-medium text-[var(--text-primary)] whitespace-nowrap tabular-nums">
                       {formatINR(h.current_value)}
                     </td>
                     <td
-                      className={`p-3 font-semibold ${
+                      className={`p-3 font-semibold whitespace-nowrap tabular-nums ${
                         h.unrealized_gain >= 0 ? 'text-emerald-400' : 'text-rose-400'
                       }`}
                     >
                       {formatINR(h.unrealized_gain)}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 whitespace-nowrap">
                       {h.holding_period_days !== null ? `${h.holding_period_days} days` : 'Unspecified'}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 whitespace-nowrap">
                       <span
                         className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
                           isLtcg
@@ -282,7 +294,7 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
                         {h.tax_category}
                       </span>
                     </td>
-                    <td className="p-3 font-semibold text-rose-400">
+                    <td className="p-3 font-semibold text-rose-400 whitespace-nowrap tabular-nums">
                       {formatINR(h.estimated_exit_tax_today)}
                     </td>
                     <td className="p-3 text-right">
