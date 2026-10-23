@@ -18,8 +18,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set DB URL dynamically from configured engine
-config.set_main_option("sqlalchemy.url", str(engine.url))
+# Set DB URL dynamically from configured engine (escape % for configparser interpolation)
+config.set_main_option("sqlalchemy.url", str(engine.url).replace("%", "%%"))
 
 target_metadata = Base.metadata
 

@@ -17,7 +17,7 @@ const DEFAULT_PROFILE: PlannerProfileInput = {
   debt_obligations: 15000,
   financial_dependents: 1,
   current_investable_capital: 300000,
-  primary_goal: 'Wealth Creation & Long-Term Growth',
+  primary_goal: 'Wealth Creation',
   target_amount: 2500000,
   target_years: 5,
   investment_horizon_category: 'Medium-Term (3-7 Years)',
@@ -26,9 +26,9 @@ const DEFAULT_PROFILE: PlannerProfileInput = {
   max_acceptable_loss_pct: 12.0,
   investment_style: 'HYBRID',
   monthly_sip_amount: 15000,
-  preferred_asset_classes: ['FIXED_DEPOSIT', 'GOLD', 'EQUITY_STOCKS', 'DIVERSIFIED_INDEX_FUNDS'],
+  preferred_asset_classes: ['Stocks', 'Fixed Deposits', 'Gold'],
   preferred_sectors: ['Technology', 'Financial Services', 'Consumer Goods'],
-  preferred_stocks: ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY'],
+  preferred_stocks: ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS'],
 }
 
 interface Props {
@@ -85,7 +85,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
         max_acceptable_loss_pct: 15,
         investment_style: 'HYBRID',
         monthly_sip_amount: 10000,
-        preferred_asset_classes: ['Stocks', 'Gold', 'Fixed Deposits'],
+        preferred_asset_classes: ['Stocks', 'Fixed Deposits', 'Gold'],
         preferred_sectors: ['Information Technology', 'Banking & Financials'],
         preferred_stocks: ['TCS.NS', 'HDFCBANK.NS', 'RELIANCE.NS'],
       })
@@ -158,7 +158,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form noValidate onSubmit={handleSubmit} className="space-y-8">
       {/* Preset Profiles Header */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -246,6 +246,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('monthly_income', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -261,6 +262,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('monthly_expenses', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -276,6 +278,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('debt_obligations', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -294,6 +297,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('emergency_fund', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -322,6 +326,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('existing_investments', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -339,8 +344,8 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 value={form.current_investable_capital}
                 onChange={e => handleChange('current_investable_capital', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-indigo-500/40 rounded-lg pl-8 pr-3.5 py-2 text-sm font-semibold text-indigo-200 focus:outline-none focus:border-indigo-400 transition"
-                min={1000}
-                step={5000}
+                min={0}
+                step="any"
               />
             </div>
             {errors.current_investable_capital && (
@@ -393,6 +398,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('target_amount', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
+                step="any"
               />
             </div>
           </div>
@@ -406,8 +412,8 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
               onChange={e => handleChange('target_years', parseFloat(e.target.value) || 1)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
               min={1}
-              max={30}
-              step={0.5}
+              max={50}
+              step="any"
             />
           </div>
 
@@ -488,7 +494,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
                 onChange={e => handleChange('monthly_sip_amount', parseFloat(e.target.value) || 0)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
                 min={0}
-                step={1000}
+                step="any"
               />
             </div>
           </div>

@@ -90,9 +90,15 @@ class PlannerStockEngine:
                 amt = round(total_equity_amount * (w / 100.0), 2)
                 allocated_so_far += amt
 
+            # Retrieve real-time market price
+            from app.integrations.market_data.market_service import MarketDataService
+            cur_p = MarketDataService.get_realtime_price(
+                stock["symbol"],
+                fallback_default=stock["current_price"],
+            )
+            tgt_p = round(cur_p * (1.0 + (stock["projected_return_pct"] / 100.0)), 2)
+
             # Retrieve SHAP explanations using existing ExplanationService
-            cur_p = stock["current_price"]
-            tgt_p = stock["ml_predicted_target"]
             shap_factors = ExplanationService.decompose_prediction(
                 symbol=stock["symbol"],
                 current_price=cur_p,

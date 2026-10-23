@@ -12,16 +12,21 @@ from app.models.market import PriceHistory, Stock
 from app.services.metrics_service import MetricsService
 
 
+from app.db.stock_universe_data import COMPREHENSIVE_STOCK_UNIVERSE
+
 # Known market parameters for Indian blue chips and assets
 ASSET_CALIBRATION: Dict[str, Dict] = {
-    "RELIANCE.NS": {"beta": 1.12, "volatility": 21.4, "max_decline": 42.1, "name": "Reliance Industries Ltd"},
-    "TCS.NS": {"beta": 0.82, "volatility": 16.5, "max_decline": 28.4, "name": "Tata Consultancy Services"},
-    "HDFCBANK.NS": {"beta": 1.05, "volatility": 19.8, "max_decline": 38.6, "name": "HDFC Bank Ltd"},
-    "INFY.NS": {"beta": 0.95, "volatility": 18.2, "max_decline": 32.5, "name": "Infosys Ltd"},
-    "ICICIBANK.NS": {"beta": 1.25, "volatility": 23.1, "max_decline": 45.2, "name": "ICICI Bank Ltd"},
     "GOLD": {"beta": -0.08, "volatility": 12.4, "max_decline": 14.2, "name": "Domestic Physical Gold 24K"},
     "FD": {"beta": 0.0, "volatility": 0.0, "max_decline": 0.0, "name": "Bank Fixed Deposit"},
 }
+for s in COMPREHENSIVE_STOCK_UNIVERSE:
+    ASSET_CALIBRATION[s["symbol"]] = {
+        "beta": float(s.get("beta", 1.05)),
+        "volatility": float(s.get("volatility", 20.0)),
+        "max_decline": round(float(s.get("volatility", 20.0)) * 1.8, 1),
+        "name": s.get("name", s["symbol"]),
+    }
+
 
 
 class StockAnalysisService:
