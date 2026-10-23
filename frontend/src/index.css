@@ -111,6 +111,90 @@
   --shadow-card-black: 0 8px 32px -8px rgba(17, 23, 38, 0.28), inset 0 1px 0 rgba(90, 41, 137, 0.35);
 }
 
+/* Restore the opening page's original StockIQ palette without changing the
+   market-inspired palette used by the rest of the application. */
+.landing-original-palette {
+  --bg-canvas: #070B14;
+  --bg-surface: #0D1424;
+  --bg-elevated: #131C30;
+  --bg-hover: #18233B;
+  --bg-card-black: #060912;
+  --border-subtle: #151E33;
+  --border-default: #1F2A44;
+  --border-focus: #D4A84B;
+  --text-primary: #E8ECF4;
+  --text-secondary: #A8B2C7;
+  --text-muted: #6F7A93;
+  --text-on-dark: #E8ECF4;
+  --text-on-dark-secondary: #A8B2C7;
+  --text-on-dark-muted: #6F7A93;
+  --accent-contrast: #070B14;
+  --gold-primary: #D4A84B;
+  --gold-hover: #E4C366;
+  --gold-soft: rgba(212, 168, 75, 0.14);
+  --blue-primary: #5B8DEF;
+  --blue-soft: rgba(91, 141, 239, 0.14);
+  --color-success: #34B58A;
+  --color-success-soft: rgba(52, 181, 138, 0.14);
+  --color-warning: #E3A23B;
+  --color-warning-soft: rgba(227, 162, 59, 0.14);
+  --color-danger: #E5584F;
+  --color-danger-soft: rgba(229, 88, 79, 0.14);
+
+  /* Tailwind theme aliases resolve at their declaration scope, so restore
+     those aliases here as well as the underlying tokens. */
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-hover: var(--bg-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border: var(--border-default);
+  --color-border-focus: var(--border-focus);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-gold: var(--gold-primary);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-300: var(--gold-primary);
+  --color-gold-400: var(--gold-primary);
+  --color-gold-500: var(--gold-primary);
+  --color-gold-600: var(--gold-hover);
+  --color-ink-950: var(--bg-canvas);
+  --color-ink-900: var(--bg-surface);
+  --color-ink-800: var(--bg-elevated);
+  --color-ink-700: var(--border-default);
+}
+
+[data-theme="light"] .landing-original-palette {
+  --bg-canvas: #F7F3EA;
+  --bg-surface: #FCFBF8;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #F1ECE0;
+  --bg-card-black: #111726;
+  --border-subtle: #EEE8DA;
+  --border-default: #E4DDCC;
+  --border-focus: #A87B1F;
+  --text-primary: #101828;
+  --text-secondary: #3B4660;
+  --text-muted: #6B7488;
+  --text-on-dark: #101828;
+  --text-on-dark-secondary: #3B4660;
+  --text-on-dark-muted: #6B7488;
+  --accent-contrast: #FFFFFF;
+  --gold-primary: #A87B1F;
+  --gold-hover: #8F6715;
+  --gold-soft: rgba(168, 123, 31, 0.12);
+  --blue-primary: #2F5FC4;
+  --blue-soft: rgba(47, 95, 196, 0.12);
+  --color-success: #0F8A63;
+  --color-success-soft: rgba(15, 138, 99, 0.12);
+  --color-warning: #B5730F;
+  --color-warning-soft: rgba(181, 115, 15, 0.12);
+  --color-danger: #C23B33;
+  --color-danger-soft: rgba(194, 59, 51, 0.12);
+}
+
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
