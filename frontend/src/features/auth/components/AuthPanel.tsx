@@ -209,6 +209,13 @@ export function AuthPanel({ variant, revealed }: Props) {
                 </Field>
               </motion.div>
             )}
+            {portal === 'admin' && !signup && (
+              <motion.div variants={item} className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
+                <span className="font-bold">Admin Portal: </span>
+                <span className="text-text-secondary">Sign in with administrator credentials (e.g. <span className="font-mono text-gold font-medium">admin@stockiq.ai</span>).</span>
+              </motion.div>
+            )}
+
             <motion.div variants={item}>
               <Field label="Email address" error={errors.email}>
                 <input
@@ -218,7 +225,7 @@ export function AuthPanel({ variant, revealed }: Props) {
                   inputMode="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={portal === 'admin' ? 'admin@stockiq.ai' : 'you@example.com'}
                   aria-invalid={!!errors.email}
                 />
               </Field>

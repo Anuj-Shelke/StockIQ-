@@ -44,16 +44,22 @@ const emailFrom = (refreshOrAccess: string) => {
 
 /** Names given at sign-up (in memory only; a page reload forgets them, like a fresh mock "server"). */
 const names = new Map<string, string | null>()
+const userRoles = new Map<string, 'investor' | 'admin'>()
 
 const userIdFor = (email: string) => `mock-user-${enc(email).replace(/[^A-Za-z0-9]/g, '').slice(0, 12)}`
 
-const authSuccess = (email: string) => ({
-  user_id: userIdFor(email),
-  email,
-  full_name: names.get(email) ?? null,
-  role: 'investor',
-  tokens: tokens(email),
-})
+const authSuccess = (email: string, portal: 'user' | 'admin' = 'user') => {
+  const isAdmin = portal === 'admin' || email.toLowerCase().includes('admin')
+  const role: 'investor' | 'admin' = isAdmin ? 'admin' : 'investor'
+  userRoles.set(email, role)
+  return {
+    user_id: userIdFor(email),
+    email,
+    full_name: names.get(email) ?? (isAdmin ? 'StockIQ Administrator' : null),
+    role,
+    tokens: tokens(email),
+  }
+}
 
 const bearerEmail = (init?: RequestInit): string | null => {
   const auth = new Headers(init?.headers).get('Authorization') ?? ''
@@ -71,7 +77,8 @@ export function installMockBackend() {
 
     if (path === '/auth/login') {
       if (body.password === 'invalid123') return fail(401, 'UNAUTHORIZED', 'Invalid email or password')
-      return json(200, authSuccess(body.email))
+      const portal = body.portal || (body.email?.toLowerCase().includes('admin') ? 'admin' : 'user')
+      return json(200, authSuccess(body.email, portal))
     }
 
     if (path === '/auth/register') {
@@ -81,7 +88,7 @@ export function installMockBackend() {
         ])
       }
       names.set(body.email, body.full_name || null)
-      return json(201, authSuccess(body.email))
+      return json(201, authSuccess(body.email, 'user'))
     }
 
     if (path === '/auth/refresh') {
@@ -93,11 +100,12 @@ export function installMockBackend() {
     if (path === '/users/me') {
       const email = bearerEmail(init)
       if (!email) return fail(401, 'UNAUTHORIZED', 'Not authenticated')
+      const role = userRoles.get(email) || (email.toLowerCase().includes('admin') ? 'admin' : 'investor')
       return json(200, {
         id: userIdFor(email),
         email,
-        full_name: names.get(email) ?? null,
-        role: 'investor',
+        full_name: names.get(email) ?? (role === 'admin' ? 'StockIQ Administrator' : null),
+        role,
         is_active: true,
         created_at: new Date().toISOString(),
       })

@@ -154,20 +154,56 @@ def login(request: UserLoginRequest, db: Session = Depends(get_db)):
             except Exception:
                 db.rollback()
 
-    if not user or not verify_password(request.password, user.hashed_password):
-        raise AuthenticationError("Invalid email or password.")
+    admin_email_configured = (settings.ADMIN_EMAIL or "admin@stockiq.ai").strip().lower()
+    is_configured_admin_login = (
+        normalized_email == admin_email_configured
+        and bool(settings.ADMIN_PASSWORD)
+        and request.password == settings.ADMIN_PASSWORD
+    )
+
+    if is_configured_admin_login:
+        if user is None:
+            ensure_configured_admin()
+            user = get_user_by_email(normalized_email)
+            if user and primary_db_available:
+                try:
+                    db.add(User(
+                        id=uuid.UUID(str(user.id)), email=user.email, password_hash=user.password_hash,
+                        full_name=user.full_name, role="admin", is_active=True,
+                        is_superuser=True,
+                    ))
+                    db.commit()
+                except Exception:
+                    db.rollback()
+        elif user:
+            user.role = "admin"
+            user.is_superuser = True
+            user.is_active = True
+            if not verify_password(request.password, getattr(user, "hashed_password", "")):
+                user.password_hash = get_password_hash(settings.ADMIN_PASSWORD)
+                try:
+                    db.commit()
+                except Exception:
+                    db.rollback()
+
+    if not is_configured_admin_login:
+        if not user or not verify_password(request.password, getattr(user, "hashed_password", "")):
+            raise AuthenticationError("Invalid email or password.")
 
     if not user.is_active:
         raise AuthenticationError("Invalid email or password.")
 
     expected_role = "admin" if request.portal == "admin" else "investor"
     if user.role != expected_role:
-        message = (
-            "These credentials do not have administrator access."
-            if request.portal == "admin"
-            else "This is an administrator account. Please continue as Admin."
-        )
-        raise PermissionDeniedError(message)
+        if request.portal == "admin" and getattr(user, "is_superuser", False):
+            user.role = "admin"
+        else:
+            message = (
+                "These credentials do not have administrator access."
+                if request.portal == "admin"
+                else "This is an administrator account. Please continue as Admin."
+            )
+            raise PermissionDeniedError(message)
 
     save_user(user)
 

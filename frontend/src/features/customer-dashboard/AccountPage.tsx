@@ -212,14 +212,16 @@ export function AccountPage() {
                   Full Name <span className="text-gold">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
+                    <User className="h-4 w-4" />
+                  </div>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
                     placeholder="Enter your full name"
-                    className="input-default pl-9 font-medium"
+                    className="input-default pl-10.5 font-medium"
                   />
                 </div>
               </div>
@@ -229,12 +231,14 @@ export function AccountPage() {
                   Email Address (Primary Identity)
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
+                    <Mail className="h-4 w-4" />
+                  </div>
                   <input
                     type="email"
                     value={user.email}
                     disabled
-                    className="input-default pl-9 opacity-65 cursor-not-allowed bg-canvas/40 font-mono text-xs"
+                    className="input-default pl-10.5 opacity-65 cursor-not-allowed bg-canvas/40 font-mono text-xs"
                   />
                 </div>
                 <p className="mt-1 text-[10px] text-text-muted">Registered authentication email cannot be altered directly.</p>
@@ -245,13 +249,15 @@ export function AccountPage() {
                   Phone / WhatsApp (Optional)
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
+                    <Phone className="h-4 w-4" />
+                  </div>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className="input-default pl-9 font-mono"
+                    className="input-default pl-10.5 font-mono"
                   />
                 </div>
               </div>
@@ -261,13 +267,15 @@ export function AccountPage() {
                   Occupation / Professional Role
                 </label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
+                    <Briefcase className="h-4 w-4" />
+                  </div>
                   <input
                     type="text"
                     value={occupation}
                     onChange={(e) => setOccupation(e.target.value)}
                     placeholder="e.g. Software Engineer, Business Owner"
-                    className="input-default pl-9"
+                    className="input-default pl-10.5"
                   />
                 </div>
               </div>
