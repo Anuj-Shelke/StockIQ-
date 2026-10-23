@@ -21,6 +21,7 @@ import { CustomerDashboardLayout } from '@/layouts/CustomerDashboardLayout/Custo
 import { ProtectedRoute, PublicOnlyRoute } from '@/routes/ProtectedRoute'
 import { WelcomeExperience } from '@/features/auth/components/WelcomeExperience'
 import { InvestmentPlannerView } from '@/features/investment-planner/InvestmentPlannerView'
+import { AccountPage } from '@/features/customer-dashboard/AccountPage'
 
 // Route-level code splitting: the landing page pulls in three.js; auth pages share it; the dashboard stays light.
 const Landing = lazy(() => import('@/pages/Landing'))
@@ -66,6 +67,7 @@ export const App = () => (
           <Route path="sebi-rules" element={<SebiRagChatbot />} />
           <Route path="review-request" element={<ReviewRequestView />} />
           <Route path="reviews" element={<MyReviews />} />
+          <Route path="account" element={<AccountPage />} />
         </Route>
       </Route>
 

@@ -145,7 +145,7 @@ export function TaxExplanationPanel({
               </button>
 
               {isOpen && (
-                <div className="border-t border-[var(--border-subtle)] bg-black/20 p-4 text-xs leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">
+                <div className="border-t border-[var(--border-subtle)] bg-elevated p-4 text-xs leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">
                   {content}
                 </div>
               )}

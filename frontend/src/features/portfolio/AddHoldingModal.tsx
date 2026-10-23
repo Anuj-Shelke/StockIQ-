@@ -34,7 +34,7 @@ export function AddHoldingModal({
   React.useEffect(() => {
     if (editingHolding) {
       setSymbol(editingHolding.symbol)
-      setName(editingHolding.name || '')
+      setName(editingHolding.name || (editingHolding.asset_type.toLowerCase() === 'gold' ? 'Gold' : editingHolding.asset_type.toLowerCase() === 'fd' ? 'Fixed Deposit' : ''))
       setAssetType(editingHolding.asset_type)
       setQuantity(editingHolding.quantity.toString())
       setBuyPrice(editingHolding.buy_price.toString())
@@ -61,6 +61,24 @@ export function AddHoldingModal({
       item.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  const isEquity = assetType === 'EQUITY' || assetType.toLowerCase() === 'stock'
+  const isGold = assetType.toLowerCase() === 'gold'
+  const isFixedDeposit = assetType.toLowerCase() === 'fd'
+  const isOther = assetType.toLowerCase() === 'other'
+  const isManualAsset = !isEquity
+
+  const handleAssetTypeChange = (value: string) => {
+    setAssetType(value)
+    setSymbol(value === 'GOLD' ? 'GOLD' : value === 'FD' ? 'FD' : '')
+    setName(value === 'GOLD' ? 'Gold' : value === 'FD' ? 'Fixed Deposit' : '')
+    setSearchQuery('')
+    setShowDropdown(false)
+    setIsCustomStock(false)
+    setCurrentPrice('')
+    setBuyPrice('')
+    setQuantity('1')
+    setErrors({})
+  }
 
   const handleSelectStock = (item: StockCatalogItem) => {
     setSymbol(item.symbol)
@@ -96,8 +114,9 @@ export function AddHoldingModal({
     e.preventDefault()
     const errs: Record<string, string> = {}
 
-    if (!symbol.trim()) errs.symbol = 'Symbol is required'
+    if (isEquity && !symbol.trim()) errs.symbol = 'Choose or enter an NSE share'
     if (isCustomStock && !name.trim()) errs.name = 'Company name is required for a custom NSE ticker'
+    if (isManualAsset && !name.trim()) errs.name = 'Enter an investment name'
     const q = parseFloat(quantity)
     if (isNaN(q) || q <= 0) errs.quantity = 'Quantity must be greater than 0'
     const bp = parseFloat(buyPrice)
@@ -108,8 +127,11 @@ export function AddHoldingModal({
       return
     }
 
+    const customSymbol = isOther && !editingHolding
+      ? `OTHER-${name.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '-').slice(0, 8)}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
+      : symbol.trim().toUpperCase()
     onSave({
-      symbol: symbol.trim().toUpperCase(),
+      symbol: customSymbol,
       name: name.trim() || undefined,
       asset_type: assetType,
       quantity: q,
@@ -138,8 +160,18 @@ export function AddHoldingModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Autocomplete Search */}
-          <div className="relative">
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">What are you adding?</label>
+            <select value={assetType.toUpperCase() === 'STOCK' ? 'EQUITY' : assetType.toUpperCase()} onChange={(e) => handleAssetTypeChange(e.target.value)} className="input-default">
+              <option value="EQUITY">Indian share (NSE/BSE)</option>
+              <option value="GOLD">Gold</option>
+              <option value="FD">Fixed deposit</option>
+              <option value="OTHER">Other investment</option>
+            </select>
+          </div>
+
+          {/* Equity-only search: manual assets should not look like NSE shares. */}
+          {isEquity && <div className="relative">
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
               Search NSE Stock / Symbol
             </label>
@@ -185,9 +217,16 @@ export function AddHoldingModal({
               </div>
             )}
             {errors.symbol && <p className="mt-1 text-xs text-loss">{errors.symbol}</p>}
-          </div>
+          </div>}
 
-          {isCustomStock && <div>
+          {!isEquity && <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">{isGold ? 'Holding name' : isFixedDeposit ? 'Deposit name' : 'Investment name'}</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input-default" placeholder={isGold ? 'e.g. 24K gold' : isFixedDeposit ? 'e.g. 1-year bank FD' : 'e.g. LIC Jeevan policy'} maxLength={100} />
+            <p className="mt-1 text-[11px] text-text-muted">Manually tracked; StockIQ won’t fetch or estimate a price. Risk Reality Check may use a generic model estimate for custom investments.</p>
+            {errors.name && <p className="mt-1 text-xs text-loss">{errors.name}</p>}
+          </div>}
+
+          {isEquity && isCustomStock && <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">Company Name</label>
             <input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Enter the listed company name" className="input-default" maxLength={255} />
             <p className="mt-1 text-[11px] text-text-muted">Ticker: {symbol}. Confirm the NSE symbol and use your own reference prices for this demo holding.</p>
@@ -197,27 +236,13 @@ export function AddHoldingModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-                Asset Class
-              </label>
-              <select
-                value={assetType}
-                onChange={(e) => setAssetType(e.target.value)}
-                className="input-default"
-              >
-                <option value="EQUITY" className="bg-surface text-text-primary">Equity (NSE)</option>
-                <option value="GOLD" className="bg-surface text-text-primary">Physical Gold</option>
-                <option value="FD" className="bg-surface text-text-primary">Fixed Deposit</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-                Quantity / Shares
+                {isEquity ? 'Shares' : isGold ? 'Quantity (grams)' : isFixedDeposit ? 'Deposit amount' : 'Units / policies'}
               </label>
               <input
                 type="number"
                 step="any"
-                min="0.001"
+                min={isFixedDeposit ? '1' : '0.001'}
+                disabled={isFixedDeposit}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="input-default font-mono"
@@ -229,7 +254,7 @@ export function AddHoldingModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-                Buy Price (₹)
+                {isFixedDeposit ? 'Principal (₹)' : isGold ? 'Purchase price (₹ / gram)' : isOther ? 'Purchase value (₹ / unit)' : 'Buy price (₹ / share)'}
               </label>
               <input
                 type="number"
@@ -245,19 +270,20 @@ export function AddHoldingModal({
 
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
-                Current Price (₹)
+                {isFixedDeposit ? 'Current value (₹)' : isGold ? 'Current value (₹ / gram)' : isOther ? 'Current value (₹ / unit)' : 'Current price (₹ / share)'}
               </label>
               <input
                 type="number"
                 step="any"
                 min="0.01"
-                placeholder="Market price"
+                placeholder={isEquity ? 'Optional reference price' : 'Enter current value'}
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
                 className="input-default font-mono"
               />
             </div>
           </div>
+          {!isEquity && <p className="text-[11px] text-text-muted">Manual value only. Update it whenever you want; it is not a live quote.</p>}
 
           <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-theme-subtle">
             <button

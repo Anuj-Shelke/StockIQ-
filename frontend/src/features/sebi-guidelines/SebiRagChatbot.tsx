@@ -374,7 +374,7 @@ export function SebiRagChatbot() {
                               href={c.officialUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="group flex items-center justify-between rounded-lg bg-black/40 border border-theme-subtle p-2 hover:border-gold/40 transition"
+                              className="group flex items-center justify-between rounded-lg bg-elevated border border-theme-subtle p-2 hover:border-gold/40 transition"
                             >
                               <div>
                                 <span className="font-semibold text-text-primary group-hover:text-gold transition">

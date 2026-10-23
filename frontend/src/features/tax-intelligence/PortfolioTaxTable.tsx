@@ -217,7 +217,7 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
           <button
             type="button"
             onClick={fetchSummary}
-            className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-white"
+            className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
@@ -290,7 +290,7 @@ export function PortfolioTaxTable({ onSelectHoldingForScenario }: PortfolioTaxTa
                         <button
                           type="button"
                           onClick={() => onSelectHoldingForScenario(h)}
-                          className="flex items-center gap-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--gold-primary)] hover:border-[var(--gold-primary)] hover:text-white"
+                          className="flex items-center gap-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--gold-primary)] hover:border-[var(--gold-primary)] hover:text-[var(--text-primary)]"
                         >
                           <Sparkles className="h-3 w-3" />
                           Simulate

@@ -7,10 +7,10 @@ interface SourceBadgeProps {
 
 export function SourceBadge({ source }: SourceBadgeProps) {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300 hover:border-gold-500/30 hover:bg-gold-500/5 transition">
+    <div className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] px-2.5 py-1 text-[11px] text-text-secondary hover:border-gold-500/30 hover:bg-gold-500/5 transition">
       <BookOpen className="h-3 w-3 text-gold-400" />
-      <span className="font-medium text-white">{source.title}</span>
-      <span className="text-slate-400">({source.publisher})</span>
+      <span className="font-medium text-text-primary">{source.title}</span>
+      <span className="text-text-muted">({source.publisher})</span>
       {source.url && (
         <a
           href={source.url}

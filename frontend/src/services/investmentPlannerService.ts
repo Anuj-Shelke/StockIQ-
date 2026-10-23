@@ -15,9 +15,9 @@ export const investmentPlannerService = {
    * Generate personalized investment plan
    */
   async generatePlan(profile: PlannerProfileInput): Promise<InvestmentPlanResponse> {
-    return apiFetch<InvestmentPlanResponse>('/api/v1/investment-planner/generate', {
+    return apiFetch<InvestmentPlanResponse>('/investment-planner/generate', {
       method: 'POST',
-      body: JSON.stringify(profile),
+      body: profile,
     })
   },
 
@@ -25,9 +25,9 @@ export const investmentPlannerService = {
    * Run What-If simulation
    */
   async simulateScenario(request: PlanSimulateRequest): Promise<PlanSimulateResponse> {
-    return apiFetch<PlanSimulateResponse>('/api/v1/investment-planner/simulate', {
+    return apiFetch<PlanSimulateResponse>('/investment-planner/simulate', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     })
   },
 
@@ -45,14 +45,14 @@ export const investmentPlannerService = {
     expected_return_pct: number
     final_base_value: number
   }>> {
-    return apiFetch('/api/v1/investment-planner/history')
+    return apiFetch('/investment-planner/history')
   },
 
   /**
    * Get plan by ID
    */
   async getPlanById(planId: string): Promise<InvestmentPlanResponse> {
-    return apiFetch<InvestmentPlanResponse>(`/api/v1/investment-planner/${planId}`)
+    return apiFetch<InvestmentPlanResponse>(`/investment-planner/${planId}`)
   },
 }
 

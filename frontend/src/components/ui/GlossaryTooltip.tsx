@@ -191,7 +191,7 @@ export function GlossaryTooltip({ term, definition, glossaryKey, asChild = false
           data-glossary-popup
           onPointerEnter={cancelClose}
           onPointerLeave={scheduleClose}
-          className={`fixed z-[100] max-h-[calc(100vh-1rem)] w-[min(16rem,calc(100vw-1rem))] overflow-auto rounded-lg border border-white/10 bg-ink-900/95 p-3 text-xs text-slate-200 shadow-2xl backdrop-blur-md ${position.placement === 'top' ? '-translate-y-full' : position.placement === 'center' ? '-translate-y-1/2' : ''}`}
+          className={`theme-dark-surface fixed z-[100] max-h-[calc(100vh-1rem)] w-[min(16rem,calc(100vw-1rem))] overflow-auto rounded-lg border border-white/10 p-3 text-xs text-slate-200 shadow-2xl backdrop-blur-md ${position.placement === 'top' ? '-translate-y-full' : position.placement === 'center' ? '-translate-y-1/2' : ''}`}
           style={{ left: position.left, top: position.top }}
         >
           <span className="font-semibold text-gold-300 flex items-center gap-1 mb-1">
