@@ -627,3 +627,158 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ====================================================================
+   StockIQ Elegant Motion — Subtle, mature, purposeful animations
+   ==================================================================== */
+
+/* --- Keyframes --- */
+
+/* Logo: slow breathing glow */
+@keyframes logo-breathe {
+  0%, 100% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 0px var(--gold-primary));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--gold-primary));
+  }
+}
+
+/* Shimmer streak — one pass every 4s */
+@keyframes logo-shimmer {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(250%) skewX(-12deg); }
+}
+
+/* Gentle idle float */
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-2px); }
+}
+
+/* Soft pulse ring for primary CTA — radiates and fades */
+@keyframes btn-ring-pulse {
+  0%   { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 0 var(--gold-soft); }
+  60%  { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 7px transparent; }
+  100% { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 0 transparent; }
+}
+
+/* NavLink active: slow left-border breathe */
+@keyframes nav-active-breathe {
+  0%, 100% { border-left-color: var(--gold-primary); }
+  50%       { border-left-color: var(--gold-hover); }
+}
+
+/* Page entrance */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hairline sweep */
+@keyframes hairline-sweep {
+  0%   { background-position: -100% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Value tick on data change */
+@keyframes value-tick {
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(-3px); }
+  70%  { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+
+/* Badge idle */
+@keyframes badge-idle {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.025); }
+}
+
+/* ---- Applied classes ---- */
+
+/* Logo ₹ icon: breathes + floats */
+.logo-mark {
+  position: relative;
+  overflow: hidden;
+  animation:
+    logo-breathe 3.6s ease-in-out infinite,
+    logo-float   5s   ease-in-out infinite;
+}
+
+/* Shimmer streak on logo */
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 80%
+  );
+  animation: logo-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Primary CTA: idle ring pulse every 3s */
+.btn-gold {
+  animation: btn-ring-pulse 3s ease-out infinite;
+}
+.btn-gold:hover:not(:disabled),
+.btn-gold:focus-visible:not(:disabled) {
+  animation: none;
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 4px 18px var(--gold-soft);
+}
+
+/* Active nav item: left-border breathe */
+.nav-active {
+  animation: nav-active-breathe 2.8s ease-in-out infinite;
+}
+
+/* card-surface hover lift + accent halo */
+.card-surface {
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+.card-surface:hover {
+  border-color: var(--border-focus);
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--gold-soft);
+  transform: translateY(-1px);
+}
+
+/* Page entrance helper */
+.page-enter {
+  animation: fade-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Intelligence hairline: animated sweep */
+.line-intelligence-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gold-primary) 40%,
+    var(--gold-hover) 50%,
+    var(--gold-primary) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: hairline-sweep 3s linear infinite;
+}
+
+/* Data value tick (add via JS on update) */
+.value-updated {
+  animation: value-tick 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Badges: very subtle idle scale */
+.badge-tier-interpretation,
+.badge-tier-verified {
+  animation: badge-idle 4s ease-in-out infinite;
+}

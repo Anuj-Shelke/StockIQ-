@@ -32,7 +32,7 @@ export function CustomerDashboardLayout() {
       className={({ isActive }) =>
         `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
           isActive
-            ? 'border-l-2 border-gold bg-gold/10 text-gold pl-2.5 font-bold'
+            ? 'nav-active border-l-2 border-gold bg-gold/10 text-gold pl-2.5 font-bold'
             : 'text-text-secondary hover:bg-white/5 hover:text-text-primary border-l-2 border-transparent'
         }`
       }
@@ -94,7 +94,7 @@ export function CustomerDashboardLayout() {
       >
         <div className="mb-6 flex items-center justify-between border-b border-theme-subtle pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold/30 bg-gold/10 font-display text-lg text-gold font-bold">
+            <span className="logo-mark grid h-8 w-8 place-items-center rounded-lg border border-gold/30 bg-gold/10 font-display text-lg text-gold font-bold">
               ₹
             </span>
             <div>
