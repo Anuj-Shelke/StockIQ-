@@ -10,7 +10,7 @@ import {
   RefreshCw,
   AlertTriangle,
   Briefcase,
-  Activity,
+  Compass,
   ChevronDown,
 } from 'lucide-react'
 import { NiftyLiveWidget } from '@/components/dashboard/NiftyLiveWidget'
@@ -142,9 +142,9 @@ export function DashboardOverview() {
           <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">Stress-test your portfolio</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Explore historical downside scenarios</span></span>
           <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gold-primary)]" />
         </Link>
-        <Link to="/fno-arena" className="dashboard-action group flex min-h-20 items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition hover:border-[var(--border-focus)] hover:bg-[var(--bg-hover)]">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--blue-soft)] text-[var(--blue-primary)]"><Activity className="h-5 w-5" /></span>
-          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">Practice before the stakes</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Learn F&amp;O in a points-based simulator</span></span>
+        <Link to="/dashboard/investment-planner" className="dashboard-action group flex min-h-20 items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition hover:border-[var(--border-focus)] hover:bg-[var(--bg-hover)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--gold-soft)] text-[var(--gold-primary)]"><Compass className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[var(--text-primary)]">AI Investment Planner</span><span className="mt-0.5 block text-xs text-[var(--text-muted)]">Multi-asset portfolio optimizer &amp; goals</span></span>
           <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gold-primary)]" />
         </Link>
       </section>

@@ -561,15 +561,15 @@
   .input-default {
     display: block;
     width: 100%;
-    min-height: 48px;
+    min-height: 52px;
     border: 1px solid var(--border-default);
-    border-radius: 10px;
-    padding: 11px 14px;
+    border-radius: 12px;
+    padding: 14px 18px;
     background: var(--bg-elevated);
     color: var(--text-primary);
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
     outline: none;
     transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
   }
@@ -577,9 +577,11 @@
   .input-default::placeholder {
     color: var(--text-muted);
     opacity: 1;
+    font-size: 15px;
   }
 
-  .input-default:focus-visible {
+  .input-default:focus-visible,
+  .input-default:focus {
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--gold-soft);
   }
@@ -588,21 +590,30 @@
     border-color: var(--color-danger);
   }
 
-  /* The sign-in card stays dark, so its fields need a lighter writing surface. */
+  /* Spacious, luxury writing surface for credentials inputs in AuthPanel */
   .auth-panel .input-default {
-    border-color: #68716e;
-    background: #f5f7f6;
-    color: #151a18;
-    caret-color: #087a55;
+    border: 1px solid rgba(212, 168, 75, 0.35);
+    background: rgba(13, 20, 36, 0.85);
+    color: #F8FAFC;
+    caret-color: #D4A84B;
+    min-height: 54px;
+    padding: 14px 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 14px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
   }
 
   .auth-panel .input-default::placeholder {
-    color: #59635f;
+    color: #8A96AC;
+    font-size: 15px;
   }
 
-  .auth-panel .input-default:focus-visible {
-    border-color: #00a77c;
-    box-shadow: 0 0 0 3px rgba(0, 208, 156, 0.25);
+  .auth-panel .input-default:focus-visible,
+  .auth-panel .input-default:focus {
+    border-color: #D4A84B;
+    background: rgba(19, 28, 48, 0.95);
+    box-shadow: 0 0 0 3px rgba(212, 168, 75, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.35);
   }
 }
 
