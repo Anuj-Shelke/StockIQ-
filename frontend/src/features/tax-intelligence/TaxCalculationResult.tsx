@@ -54,7 +54,7 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
             className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
               activeTab === 'breakdown'
                 ? 'bg-[var(--gold-primary)] text-black shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-white'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             Tax Metrics
@@ -65,7 +65,7 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
             className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
               activeTab === 'xai'
                 ? 'bg-[var(--gold-primary)] text-black shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-white'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -78,7 +78,7 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 activeTab === 'lots'
                   ? 'bg-[var(--gold-primary)] text-black shadow-xs'
-                  : 'text-[var(--text-secondary)] hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               FIFO Lots ({result.lot_allocations.length})
@@ -218,7 +218,7 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
                 <span className="text-[var(--text-primary)]">{formatINR(m.cess)}</span>
               </div>
 
-              <div className="flex items-center justify-between bg-black/40 p-4 font-bold text-sm">
+              <div className="flex items-center justify-between bg-hover p-4 font-bold text-sm">
                 <span className="text-[var(--text-primary)]">Final Estimated Capital Gains Tax Payable</span>
                 <span className="text-rose-400 font-display text-base">
                   {formatINR(m.estimated_total_tax)}
@@ -301,7 +301,7 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
       )}
 
       {/* Statutory Disclaimer */}
-      <div className="rounded-lg border border-[var(--border-subtle)] bg-black/30 p-3 text-[11px] leading-relaxed text-[var(--text-muted)]">
+      <div className="rounded-lg border border-[var(--border-subtle)] bg-elevated p-3 text-[11px] leading-relaxed text-[var(--text-muted)]">
         <strong className="text-[var(--text-secondary)]">Statutory Disclaimer: </strong>
         {result.disclaimer ||
           'StockIQ Capital Gains calculations are simulated estimates for educational and decision-support purposes based on the Indian Income Tax Act, 1961 (Finance Act No. 2, 2024). Actual tax liabilities may vary depending on total slab income, Chapter VI-A deductions, rebate under Section 87A, and grandfathering under Section 112A. Consult a qualified Chartered Accountant before filing your ITR.'}

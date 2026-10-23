@@ -157,12 +157,12 @@ export const PortfolioRiskSection: React.FC<PortfolioRiskSectionProps> = ({ risk
 
         {/* Inline Explanation Drawer if an icon was clicked */}
         {expandedExplanation && risk.risk_metrics_explanation && (
-          <div className="mt-4 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4 text-xs text-indigo-200">
-            <div className="flex items-center justify-between font-semibold text-indigo-300">
+          <div className="mt-4 rounded-xl border border-blue/30 bg-blue-soft p-4 text-xs text-text-secondary">
+            <div className="flex items-center justify-between font-semibold text-text-primary">
               <span>Formula & Financial Interpretation</span>
-              <button onClick={() => setExpandedExplanation(null)} className="hover:text-white">✕</button>
+              <button onClick={() => setExpandedExplanation(null)} className="hover:text-text-primary">✕</button>
             </div>
-            <p className="mt-1.5 leading-relaxed text-indigo-100/90">
+            <p className="mt-1.5 leading-relaxed text-text-secondary">
               {risk.risk_metrics_explanation[expandedExplanation] ||
                 risk.risk_metrics_explanation.sharpe_ratio ||
                 'Calculated via institutional quantitative risk modeling.'}

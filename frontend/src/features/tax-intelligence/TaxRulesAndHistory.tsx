@@ -141,7 +141,7 @@ export function TaxRulesAndHistory() {
           <button
             type="button"
             onClick={fetchData}
-            className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-white"
+            className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh History

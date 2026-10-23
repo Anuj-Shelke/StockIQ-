@@ -82,7 +82,7 @@ export const PortfolioComparisonSection: React.FC<PortfolioComparisonSectionProp
                         key={asset}
                         className="rounded-md bg-slate-900 px-2 py-0.5 text-2xs font-medium text-slate-300 border border-slate-800"
                       >
-                        {asset.replace('_', ' ')}: <strong className="text-white">{pct}%</strong>
+                        {asset.replace('_', ' ')}: <strong className="text-slate-100">{pct}%</strong>
                       </span>
                     ))}
                   </div>

@@ -148,28 +148,28 @@ export function TaxCalculatorCard({ onCalculate, isLoading = false }: TaxCalcula
           <button
             type="button"
             onClick={() => applyPreset('stcg')}
-            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-white"
+            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-[var(--text-primary)]"
           >
             STCG 20%
           </button>
           <button
             type="button"
             onClick={() => applyPreset('ltcg')}
-            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-white"
+            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-[var(--text-primary)]"
           >
             LTCG 12.5%
           </button>
           <button
             type="button"
             onClick={() => applyPreset('fifo')}
-            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-white"
+            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-[var(--text-primary)]"
           >
             FIFO Lots
           </button>
           <button
             type="button"
             onClick={() => applyPreset('prebudget')}
-            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-white"
+            className="rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:border-[var(--gold-primary)] hover:text-[var(--text-primary)]"
           >
             Pre-Budget
           </button>

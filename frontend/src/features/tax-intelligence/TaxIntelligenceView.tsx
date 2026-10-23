@@ -175,7 +175,7 @@ export function TaxIntelligenceView() {
           className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             activeTab === 'calculator'
               ? 'bg-[var(--gold-primary)] text-black shadow-xs font-bold'
-              : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Calculator className="h-4 w-4" />
@@ -188,7 +188,7 @@ export function TaxIntelligenceView() {
           className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             activeTab === 'portfolio'
               ? 'bg-[var(--gold-primary)] text-black shadow-xs font-bold'
-              : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Coins className="h-4 w-4" />
@@ -201,7 +201,7 @@ export function TaxIntelligenceView() {
           className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             activeTab === 'scenario'
               ? 'bg-[var(--gold-primary)] text-black shadow-xs font-bold'
-              : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
           }`}
         >
           <TrendingUp className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function TaxIntelligenceView() {
           className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             activeTab === 'rules'
               ? 'bg-[var(--gold-primary)] text-black shadow-xs font-bold'
-              : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-white'
+              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Scale className="h-4 w-4" />

@@ -69,12 +69,12 @@ export const GoalTimelinePlanner: React.FC<GoalTimelinePlannerProps> = ({ goalTi
 
         {/* Shortfall Remedial Callout */}
         {hasShortfall && goalTimeline.required_additional_monthly_sip > 0 && (
-          <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-text-secondary">
             <div className="flex items-center gap-3">
-              <PlusCircle className="h-5 w-5 text-amber-400 flex-shrink-0" />
-              <span className="text-amber-200">
-                <strong className="text-amber-300">Action to Bridge Deficit:</strong> Increase your monthly SIP contribution by{' '}
-                <strong className="text-white underline">{formatINR(goalTimeline.required_additional_monthly_sip)}/month</strong> to achieve 100% target goal corpus.
+              <PlusCircle className="h-5 w-5 text-[var(--color-warning)] flex-shrink-0" />
+              <span>
+                <strong className="text-[var(--color-warning)]">Action to Bridge Deficit:</strong> Increase your monthly SIP contribution by{' '}
+                <strong className="text-text-primary underline">{formatINR(goalTimeline.required_additional_monthly_sip)}/month</strong> to achieve 100% target goal corpus.
               </span>
             </div>
           </div>
