@@ -3,7 +3,6 @@ import { apiFetch, AUTH_LOGOUT_EVENT } from '@/services/api'
 import * as authService from '@/services/auth'
 import type { AuthStatus, DashboardResponse, LoginRequest, RegisterRequest, UserMe } from '@/types/auth'
 import { AuthContext, type AuthContextValue } from './AuthContext'
-import { clearArenaSessionStorage } from '@/features/fno-arena/arenaSessionStorage'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
@@ -24,7 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const clearWelcomeSession = useCallback(() => {
-    clearArenaSessionStorage()
     try {
       sessionStorage.removeItem('stockiq_welcome_pending')
       sessionStorage.removeItem('stockiq_welcome_seen')

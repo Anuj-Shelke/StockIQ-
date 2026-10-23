@@ -25,11 +25,11 @@ const item: Variants = {
 
 function Field({ label, error, children }: { label: string; error?: string | null; children: ReactNode }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold text-text-primary">{label}</span>
+    <label className="block space-y-2">
+      <span className="block text-xs font-semibold tracking-wider uppercase text-text-secondary">{label}</span>
       {children}
       {error && (
-        <span role="alert" className="mt-1 block text-sm text-loss">
+        <span role="alert" className="mt-1.5 block text-xs font-mono text-loss">
           {error}
         </span>
       )}
@@ -55,7 +55,7 @@ export function AuthPanel({ variant, revealed }: Props) {
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirm?: string }>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [portal, setPortal] = useState<'user' | 'admin' | null>(null)
+  const [portal, setPortal] = useState<'user' | 'admin'>('user')
 
   const signup = variant === 'signup'
   const authed = status === 'authenticated'
@@ -118,9 +118,9 @@ export function AuthPanel({ variant, revealed }: Props) {
       animate={revealed ? 'show' : 'hide'}
       variants={panel}
       inert={!revealed}
-      className={`auth-panel card-black absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-5 sm:p-6 md:p-8
+      className={`auth-panel card-black absolute z-20 max-h-[calc(100svh-1.5rem)] overflow-y-auto rounded-3xl p-6 sm:p-8 md:p-10
         inset-x-3 bottom-3
-        md:inset-x-auto md:bottom-auto md:right-[5vw] md:top-1/2 md:w-[26rem] md:-translate-y-1/2
+        md:inset-x-auto md:bottom-auto md:right-[6vw] md:top-1/2 md:w-[32rem] md:-translate-y-1/2
         shadow-2xl border border-gold/30 backdrop-blur-xl
         ${revealed ? '' : 'pointer-events-none'}`}
     >
@@ -129,12 +129,12 @@ export function AuthPanel({ variant, revealed }: Props) {
         ₹
       </div>
 
-      <motion.div variants={item} className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold/50 bg-gold/10 font-display text-lg text-gold font-bold">₹</span>
-          <span className="font-display text-xl tracking-tight text-text-primary">StockIQ</span>
+      <motion.div variants={item} className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-9 w-9 place-items-center rounded-xl border border-gold/50 bg-gold/10 font-display text-xl text-gold font-bold shadow-sm">₹</span>
+          <span className="font-display text-2xl tracking-tight text-text-primary">StockIQ</span>
         </div>
-        <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-gold/10 border border-gold/20 text-gold">
+        <span className="text-[11px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md bg-gold/10 border border-gold/25 text-gold font-medium">
           Secure Access
         </span>
       </motion.div>
@@ -148,7 +148,7 @@ export function AuthPanel({ variant, revealed }: Props) {
           </>
         )}
       </motion.h2>
-      <motion.p variants={item} className="mb-5 mt-2 text-sm leading-relaxed text-text-secondary">
+      <motion.p variants={item} className="mb-6 mt-2 text-sm leading-relaxed text-text-secondary">
         {variant === 'forgot' ? 'Password reset is not available yet.' : 'Understand the risk. Explore the data. Know the reasoning.'}
       </motion.p>
 
@@ -162,40 +162,62 @@ export function AuthPanel({ variant, revealed }: Props) {
           </Link>
         </motion.div>
       ) : authed ? (
-        <motion.div variants={item} className="space-y-3">
-          <Link to="/dashboard" className="btn-gold w-full text-center block">
+        <motion.div variants={item} className="space-y-4">
+          <Link to="/dashboard" className="btn-gold w-full min-h-[52px] text-center flex items-center justify-center text-base font-semibold rounded-xl">
             Continue to dashboard
           </Link>
           <button type="button" onClick={logout} className="w-full text-center text-xs text-text-muted hover:text-text-primary transition font-mono">
             Sign out
           </button>
         </motion.div>
-      ) : !signup && !portal ? (
-        <motion.div variants={item} className="space-y-3">
-          <p className="text-sm font-semibold text-text-primary">How would you like to continue?</p>
-          <button type="button" onClick={() => setPortal('user')} className="card-surface flex w-full items-start gap-3 p-4 text-left hover:border-gold/40">
-            <UserRound className="mt-0.5 h-5 w-5 text-gold" />
-            <span><strong className="block text-sm text-text-primary">User</strong><span className="text-xs text-text-muted">Understand your portfolio and risk</span></span>
-          </button>
-          <button type="button" onClick={() => setPortal('admin')} className="card-surface flex w-full items-start gap-3 p-4 text-left hover:border-gold/40">
-            <ShieldCheck className="mt-0.5 h-5 w-5 text-gold" />
-            <span><strong className="block text-sm text-text-primary">Admin</strong><span className="text-xs text-text-muted">Review users, analyses, and expert-review requests</span></span>
-          </button>
-          <p className="pt-2 text-center text-xs text-text-muted">Don't have an account? <Link to="/signup" className="font-medium text-gold hover:underline">Sign up</Link></p>
-        </motion.div>
       ) : (
         <>
-          {!signup && portal && <button type="button" onClick={() => { setPortal(null); setFormError(null) }} className="mb-3 inline-flex items-center gap-1 text-xs text-text-muted hover:text-text-primary"><ArrowLeft className="h-3.5 w-3.5" /> Change portal · {portal === 'admin' ? 'Admin' : 'User'}</button>}
-          <form onSubmit={onSubmit} noValidate className="space-y-3.5">
+          {!signup && (
+            <motion.div variants={item} className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-white/[0.04] p-1.5 border border-white/[0.08]">
+              <button
+                type="button"
+                onClick={() => { setPortal('user'); setFormError(null) }}
+                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs font-semibold tracking-wide transition-all ${
+                  portal === 'user'
+                    ? 'bg-gold/20 text-gold border border-gold/40 shadow-sm'
+                    : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04]'
+                }`}
+              >
+                <UserRound className="h-4 w-4" />
+                <span>Investor</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setPortal('admin'); setFormError(null) }}
+                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-xs font-semibold tracking-wide transition-all ${
+                  portal === 'admin'
+                    ? 'bg-gold/20 text-gold border border-gold/40 shadow-sm'
+                    : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04]'
+                }`}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>Admin</span>
+              </button>
+            </motion.div>
+          )}
+
+          <form onSubmit={onSubmit} noValidate className="space-y-5">
             {signup && (
               <motion.div variants={item}>
                 <Field label="Full name (optional)">
-                  <input className="input-default" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+                  <input className="input-default" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" />
                 </Field>
               </motion.div>
             )}
+            {portal === 'admin' && !signup && (
+              <motion.div variants={item} className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
+                <span className="font-bold">Admin Portal: </span>
+                <span className="text-text-secondary">Sign in with administrator credentials (e.g. <span className="font-mono text-gold font-medium">admin@stockiq.ai</span>).</span>
+              </motion.div>
+            )}
+
             <motion.div variants={item}>
-              <Field label="Email" error={errors.email}>
+              <Field label="Email address" error={errors.email}>
                 <input
                   className="input-default"
                   type="email"
@@ -203,7 +225,7 @@ export function AuthPanel({ variant, revealed }: Props) {
                   inputMode="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={portal === 'admin' ? 'admin@stockiq.ai' : 'you@example.com'}
                   aria-invalid={!!errors.email}
                 />
               </Field>
@@ -212,21 +234,21 @@ export function AuthPanel({ variant, revealed }: Props) {
               <Field label="Password" error={errors.password}>
                 <span className="relative block">
                   <input
-                    className="input-default pr-11"
+                    className="input-default pr-14"
                     type={showPw ? 'text' : 'password'}
                     autoComplete={signup ? 'new-password' : 'current-password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={signup ? 'At least 8 characters' : 'Your password'}
+                    placeholder={signup ? 'At least 8 characters' : 'Enter your password'}
                     aria-invalid={!!errors.password}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw((v) => !v)}
                     aria-label={showPw ? 'Hide password' : 'Show password'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-text-muted hover:text-gold hover:bg-white/5 transition"
                   >
-                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </span>
               </Field>
@@ -234,26 +256,30 @@ export function AuthPanel({ variant, revealed }: Props) {
             {signup && (
               <motion.div variants={item}>
                 <Field label="Confirm password" error={errors.confirm}>
-                  <input className="input-default font-mono" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                  <input className="input-default" type={showPw ? 'text' : 'password'} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" />
                 </Field>
               </motion.div>
             )}
 
             {formError && (
-              <p role="alert" className="rounded-lg border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss font-mono">
+              <p role="alert" className="rounded-xl border border-loss/30 bg-loss/10 px-4 py-3 text-xs text-loss font-mono">
                 {formError}
               </p>
             )}
 
-            <motion.div variants={item}>
-              <button type="submit" className="btn-gold w-full text-center flex items-center justify-center gap-2" disabled={busy}>
-                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                {signup ? 'Create account' : 'Sign in'}
+            <motion.div variants={item} className="pt-1">
+              <button
+                type="submit"
+                className="btn-gold w-full min-h-[52px] py-3.5 text-base font-semibold shadow-lg flex items-center justify-center gap-2.5 rounded-xl transition-all"
+                disabled={busy}
+              >
+                {busy && <Loader2 className="h-5 w-5 animate-spin" />}
+                {signup ? 'Create account' : portal === 'admin' ? 'Sign in as Admin' : 'Sign in as Investor'}
               </button>
             </motion.div>
           </form>
 
-          <motion.div variants={item} className="mt-4 flex flex-col items-center gap-1.5 text-xs text-text-muted">
+          <motion.div variants={item} className="mt-6 flex flex-col items-center gap-2 text-xs text-text-muted">
             {!signup && (
               <Link to="/forgot-password" className="hover:text-text-primary transition">
                 Forgot password?

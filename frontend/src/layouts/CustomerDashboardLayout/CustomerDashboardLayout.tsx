@@ -85,10 +85,10 @@ export function CustomerDashboardLayout() {
   )
 
   return (
-    <div className="min-h-screen bg-canvas text-text-primary md:grid md:grid-cols-[16rem_1fr] transition-colors duration-200">
-      {/* Sidebar (Desktop) / Drawer (Mobile) */}
+    <div className="min-h-screen bg-canvas text-text-primary transition-colors duration-200">
+      {/* Sidebar (Desktop) / Drawer (Mobile) - Fixed at one place */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col transform border-r border-theme-subtle bg-surface p-4 transition-transform duration-200 md:sticky md:top-0 md:h-screen md:self-start md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 h-screen flex-col border-r border-theme-subtle bg-surface p-4 transition-transform duration-200 md:translate-x-0 ${
           open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
@@ -126,7 +126,7 @@ export function CustomerDashboardLayout() {
       )}
 
       {/* Main Workspace Shell */}
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col md:pl-64">
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-theme-subtle bg-surface/90 px-4 py-3 backdrop-blur-md md:px-8">
           <button

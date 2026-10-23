@@ -46,21 +46,27 @@ class PortfolioService:
             return fallback_price
 
         # Stock / Equity price resolution
+        # 1. Try MarketDataService real-time quote first
         try:
-            # 1. Try DB stock catalog
+            live_pr = MarketDataService.get_realtime_price(clean_symbol, fallback_default=0.0)
+            if live_pr > 0:
+                return float(live_pr)
+        except Exception:
+            pass
+
+        # 2. Try DB stock catalog
+        try:
             stock = db.query(Stock).filter(Stock.symbol.ilike(clean_symbol)).first()
-            if stock and stock.current_price:
+            if stock and stock.current_price and float(stock.current_price) > 0:
                 return float(stock.current_price)
         except Exception:
             pass
 
-        # 2. Try MarketDataService live quote
-        try:
-            quote = MarketDataService.get_quote(clean_symbol)
-            if quote and quote.current_price > 0:
-                return float(quote.current_price)
-        except Exception:
-            pass
+        # 3. Try stock universe catalog fallback
+        from app.db.stock_universe_data import get_stock_by_symbol
+        stock_meta = get_stock_by_symbol(clean_symbol)
+        if stock_meta and stock_meta.get("current_price"):
+            return float(stock_meta["current_price"])
 
         return fallback_price
 

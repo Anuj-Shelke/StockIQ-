@@ -15,7 +15,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, synonym
 
 from app.db.base import Base, GUID
-import app.models.investment_planner  # noqa: F401 - ensure mappers resolve
 
 
 class User(Base):

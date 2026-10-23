@@ -116,18 +116,30 @@ class AssetAllocationEngine:
                 raw_weights["Diversified Index Funds"] -= excess_equity * 0.4
                 raw_weights["Fixed Deposits"] += excess_equity
 
-        # 5. User Asset Class Preferences
-        prefs = profile.preferred_asset_classes or []
-        if prefs:
-            if "Stocks" not in prefs:
+        # 5. User Asset Class Preferences (Normalizing format strings robustly)
+        raw_prefs = profile.preferred_asset_classes or []
+        normalized_prefs = set()
+        for p in raw_prefs:
+            p_upper = str(p).upper()
+            if "STOCK" in p_upper or "EQUITY" in p_upper:
+                normalized_prefs.add("Stocks")
+            if "GOLD" in p_upper:
+                normalized_prefs.add("Gold")
+            if "DEPOSIT" in p_upper or "FD" in p_upper:
+                normalized_prefs.add("Fixed Deposits")
+            if "FUND" in p_upper or "INDEX" in p_upper or "MUTUAL" in p_upper:
+                normalized_prefs.add("Diversified Index Funds")
+
+        if normalized_prefs:
+            if "Stocks" not in normalized_prefs:
                 raw_weights["Fixed Deposits"] += raw_weights["Stocks"] * 0.5
                 raw_weights["Diversified Index Funds"] += raw_weights["Stocks"] * 0.5
                 raw_weights["Stocks"] = 0.0
-            if "Gold" not in prefs:
+            if "Gold" not in normalized_prefs:
                 raw_weights["Fixed Deposits"] += raw_weights["Gold"] * 0.5
                 raw_weights["Diversified Index Funds"] += raw_weights["Gold"] * 0.5
                 raw_weights["Gold"] = 0.0
-            if "Fixed Deposits" not in prefs and risk_tier in ["Moderate", "High"] and horizon_years >= 3.0:
+            if "Fixed Deposits" not in normalized_prefs and risk_tier in ["Moderate", "High"] and horizon_years >= 3.0:
                 raw_weights["Diversified Index Funds"] += raw_weights["Fixed Deposits"]
                 raw_weights["Fixed Deposits"] = 0.0
 

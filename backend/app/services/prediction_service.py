@@ -16,14 +16,17 @@ from app.schemas.prediction import (
 from app.services.explanation_service import ExplanationService
 
 
-# Calibrated asset baselines for Indian top tickers
-TICKER_PROFILES: Dict[str, Dict] = {
-    "RELIANCE.NS": {"price": 2985.0, "name": "Reliance Industries Ltd", "drift": 0.048, "vol": 0.18},
-    "TCS.NS": {"price": 4120.0, "name": "Tata Consultancy Services", "drift": 0.035, "vol": 0.15},
-    "INFY.NS": {"price": 1890.0, "name": "Infosys Ltd", "drift": 0.042, "vol": 0.17},
-    "HDFCBANK.NS": {"price": 1680.0, "name": "HDFC Bank Ltd", "drift": 0.038, "vol": 0.16},
-    "ICICIBANK.NS": {"price": 1260.0, "name": "ICICI Bank Ltd", "drift": 0.052, "vol": 0.19},
-}
+from app.db.stock_universe_data import COMPREHENSIVE_STOCK_UNIVERSE
+
+# Calibrated asset baselines for Indian top tickers across NSE and BSE
+TICKER_PROFILES: Dict[str, Dict] = {}
+for s in COMPREHENSIVE_STOCK_UNIVERSE:
+    TICKER_PROFILES[s["symbol"]] = {
+        "price": float(s.get("current_price", 1000.0)),
+        "name": s.get("name", s["symbol"]),
+        "drift": float(s.get("drift", 0.045)),
+        "vol": round(float(s.get("volatility", 20.0)) / 100.0, 3),
+    }
 
 HORIZON_SCALERS = {
     "7d": 0.25,
@@ -46,7 +49,7 @@ class PredictionService:
     ) -> PredictionResponse:
         """Run ML forecasting model and calculate SHAP feature contributions."""
         sym_clean = request.stock_symbol.strip().upper()
-        if not sym_clean.endswith(".NS") and not sym_clean.endswith(".BO") and len(sym_clean) <= 10:
+        if not sym_clean.endswith(".NS") and not sym_clean.endswith(".BO") and len(sym_clean) <= 10 and sym_clean not in ("GOLD", "SILVER"):
             sym_clean = f"{sym_clean}.NS"
 
         # Check ticker profile
@@ -59,17 +62,27 @@ class PredictionService:
             vol = prof["vol"]
         else:
             # Query db for stock if available
-            cur_price = 2450.0
-            drift = 0.040
-            vol = 0.18
+            cur_price = 1000.0
+            drift = 0.045
+            vol = 0.20
             if db:
                 try:
                     s_rec = db.query(Stock).filter(Stock.symbol == sym_clean).first()
                     if s_rec:
                         stock_name = s_rec.name or sym_clean
-                        cur_price = float(s_rec.current_price or 2450.0)
+                        cur_price = float(s_rec.current_price or 1000.0)
+                        if s_rec.beta:
+                            drift = round(0.040 * float(s_rec.beta), 3)
+                            vol = round(0.18 * float(s_rec.beta), 3)
                 except Exception:
                     pass
+
+        # Synchronize with live real-time price
+        from app.integrations.market_data.market_service import MarketDataService
+        live_price = MarketDataService.get_realtime_price(sym_clean, fallback_default=cur_price)
+        if live_price and live_price > 0:
+            cur_price = live_price
+
 
         scale = HORIZON_SCALERS.get(request.target_horizon, 1.0)
         expected_drift = drift * scale
