@@ -96,6 +96,7 @@ const INSTALLED_SEBI_DOCUMENTS: InstalledDoc[] = [
 ]
 
 const SAMPLE_PROMPTS = [
+  'What is the minimum net worth requirement for registered Portfolio Managers in India?',
   'What are the mandatory risk profiling rules under SEBI (Investment Advisers) Regulations?',
   'What is the maximum fee an Investment Adviser can legally charge a retail client?',
   'What constitutes Unpublished Price Sensitive Information (UPSI) under SEBI PIT Regulations?',
@@ -265,7 +266,34 @@ export function SebiRagChatbot() {
             relevanceScore: 0.95,
           },
         ]
-      } else if (lower.includes('age') || lower.includes('minor') || lower.includes('eligib') || lower.includes('demat') || lower.includes('invest in stock') || lower.includes('kyc')) {
+      } else if (
+        lower.includes('portfolio manager') ||
+        lower.includes('protfolio manager') ||
+        lower.includes('pms') ||
+        lower.includes('portfolio management') ||
+        lower.includes('protfolio management')
+      ) {
+        botResponse =
+          'Under **SEBI (Portfolio Managers) Regulations, 2020 (Regulation 9 & 23)**:\n\n' +
+          '- **Minimum Net Worth Requirement:** Every registered Portfolio Manager must continuously maintain a minimum tangible net worth of **₹5 Crore** (raised from ₹2 Crore to ensure financial strength and operational resilience).\n' +
+          '- **Minimum Client Investment Ticket Size:** A portfolio manager cannot accept funds or securities worth less than **₹50 Lakh** from any client, strictly reserving PMS services for High Net Worth Individuals (HNIs).\n' +
+          '- **Asset Segregation:** Client funds and securities must be maintained in dedicated, segregated Demat and bank accounts.\n' +
+          '- **Performance Reporting:** Performance must be reported to clients at least quarterly using the Time-Weighted Rate of Return (TWRR) methodology net of all fees.'
+        citations = [
+          {
+            docId: 'SEBI-PMS-2020',
+            title: 'SEBI (Portfolio Managers) Regulations, 2020',
+            section: 'Regulation 9 - Net Worth Requirement of ₹5 Crore',
+            circularNo: 'SEBI/LAD-NRO/GN/2019/46 & CIR/P/2020/22',
+            officialUrl: 'https://www.sebi.gov.in/legal/regulations/jan-2020/securities-and-exchange-board-of-india-portfolio-managers-regulations-2020_45719.html',
+            excerpt: 'Mandatory minimum net worth of ₹5 Crore for PMS registration and ₹50 Lakh minimum client ticket size.',
+            relevanceScore: 0.98,
+          },
+        ]
+      } else if (
+        (/\b(age|ages|minor|minors|child|under\s*18|how\s*old)\b/i.test(lower) || lower.includes('demat') || lower.includes('invest in stock') || lower.includes('kyc')) &&
+        !/(manager|management|average|brokerage|leverage|coverage|package|message)/i.test(lower)
+      ) {
         botResponse =
           'Under the **Indian Contract Act, 1872** and **SEBI / Depository (NSDL/CDSL) Master Circulars**:\n\n' +
           '- **Statutory Minimum Age:** The legal minimum age to independently open a trading and Demat account and trade in the Indian stock market is **18 years** (age of majority).\n' +

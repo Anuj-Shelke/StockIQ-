@@ -27,8 +27,8 @@ const DEFAULT_PROFILE: PlannerProfileInput = {
   investment_style: 'HYBRID',
   monthly_sip_amount: 15000,
   preferred_asset_classes: ['Stocks', 'Fixed Deposits', 'Gold'],
-  preferred_sectors: ['Technology', 'Financial Services', 'Consumer Goods'],
-  preferred_stocks: ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS'],
+  preferred_sectors: [],
+  preferred_stocks: [],
 }
 
 interface Props {
@@ -86,38 +86,38 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
         investment_style: 'HYBRID',
         monthly_sip_amount: 10000,
         preferred_asset_classes: ['Stocks', 'Fixed Deposits', 'Gold'],
-        preferred_sectors: ['Information Technology', 'Banking & Financials'],
-        preferred_stocks: ['TCS.NS', 'HDFCBANK.NS', 'RELIANCE.NS'],
+        preferred_sectors: [],
+        preferred_stocks: [],
       })
     } else if (preset === 'conservative') {
       setForm({
-        age: 48,
-        occupation: 'Senior Manager',
+        age: 55,
+        occupation: 'Senior Executive',
         monthly_income: 180000,
         monthly_expenses: 75000,
         monthly_savings: 50000,
         emergency_fund: 500000,
         existing_investments: 2500000,
-        debt_obligations: 20000,
-        financial_dependents: 3,
-        current_investable_capital: 750000,
+        debt_obligations: 0,
+        financial_dependents: 1,
+        current_investable_capital: 2500000,
         primary_goal: 'Capital Preservation',
-        target_amount: 1000000,
-        target_years: 3,
-        investment_horizon_category: '1-3 years',
+        target_amount: 3500000,
+        target_years: 5,
+        investment_horizon_category: '3-5 years',
         risk_tolerance: 'Low',
         required_liquidity: 'High',
         max_acceptable_loss_pct: 8,
         investment_style: 'LUMP_SUM',
         monthly_sip_amount: 5000,
-        preferred_asset_classes: ['Fixed Deposits', 'Gold'],
-        preferred_sectors: ['Banking & Financials', 'FMCG'],
-        preferred_stocks: ['HDFCBANK.NS', 'TCS.NS'],
+        preferred_asset_classes: ['Fixed Deposits', 'Gold', 'Stocks'],
+        preferred_sectors: ['Utilities & Energy', 'FMCG', 'Pharmaceuticals'],
+        preferred_stocks: ['POWERGRID.NS', 'NESTLEIND.NS', 'CIPLA.NS'],
       })
     } else {
       setForm({
         age: 26,
-        occupation: 'Product Designer',
+        occupation: 'Software Engineer',
         monthly_income: 90000,
         monthly_expenses: 32000,
         monthly_savings: 40000,
@@ -125,7 +125,7 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
         existing_investments: 200000,
         debt_obligations: 0,
         financial_dependents: 0,
-        current_investable_capital: 400000,
+        current_investable_capital: 300000,
         primary_goal: 'Long-term Financial Independence',
         target_amount: 2500000,
         target_years: 8,
@@ -136,8 +136,8 @@ export function InvestmentProfileForm({ initialValues, onSubmit, loading }: Prop
         investment_style: 'SIP',
         monthly_sip_amount: 20000,
         preferred_asset_classes: ['Stocks', 'Gold'],
-        preferred_sectors: ['Information Technology', 'Automotive & EV'],
-        preferred_stocks: ['TATAMOTORS.NS', 'INFY.NS', 'RELIANCE.NS'],
+        preferred_sectors: ['Defense & Aerospace', 'Automotive & EV', 'Information Technology'],
+        preferred_stocks: ['BEL.NS', 'TATAMOTORS.NS', 'ICICIBANK.NS'],
       })
     }
   }

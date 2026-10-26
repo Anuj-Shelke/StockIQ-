@@ -87,7 +87,25 @@ class SuitabilityEngine:
         capital_cushion_ratio = min(10.0, (capital / max(expenses * 12.0, 1.0)) * 5.0)
         score_cushion = max(2.0, 15.0 - dependent_penalty + capital_cushion_ratio)
 
-        raw_capacity_score = round(score_surplus + score_debt + score_horizon + score_cushion, 1)
+        # Factor E: Demographic Life-Stage Runway (Up to 15 pts)
+        age = profile.age or 35
+        if age <= 30:
+            score_age = 15.0
+        elif age <= 42:
+            score_age = 11.0
+        elif age <= 52:
+            score_age = 7.0
+        elif age <= 60:
+            score_age = 3.0
+        else:
+            score_age = 1.0
+
+        if age >= 55:
+            assumptions.append(
+                f"Senior Capital Preservation Principle: At age {age}, portfolio risk is calibrated towards wealth protection and low volatility."
+            )
+
+        raw_capacity_score = round((score_surplus + score_debt + score_horizon + score_cushion) * 0.85 + score_age, 1)
         risk_capacity_score = max(5.0, min(95.0, raw_capacity_score))
 
         # Risk Capacity Classification

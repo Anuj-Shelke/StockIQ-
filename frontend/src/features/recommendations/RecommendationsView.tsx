@@ -728,20 +728,7 @@ export function RecommendationsView() {
     }
   }, [age, annualIncome, investmentAmount, horizonYears, riskPreference, selectedSectorFilter, apiStocks])
 
-  if (hasHoldings === null)
-    return <div className="card-surface p-8 text-center text-text-muted">{portfolioError || 'Loading recommendations…'}</div>
-  if (portfolioError)
-    return <div role="alert" className="card-surface p-8 text-center text-text-primary">{portfolioError}</div>
-  if (!hasHoldings)
-    return (
-      <section className="card-surface mx-auto max-w-2xl space-y-4 p-8 text-center">
-        <h2 className="text-xl font-semibold text-text-primary">Recommendations are ready to explore.</h2>
-        <p className="text-sm text-text-muted">You can add your holdings or apply recommendations straight to your portfolio.</p>
-        <Link to="/dashboard/portfolio" className="btn-gold inline-flex">
-          Manage holdings
-        </Link>
-      </section>
-    )
+  // If user does not have existing holdings, we still allow full exploration and 1-click portfolio creation
 
   const handleApplyPortfolio = async () => {
     setIsApplying(true)
@@ -820,6 +807,23 @@ export function RecommendationsView() {
         </div>
       )}
 
+      {hasHoldings === false && (
+        <div className="flex items-center justify-between rounded-xl border border-gold/30 bg-gold/10 p-4 text-xs text-text-primary shadow">
+          <span>
+            You haven't added custom holdings yet. Explore personalized AI stock recommendations below and apply them straight to your portfolio, or{' '}
+            <Link to="/dashboard/portfolio" className="text-gold underline font-medium hover:text-gold-light">
+              manage holdings manually
+            </Link>.
+          </span>
+        </div>
+      )}
+
+      {portfolioError && (
+        <div className="rounded-xl border border-loss/30 bg-loss/10 p-3 text-xs text-loss shadow">
+          Notice: {portfolioError}
+        </div>
+      )}
+
       {/* Profiling Inputs Panel */}
       <div className="card-surface p-6 space-y-6">
         <div className="flex items-center gap-2 border-b border-theme-subtle pb-3">
@@ -828,6 +832,64 @@ export function RecommendationsView() {
           <span className="ml-auto text-xs text-text-muted flex items-center gap-1 font-mono">
             <RefreshCw className={`h-3 w-3 text-gold ${isSyncing ? 'animate-spin' : ''}`} /> Real-time model sync
           </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-[11px] font-mono text-text-muted">Quick Profile Benchmarks:</span>
+          <button
+            type="button"
+            onClick={() => {
+              setAge(28)
+              setInvestmentAmount(200000)
+              setAnnualIncome(1200000)
+              setHorizonYears(7)
+              setRiskPreference('aggressive')
+              setPrimaryGoal('wealth_creation')
+            }}
+            className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${
+              age === 28 && investmentAmount === 200000
+                ? 'bg-gold-500 text-ink-950 font-bold'
+                : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
+            }`}
+          >
+            28y Accumulator (₹2 Lakh)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAge(58)
+              setInvestmentAmount(6700000)
+              setAnnualIncome(2800000)
+              setHorizonYears(3)
+              setRiskPreference('conservative')
+              setPrimaryGoal('preservation')
+            }}
+            className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${
+              age === 58 && investmentAmount === 6700000
+                ? 'bg-gold-500 text-ink-950 font-bold'
+                : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
+            }`}
+          >
+            58y Preservation (₹67 Lakh)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAge(38)
+              setInvestmentAmount(1500000)
+              setAnnualIncome(2000000)
+              setHorizonYears(5)
+              setRiskPreference('dynamic')
+              setPrimaryGoal('wealth_creation')
+            }}
+            className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${
+              age === 38 && investmentAmount === 1500000
+                ? 'bg-gold-500 text-ink-950 font-bold'
+                : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
+            }`}
+          >
+            38y Balanced (₹15 Lakh)
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
@@ -862,7 +924,7 @@ export function RecommendationsView() {
             <input
               type="range"
               min={300000}
-              max={5000000}
+              max={10000000}
               step={100000}
               value={annualIncome}
               onChange={(e) => setAnnualIncome(Number(e.target.value))}
@@ -870,8 +932,8 @@ export function RecommendationsView() {
             />
             <div className="flex justify-between text-[10px] text-text-muted font-mono">
               <span>₹3 Lakh</span>
-              <span>₹25 Lakh</span>
-              <span>₹50+ Lakh</span>
+              <span>₹50 Lakh</span>
+              <span>₹1 Crore</span>
             </div>
           </div>
 
@@ -884,7 +946,7 @@ export function RecommendationsView() {
             <input
               type="range"
               min={25000}
-              max={2000000}
+              max={10000000}
               step={25000}
               value={investmentAmount}
               onChange={(e) => setInvestmentAmount(Number(e.target.value))}
@@ -892,8 +954,8 @@ export function RecommendationsView() {
             />
             <div className="flex justify-between text-[10px] text-text-muted font-mono">
               <span>₹25K</span>
-              <span>₹10 Lakh</span>
-              <span>₹20+ Lakh</span>
+              <span>₹50 Lakh</span>
+              <span>₹1 Crore</span>
             </div>
           </div>
 

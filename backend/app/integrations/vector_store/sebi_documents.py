@@ -349,5 +349,34 @@ SEBI_REGULATORY_DOCUMENTS: List[Dict[str, Any]] = [
             },
         ],
     },
+    {
+        "doc_id": "SEBI-PMS-2020",
+        "title": "SEBI (Portfolio Managers) Regulations, 2020 & Net Worth Requirements",
+        "category": "Portfolio Management Services & HNI Mandates",
+        "circular_no": "SEBI/LAD-NRO/GN/2019/46 & CIR/P/2020/22",
+        "official_url": "https://www.sebi.gov.in/legal/regulations/jan-2020/securities-and-exchange-board-of-india-portfolio-managers-regulations-2020_45719.html",
+        "sections": [
+            {
+                "section": "Regulation 9 - Net Worth Requirement of ₹5 Crore for Portfolio Managers",
+                "summary": "Every registered Portfolio Manager must maintain continuous minimum tangible net worth of ₹5 Crore.",
+                "text": (
+                    "Under Regulation 9 of SEBI (Portfolio Managers) Regulations, 2020, every applicant seeking registration as a Portfolio Manager "
+                    "or holding a certificate of registration must continuously maintain a minimum net worth of **₹5 Crore** (raised from ₹2 Crore "
+                    "to enhance financial resilience and risk governance). Net worth is defined as paid-up capital plus free reserves less accumulated "
+                    "losses and deferred expenditure, certified by an independent statutory auditor."
+                ),
+            },
+            {
+                "section": "Regulation 23 - Client Minimum Ticket Size of ₹50 Lakh",
+                "summary": "Minimum client investment amount in Portfolio Management Services (PMS) is strictly ₹50 Lakh.",
+                "text": (
+                    "Under Regulation 23 of SEBI (Portfolio Managers) Regulations, 2020, the portfolio manager cannot accept funds or securities worth "
+                    "less than **₹50 Lakh** from any client. This minimum threshold ensures that PMS products are restricted to sophisticated High "
+                    "Net Worth Individuals (HNIs) capable of absorbing individual equity drawdown and strategy risk. Funds and securities of each client "
+                    "must be segregated and held in dedicated client-named Demat and bank accounts."
+                ),
+            },
+        ],
+    },
 ]
 

@@ -14,7 +14,7 @@ from app.services.explanation_service import ExplanationService
 
 
 class PlannerStockEngine:
-    """Selects and weights equities based on investor profile, risk tier, and ML forecasting confidence."""
+    """Selects and weights equities based on investor profile, risk tier, age, capital, and ML forecasting confidence."""
 
     @classmethod
     def select_stock_allocations(
@@ -23,6 +23,10 @@ class PlannerStockEngine:
         risk_tier: str,
         preferred_sectors: List[str] = None,
         preferred_stocks: List[str] = None,
+        age: int = 32,
+        capital: float = 300000.0,
+        horizon_years: float = 5.0,
+        primary_goal: str = "wealth_creation",
     ) -> List[StockAllocationItem]:
         if total_equity_amount <= 0:
             return []
@@ -30,32 +34,75 @@ class PlannerStockEngine:
         preferred_sectors = [s.lower() for s in (preferred_sectors or [])]
         preferred_stocks = [s.upper() for s in (preferred_stocks or [])]
 
+        is_young = age <= 35
+        is_senior = age >= 50
+        is_starter_capital = capital <= 500000.0  # e.g., 2 Lakh
+        is_large_capital = capital >= 3000000.0   # e.g., 67 Lakh
+        is_conservative = risk_tier in ["Very Low", "Low"] or is_senior
+        is_aggressive = risk_tier == "High" or is_young
+
         # Filter and rank stocks from the StockIQ catalog universe
         ranked_stocks = []
         for stock in STOCK_CATALOG_UNIVERSE:
+            def_score = float(stock.get("defensive_score", 70))
+            gro_score = float(stock.get("growth_score", 70))
+            beta = float(stock.get("beta", 1.0))
+            proj_ret = float(stock.get("projected_return_pct", 10.0))
+            mcap = stock.get("market_cap_category", "Large Cap")
+            sec_lower = stock.get("sector", "").lower()
+            cur_price = float(stock.get("current_price", 1000.0))
+
             score = 50.0
 
-            # Match sector or stock preference
-            if preferred_sectors and any(ps in stock["sector"].lower() for ps in preferred_sectors):
-                score += 30.0
-            if preferred_stocks and (stock["symbol"].upper() in preferred_stocks or stock["symbol"].split(".")[0].upper() in preferred_stocks):
-                score += 40.0
+            if is_senior or is_conservative:
+                # Senior / Wealth Preservation (e.g. 58yo, ₹67L): Capital safety, low beta (<0.85), high dividend moats
+                score += def_score * 0.75 + (1.25 - min(beta, 1.5)) * 32.0 + proj_ret * 0.6
+                if beta > 1.05:
+                    score -= 35.0
+                if stock.get("volatility_risk") == "High":
+                    score -= 30.0
+                if mcap in ["Mega Cap", "Large Cap"]:
+                    score += 15.0
+                if any(k in sec_lower for k in ["fmcg", "power", "utility", "pharma", "energy"]):
+                    score += 15.0
+                if gro_score >= 90 and def_score < 75:
+                    score -= 25.0
+            elif is_young or is_aggressive:
+                # Young Accumulator (e.g. 28yo, ₹2L): High growth compounders, high return, capex tailwinds
+                score += gro_score * 0.70 + proj_ret * 2.5 + (beta - 0.85) * 16.0
+                if gro_score >= 88:
+                    score += 18.0
+                if def_score >= 92 and gro_score <= 70:
+                    score -= 30.0
+                if any(k in sec_lower for k in ["defence", "capital goods", "consumer", "tech", "auto", "telecom"]):
+                    score += 14.0
+                if is_starter_capital and gro_score >= 85:
+                    score += 12.0
+            else:
+                # Balanced
+                score += def_score * 0.45 + gro_score * 0.45 + (1.15 - abs(beta - 1.0)) * 14.0 + proj_ret * 1.2
 
-            # Match risk profile
-            if risk_tier in ["Very Low", "Low"]:
-                score += stock.get("defensive_score", 70) * 0.4
-                if stock["volatility_risk"] == "Low":
-                    score += 25.0
-            elif risk_tier == "Moderate":
-                score += (stock.get("defensive_score", 70) + stock.get("growth_score", 70)) * 0.25
-            else:  # High
-                score += stock.get("growth_score", 70) * 0.5
-                if stock["projected_return_pct"] >= 8.0:
-                    score += 20.0
+            # Capital Size Calibration
+            if is_large_capital:
+                if mcap == "Mega Cap":
+                    score += 12.0
+                elif mcap == "Mid Cap":
+                    score -= 10.0
+            elif is_starter_capital:
+                if cur_price <= 4000.0:
+                    score += 6.0
+
+            # Match sector preference
+            if preferred_sectors and any(ps in sec_lower for ps in preferred_sectors):
+                score += 12.0
+
+            # Match stock preference gently without overriding risk profile
+            if preferred_stocks and (stock["symbol"].upper() in preferred_stocks or stock["symbol"].split(".")[0].upper() in preferred_stocks):
+                score += 8.0
 
             ranked_stocks.append((score, stock))
 
-        # Sort by score descending and take top 4-5 diversified stocks across sectors
+        # Sort by score descending and take top diversified stocks across sectors
         ranked_stocks.sort(key=lambda x: x[0], reverse=True)
 
         selected_items: List[StockAllocationItem] = []

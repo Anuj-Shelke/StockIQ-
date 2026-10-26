@@ -81,15 +81,37 @@ export function ChatAssistant() {
       let citations: SourceCitation[] = []
       const lower = question.toLowerCase()
 
-      // 1. Minimum age and Demat eligibility
+      // 1. Portfolio Managers (PMS) Regulations & Net Worth Requirement
       if (
-        lower.includes('age') ||
-        lower.includes('minor') ||
-        lower.includes('invest in stock') ||
-        lower.includes('minimum age') ||
-        lower.includes('how old') ||
-        lower.includes('18') ||
-        lower.includes('eligib')
+        lower.includes('portfolio manager') ||
+        lower.includes('protfolio manager') ||
+        lower.includes('pms') ||
+        lower.includes('portfolio management') ||
+        lower.includes('protfolio management')
+      ) {
+        reply =
+          'Under Regulation 9 of **SEBI (Portfolio Managers) Regulations, 2020**, every registered Portfolio Manager ' +
+          'must maintain a continuous minimum net worth of **₹5 Crore** (raised from ₹2 Crore to ensure high capital adequacy). ' +
+          'Additionally, under Regulation 23, the statutory minimum client investment ticket size for PMS services is **₹50 Lakh**.'
+        citations = [
+          {
+            id: 'c-pms-01',
+            title: 'SEBI (Portfolio Managers) Regulations, 2020 (Regulation 9 - Net Worth)',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+          {
+            id: 'c-pms-02',
+            title: 'SEBI Circular on PMS Minimum Ticket Size (₹50 Lakh)',
+            publisher: 'SEBI Investment Management Department',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 2. Minimum age and Demat eligibility (guarded against 'manager', 'management', etc.)
+      else if (
+        /\b(age|ages|minor|minors|child|under\s*18|how\s*old)\b/i.test(lower) &&
+        !/(manager|management|average|brokerage|leverage|coverage|package|message)/i.test(lower)
       ) {
         reply =
           'The legal minimum age to open an independent Demat and Trading account in India is **18 years** ' +
