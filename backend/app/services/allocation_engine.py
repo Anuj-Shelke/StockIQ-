@@ -47,8 +47,33 @@ class AssetAllocationEngine:
         liquidity_pref = profile.required_liquidity
         max_loss = profile.max_acceptable_loss_pct
 
-        # 1. Baseline Distribution by Composite Risk Rating
-        if risk_tier == "Very Low":
+        # 1. Baseline Distribution by Composite Risk Rating and Demographic Life-Stage (Rule of 110)
+        age = profile.age or 35
+        if age <= 30:
+            # Young Accumulator (e.g. 28yo): High compounding equity runway
+            if risk_tier in ["High", "Moderate"]:
+                raw_weights = {
+                    "Fixed Deposits": 10.0,
+                    "Gold": 10.0,
+                    "Stocks": 45.0,
+                    "Diversified Index Funds": 35.0,
+                }
+            else:
+                raw_weights = {
+                    "Fixed Deposits": 20.0,
+                    "Gold": 15.0,
+                    "Stocks": 35.0,
+                    "Diversified Index Funds": 30.0,
+                }
+        elif age >= 52:
+            # Senior / Pre-Retirement (e.g. 58yo): High capital protection, low equity drawdown risk
+            raw_weights = {
+                "Fixed Deposits": 45.0,
+                "Gold": 15.0,
+                "Stocks": 18.0,
+                "Diversified Index Funds": 22.0,
+            }
+        elif risk_tier == "Very Low":
             raw_weights = {
                 "Fixed Deposits": 65.0,
                 "Gold": 15.0,

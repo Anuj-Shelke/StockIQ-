@@ -1,6 +1,5 @@
-"""Gemini LLM integration and grounded financial response generator."""
-
 import os
+import re
 from typing import Dict, List, Optional
 import httpx
 
@@ -19,7 +18,7 @@ class GeminiClient:
         """Generate response strictly grounded in retrieved regulatory sources."""
         # Check if live GEMINI API key is available
         api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
-        if api_key and api_key.startswith("AIza"):
+        if api_key and (api_key.startswith("AIza") or len(api_key) > 20):
             try:
                 prompt = (
                     "You are StockIQ's SEBI-compliant Financial Education Assistant. "
@@ -48,14 +47,49 @@ class GeminiClient:
             except Exception:
                 pass
 
+        # Check if live CLAUDE API key is available
+        claude_key = getattr(settings, "CLAUDE_API_KEY", None) or os.getenv("CLAUDE_API_KEY")
+        if claude_key and (claude_key.startswith("sk-ant") or len(claude_key) > 20):
+            try:
+                resp = httpx.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": claude_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": "claude-3-haiku-20240307",
+                        "max_tokens": 200,
+                        "messages": [{"role": "user", "content": f"You are StockIQ's SEBI compliance assistant. Answer concisely under 75 words: {query}"}],
+                    },
+                    timeout=6.0,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = data.get("content", [])
+                    if content and "text" in content[0]:
+                        return content[0]["text"].strip()
+            except Exception:
+                pass
+
         # Deterministic grounded synthesizer (offline & high-accuracy fallback)
         primary_ctx = retrieved_contexts[0] if retrieved_contexts else None
         secondary_ctx = retrieved_contexts[1] if len(retrieved_contexts) > 1 else None
 
         q_lower = query.lower()
 
-        # 1. Minimum age and Demat account eligibility
-        if any(w in q_lower for w in ["age", "18", "minor", "child", "kid", "how old", "eligib", "under 18", "teen", "student"]):
+        # 1. Registered Portfolio Manager (PMS) regulations & Net Worth Requirement
+        if any(w in q_lower for w in ["portfolio manager", "protfolio manager", "pms", "portfolio management", "protfolio management"]):
+            return (
+                "Under Regulation 9 of SEBI (Portfolio Managers) Regulations, 2020, every registered Portfolio Manager "
+                "must maintain a continuous minimum net worth of **₹5 Crore** (raised from ₹2 Crore to enhance capital adequacy). "
+                "Additionally, under Regulation 23, the statutory minimum client investment ticket size for PMS services is **₹50 Lakh**."
+            )
+
+        # 2. Minimum age and Demat account eligibility (with word boundary guard)
+        elif (re.search(r'\b(age|ages|minor|minors|child|kid|kids|teen|under\s*18|how\s*old)\b', q_lower)
+              and not any(w in q_lower for w in ["manager", "management", "average", "brokerage", "leverage", "coverage", "package", "message"])):
             return (
                 "The legal minimum age to open an independent Demat and Trading account in India is **18 years** "
                 "(Indian Contract Act & SEBI Master Circular). Minors under 18 can hold a Demat account managed "

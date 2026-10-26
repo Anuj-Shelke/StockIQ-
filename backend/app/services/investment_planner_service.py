@@ -59,12 +59,16 @@ class InvestmentPlannerService:
         fd_amount = sum(a.allocated_amount for a in allocations if "deposit" in a.asset_class.lower() or "fd" in a.asset_class.lower())
         gold_amount = sum(a.allocated_amount for a in allocations if "gold" in a.asset_class.lower())
 
-        # 3. Stock Selection with SHAP Explainability
+        # 3. Stock Selection with SHAP Explainability (demographic & capital calibrated)
         stocks = PlannerStockEngine.select_stock_allocations(
             total_equity_amount=equity_amount,
             risk_tier=suitability.composite_risk_rating,
             preferred_sectors=profile_input.preferred_sectors,
             preferred_stocks=profile_input.preferred_stocks,
+            age=profile_input.age,
+            capital=suitability.investable_capital_allocated,
+            horizon_years=profile_input.target_years,
+            primary_goal=profile_input.primary_goal,
         )
 
         # 4. Bank Fixed Deposit Options
