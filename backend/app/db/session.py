@@ -185,28 +185,36 @@ def seed_default_data(db: Session) -> None:
             logger.info("Successfully seeded demo user and portfolio.")
 
         # Seed configured administrator user
-        admin_email = (settings.ADMIN_EMAIL or "admin@stockiq.ai").strip().lower()
-        admin_password = settings.ADMIN_PASSWORD or "adminpassword123"
-        existing_admin = db.query(User).filter(func.lower(User.email) == admin_email).first()
-        if not existing_admin:
-            import uuid
-            admin_user = User(
-                id=uuid.uuid5(uuid.NAMESPACE_URL, "stockiq-admin:" + admin_email),
-                email=admin_email,
-                password_hash=get_password_hash(admin_password),
-                full_name=settings.ADMIN_NAME or "StockIQ Administrator",
-                role="admin",
-                is_active=True,
-                is_superuser=True,
-            )
-            db.add(admin_user)
-            db.commit()
-            logger.info("Successfully seeded administrator user (%s).", admin_email)
-        else:
-            if existing_admin.role != "admin" or not existing_admin.is_active or not getattr(existing_admin, "is_superuser", False):
-                existing_admin.role = "admin"
-                existing_admin.is_active = True
-                existing_admin.is_superuser = True
+        admin_emails = list(dict.fromkeys([
+            (settings.ADMIN_EMAIL or "anujshelke12121@gmail.com").strip().lower(),
+            "anujshelke12121@gmail.com",
+            "admin@stockiq.ai",
+        ]))
+        admin_password = settings.ADMIN_PASSWORD or "admin@1234"
+        admin_name = settings.ADMIN_NAME or "Anuj Shelke"
+
+        import uuid
+        for email_addr in admin_emails:
+            existing_adm = db.query(User).filter(func.lower(User.email) == email_addr).first()
+            if not existing_adm:
+                adm_user = User(
+                    id=uuid.uuid5(uuid.NAMESPACE_URL, "stockiq-admin:" + email_addr),
+                    email=email_addr,
+                    password_hash=get_password_hash(admin_password if email_addr == admin_emails[0] or email_addr == "anujshelke12121@gmail.com" else "adminpassword123"),
+                    full_name=admin_name if email_addr == "anujshelke12121@gmail.com" else "StockIQ Administrator",
+                    role="admin",
+                    is_active=True,
+                    is_superuser=True,
+                )
+                db.add(adm_user)
+                db.commit()
+                logger.info("Successfully seeded administrator user (%s).", email_addr)
+            else:
+                existing_adm.role = "admin"
+                existing_adm.is_active = True
+                existing_adm.is_superuser = True
+                if email_addr == (settings.ADMIN_EMAIL or "anujshelke12121@gmail.com").strip().lower():
+                    existing_adm.password_hash = get_password_hash(admin_password)
                 db.commit()
     except Exception as exc:
         logger.warning("Could not auto-seed default data: %s", str(exc))

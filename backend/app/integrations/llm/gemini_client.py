@@ -21,15 +21,16 @@ class GeminiClient:
         api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
         if api_key and api_key.startswith("AIza"):
             try:
-                # Call Gemini REST endpoint
                 prompt = (
                     "You are StockIQ's SEBI-compliant Financial Education Assistant. "
-                    "Answer the user query concisely, using only facts verified in the context below.\n\n"
+                    "Answer the user query concisely, using only facts verified in the context below. "
+                    "Keep your answer short, easy to understand, grounded in plain words (2 to 4 sentences, under 75 words). "
+                    "Directly address the question asked and cite the relevant SEBI regulation or guideline.\n\n"
                     f"User Question: {query}\n\n"
-                    "Verified Knowledge Context:\n"
+                    "Verified Regulatory Context:\n"
                 )
                 for i, ctx in enumerate(retrieved_contexts, 1):
-                    prompt += f"[{i}] {ctx['title']} ({ctx['publisher']}): {ctx['text']}\n"
+                    prompt += f"[{i}] {ctx.get('title', 'SEBI Guideline')} ({ctx.get('publisher', 'SEBI')}): {ctx.get('text', '')}\n"
 
                 endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
                 resp = httpx.post(
@@ -56,102 +57,157 @@ class GeminiClient:
         # 1. Minimum age and Demat account eligibility
         if any(w in q_lower for w in ["age", "18", "minor", "child", "kid", "how old", "eligib", "under 18", "teen", "student"]):
             return (
-                "The legal minimum age to open an independent Demat and Trading account to invest in the Indian stock market is **18 years**, "
-                "in accordance with the Indian Contract Act, 1872 and SEBI Master Circular for Depositories.\n\n"
-                "Key regulatory requirements regarding age and stock investing:\n\n"
-                "• **Adult Investors (18+ years)**: Individuals who have completed 18 years have full legal contractual capacity to open an independent trading and Demat account, sign broker client agreements, and trade in equities, mutual funds, and derivatives.\n"
-                "• **Minors (Under 18 years)**: Minors can legally hold and invest in stocks, bonds, and mutual funds, but exclusively through a **Minor Demat Account** opened and operated by a natural guardian (father or mother) or a court-appointed legal guardian. Minors are legally prohibited from executing speculative intraday trades or equity derivatives (Futures & Options).\n"
-                "• **Transition to Major (Turning 18)**: When the minor turns 18, trading is temporarily suspended until the account is converted into a regular individual account by submitting fresh KYC documents, the investor's new signature, and updated bank details."
+                "The legal minimum age to open an independent Demat and Trading account in India is **18 years** "
+                "(Indian Contract Act & SEBI Master Circular). Minors under 18 can hold a Demat account managed "
+                "by a parent or legal guardian, but cannot execute intraday trades or derivatives (F&O). "
+                "Upon turning 18, the account transitions to adult status via fresh KYC."
             )
 
-        # 2. KYC requirements and documents
-        elif any(w in q_lower for w in ["kyc", "document", "open account", "pan card", "aadhaar", "open demat"]):
+        # 2. Investment Advisers (IA) rules & fee limits
+        elif any(w in q_lower for w in ["adviser", "advisor", "fee limit", "fee cap", "advisory fee", "charge client", "regulation 15", "aua"]):
             return (
-                "Under SEBI KYC norms, opening a Demat and Trading account in India requires the following mandatory documents:\n\n"
-                "1. **PAN Card**: Mandatory statutory identity document for all capital market transactions.\n"
-                "2. **Proof of Identity & Address**: Aadhaar (with OTP e-Sign), Passport, Voter ID, or Driving License.\n"
-                "3. **Bank Account Proof**: Bank passbook copy, bank statement, or cancelled cheque with IFSC and name clearly printed.\n"
-                "4. **In-Person Verification (IPV)**: Quick live webcam photo or video verification to prevent identity theft.\n\n"
-                "Once registered through a SEBI-registered KYC Registration Agency (KRA) or CKYC registry, the same KYC is valid across all brokers and depositories."
+                "Under SEBI (Investment Advisers) Regulations, 2013, advisers act in a fiduciary capacity and must "
+                "conduct written risk profiling before advising. Advisory fees are legally capped at **2.5% of AUA per year** "
+                "under the assets model, or a maximum **₹1,25,000 per family per year** under the fixed fee model. "
+                "Advisers cannot earn product distribution commissions."
             )
 
-        # 3. Market hours, timings, and settlement
-        elif any(w in q_lower for w in ["timing", "timings", "market hours", "open time", "close time", "settlement", "t+1"]):
+        # 3. Insider Trading & UPSI
+        elif any(w in q_lower for w in ["insider", "upsi", "unpublished price", "pit reg", "insider trading", "tip sharing"]):
             return (
-                "Trading on Indian stock exchanges (NSE & BSE) operates on the following schedule (Monday to Friday):\n\n"
-                "• **Pre-Open Session (09:00 AM – 09:15 AM IST)**: Order entry, modification, and equilibrium price discovery.\n"
-                "• **Regular Trading Hours (09:15 AM – 03:30 PM IST)**: Continuous order matching for equity cash and derivatives.\n"
-                "• **Post-Closing Session (03:40 PM – 04:00 PM IST)**: Trades executed at the official closing price.\n\n"
-                "All Indian equities settle under the **T+1 rolling settlement cycle**, meaning securities and funds are transferred to the investor within 24 hours of the trade date."
+                "Under SEBI (Prohibition of Insider Trading) Regulations, 2015, Unpublished Price Sensitive Information (UPSI) "
+                "includes non-public financials, dividends, mergers, demergers, and capital structure changes. "
+                "Communicating or trading while possessing UPSI is illegal and carries severe penalties, disgorgement of profits, "
+                "and trading bans. Companies must maintain a tamper-proof Structured Digital Database (SDD)."
             )
 
-        # 4. Maximum Drawdown (MDD)
-        elif "drawdown" in q_lower or "mdd" in q_lower:
+        # 4. Market Manipulation, Pump and Dump, Front-Running & Social Media Tips
+        elif any(w in q_lower for w in ["pump", "dump", "front running", "front-running", "manipulat", "pfutp", "fake tip", "telegram tip", "whatsapp tip", "fraud"]):
             return (
-                "Maximum Drawdown (MDD) is the peak-to-trough decline of an investment before a new high is achieved. "
-                "According to NISM certification materials, MDD measures extreme downside pain rather than average volatility. "
-                "Historically, during systemic panics (like the 2008 GFC or 2020 COVID shock), Indian equities experienced "
-                "drawdowns between 38% and 54%."
+                "SEBI PFUTP Regulations, 2003 prohibit fraudulent practices like circular trading, spoofing order books, "
+                "front-running client trades, and circulating unregistered stock tips on social media (Telegram, WhatsApp, YouTube) "
+                "to artificially pump stock prices. Violators face fines up to ₹25 Crore or three times the profits earned under Section 15HA."
             )
 
-        # 5. CAGR and Compounding
-        elif "cagr" in q_lower or "compound" in q_lower or "return" in q_lower:
+        # 5. IPO, ASBA & Retail Allotment Quotas
+        elif any(w in q_lower for w in ["ipo", "asba", "allotment", "anchor", "book building", "icdr", "retail quota"]):
             return (
-                "CAGR (Compound Annual Growth Rate) provides the geometric annualized growth rate of your investment corpus. "
-                "As documented in NISM guidelines, CAGR accounts for compounding effects and smooths out annual fluctuations, "
-                "making it the standard benchmark for comparing multi-year asset performance."
+                "Under SEBI ICDR Regulations, 2018, all retail IPO bids must use **ASBA (Application Supported by Blocked Amount)** "
+                "via UPI or bank branch, ensuring money stays in your account until allotment. In mainboard IPOs, at least **35% of the offer** "
+                "is reserved for retail individual investors (applications up to ₹2,00,000)."
             )
 
-        # 6. Taxation: LTCG & STCG
-        elif "tax" in q_lower or "ltcg" in q_lower or "stcg" in q_lower:
+        # 6. Corporate Governance & LODR Event Disclosures
+        elif any(w in q_lower for w in ["lodr", "disclosure", "board meeting", "30 minute", "independent director", "rpt", "related party"]):
             return (
-                "Under the Indian Income Tax Act Section 112A, Long Term Capital Gains (LTCG) on listed equities held for >12 months "
-                "are taxed at 12.5% beyond the annual exemption limit of ₹1.25 Lakh. Short Term Capital Gains (STCG) are taxed at 20% under Section 111A. "
-                "Bank Fixed Deposit interest is taxed at your applicable personal income slab rate."
+                "Under SEBI LODR Regulations, 2015, listed companies must disclose board meeting outcomes (financial results, dividends, "
+                "buybacks) within **30 minutes** of meeting closure. At least 50% of the board must be independent directors if the chairman "
+                "is executive, and all Related Party Transactions require prior Audit Committee approval."
             )
 
-        # 7. Gold, Fixed Deposits & Diversification
-        elif "gold" in q_lower or "fixed deposit" in q_lower or "fd" in q_lower or "diversif" in q_lower:
+        # 7. Mutual Fund Categorization & Expense Ratios
+        elif any(w in q_lower for w in ["mutual fund", "scheme categor", "large cap fund", "mid cap fund", "small cap fund", "ter", "expense ratio", "risk-o-meter"]):
             return (
-                "Per AMFI risk management best practices, holding uncorrelated assets like Physical Gold and Fixed Deposits cushions "
-                "portfolio drawdown during equity bear markets. Gold has demonstrated an 11.2% historical 10-year CAGR in INR, "
-                "serving as an effective hedge against currency depreciation and systemic equity market shocks."
+                "SEBI mandates true-to-label mutual funds: Large Cap funds invest min. 80% in top 100 stocks, Mid Cap min. 65% in "
+                "101st-250th stocks, and Small Cap min. 65% in 251st+ stocks. Total Expense Ratio (TER) is capped between 1.05% and 2.25% "
+                "based on AUM. Schemes must display a monthly Risk-o-meter showing risk from Low to Very High."
             )
 
-        # 8. Circuit breakers and price limits
-        elif any(w in q_lower for w in ["circuit", "halt", "lower circuit", "upper circuit", "price band"]):
+        # 8. Research Analyst (RA) Regulations
+        elif any(w in q_lower for w in ["research analyst", "target price", "stock rating", "ra reg", "analyst certification", "nism series xv"]):
             return (
-                "SEBI enforces index-based market-wide circuit breakers to curb catastrophic systemic panics. "
-                "Triggers are set at 10%, 15%, and 20% movements in NIFTY 50 or SENSEX. "
-                "A 10% breach before 1:00 PM halts all trading nationwide for 45 minutes followed by a 15-minute pre-open call auction. "
-                "Individual non-F&O securities also operate within daily price bands (2%, 5%, 10%, or 20%)."
+                "Under SEBI (Research Analysts) Regulations, 2014, any individual or firm publishing stock price targets or research reports "
+                "must be SEBI-registered and NISM Series XV certified. Analysts cannot trade in recommended stocks 30 days before and 5 days "
+                "after report publication, and must prominently disclose all financial interests and conflicts."
             )
 
-        # 9. F&O risk disclosure
-        elif any(w in q_lower for w in ["f&o", "derivative", "option", "futures", "options trading"]):
+        # 9. Grievance Redressal (SCORES 2.0 & SMART ODR)
+        elif any(w in q_lower for w in ["score", "complaint", "grievance", "dispute", "smart odr", "redressal"]):
             return (
-                "Per SEBI's empirical study on retail trading in Futures & Options (F&O), **9 out of 10 individual traders (89%)** "
-                "incur net financial losses in derivatives trading. The average loss exceeded ₹1.1 Lakh per loss-making trader. "
-                "SEBI mandates strict 100% upfront margin collection and risk disclosure warnings before entering derivative contracts."
+                "Investors can register formal complaints against brokers, listed firms, or advisers on **SEBI SCORES 2.0** (scores.sebi.gov.in). "
+                "Entities must resolve grievances within **21 calendar days**. If unsatisfied, the investor can escalate to SEBI or initiate "
+                "independent online mediation and arbitration through the **SMART ODR portal**."
             )
 
-        # 10. Grievance Redressal (SCORES 2.0 & SMART ODR)
-        elif any(w in q_lower for w in ["score", "complaint", "fraud", "grievance", "dispute", "odr"]):
+        # 10. F&O Retail Loss Warning & Curbs
+        elif any(w in q_lower for w in ["f&o", "derivative", "option", "futures", "options trading", "margin"]):
             return (
-                "If an investor faces an unresolved grievance with a broker, listed firm, or depository, they can register a formal complaint on "
-                "**SEBI SCORES 2.0** (scores.sebi.gov.in). Intermediaries are legally required to resolve grievances within **21 calendar days**. "
-                "If unresolved, the investor can initiate online conciliation and arbitration through the **SMART ODR portal**."
+                "SEBI's official research found that **93% of individual retail traders lose money in F&O**, with average losses exceeding ₹1.1 Lakh. "
+                "To curb speculative over-leverage, SEBI raised minimum contract sizes to ₹15-20 Lakh, limited weekly index expiries to one per "
+                "exchange, and requires brokers to collect 100% upfront margins before order execution."
             )
 
-        # 11. Grounded synthesis directly from retrieved knowledge context
-        elif primary_ctx:
+        # 11. KYC Requirements & Documents
+        elif any(w in q_lower for w in ["kyc", "document", "open account", "pan card", "aadhaar", "open demat", "kra"]):
             return (
-                f"Based on official investor guidelines from **{primary_ctx['publisher']}** (*{primary_ctx['title']}*):\n\n"
-                f"{primary_ctx['text']}\n\n"
-                f"{'Corroborating Source: ' + secondary_ctx['title'] if secondary_ctx else ''}"
+                "Under SEBI KYC norms, opening a Demat and Trading account requires: 1) Permanent Account Number (PAN Card), which is statutory; "
+                "2) Proof of Identity and Address (Aadhaar with e-Sign, Passport, Voter ID); 3) Bank account proof (cancelled cheque); "
+                "and 4) In-Person Verification (IPV via webcam). A single KRA/CKYC registration is valid across all brokers."
+            )
+
+        # 12. Market Hours, Timings, & T+1 Settlement
+        elif any(w in q_lower for w in ["timing", "timings", "market hour", "open time", "close time", "settlement", "t+1"]):
+            return (
+                "Indian exchanges (NSE & BSE) trade Monday through Friday: Pre-open price discovery from 09:00 AM to 09:15 AM IST, "
+                "and continuous regular trading from 09:15 AM to 03:30 PM IST. All Indian cash equities settle on a **T+1 rolling settlement cycle**, "
+                "meaning shares and funds are delivered within 24 hours of the trade date."
+            )
+
+        # 13. Circuit Breakers and Price Bands
+        elif any(w in q_lower for w in ["circuit", "halt", "lower circuit", "upper circuit", "price band", "limit"]):
+            return (
+                "SEBI triggers index circuit breakers at **10%, 15%, and 20%** moves in NIFTY 50 or SENSEX to halt trading nationwide during panics. "
+                "A 10% breach before 1:00 PM halts trading for 45 minutes followed by a 15-minute pre-open call auction. "
+                "Individual non-F&O stocks operate within daily price bands of 2%, 5%, 10%, or 20%."
+            )
+
+        # 14. Taxation: LTCG & STCG (Budget 2024)
+        elif any(w in q_lower for w in ["tax", "ltcg", "stcg", "capital gain", "budget 2024", "112a", "111a"]):
+            return (
+                "Under Budget 2024 (Section 112A), Long-Term Capital Gains (LTCG) on equities held over 12 months are taxed at **12.5%** "
+                "on gains above the ₹1.25 Lakh annual exemption. Short-Term Capital Gains (STCG) on holdings up to 12 months are taxed at **20%** "
+                "under Section 111A. Bank Fixed Deposit interest is taxed at your regular income slab rate."
+            )
+
+        # 15. Max Drawdown & Risk Reality
+        elif any(w in q_lower for w in ["drawdown", "mdd", "risk reality", "downside"]):
+            return (
+                "Maximum Drawdown (MDD) calculates the peak-to-trough percentage drop of your portfolio before reaching a new high. "
+                "In StockIQ's Risk Reality Check, MDD reveals the exact emotional pain and capital loss you must endure during crashes "
+                "(e.g., -38.4% in COVID-19 or -52% in 2008), contrasting historical reality against perceived risk tolerance."
+            )
+
+        # 16. AI/ML and Algorithmic Trading Rules
+        elif any(w in q_lower for w in ["algorithm", "algo", "ai/ml", "artificial intelligence", "automated", "xai", "explainab"]):
+            return (
+                "SEBI's fintech framework requires AI and algorithmic systems to provide transparent explainability, pre-trade risk controls, "
+                "order rate throttles, and emergency kill switches. Retail recommendations cannot rely on uninterpretable black-box models, "
+                "and intermediaries must maintain auditable logs of feature weights and training data."
+            )
+
+        # 17. Buyback & Delisting Rules
+        elif any(w in q_lower for w in ["buyback", "delisting", "delist", "reverse book"]):
+            return (
+                "Delisting requires the promoter to acquire at least 90% of outstanding shares via the Reverse Book Building (RBB) process. "
+                "In share buybacks, companies can buy back up to 25% of paid-up capital and reserves, with a mandatory **15% reservation** "
+                "for retail shareholders holding shares valued under ₹2 Lakh."
+            )
+
+        # 18. Grounded synthesis directly from retrieved knowledge context
+        elif primary_ctx and primary_ctx.get("text"):
+            title = primary_ctx.get("title", "SEBI Regulatory Guidelines")
+            publisher = primary_ctx.get("publisher", "SEBI")
+            text = primary_ctx.get("text", "")
+            # Produce a concise, grounded 2-3 sentence summary
+            sentences = [s.strip() for s in text.split(".") if len(s.strip()) > 15]
+            summary_sentences = ". ".join(sentences[:2]) + "." if sentences else text[:180] + "."
+            return (
+                f"Per official **{publisher}** guidelines (*{title}*):\n\n"
+                f"{summary_sentences}\n\n"
+                f"Investors must ensure adherence to PAN KYC and documented suitability norms."
             )
         else:
             return (
-                "SEBI and Indian exchange regulations mandate disciplined risk assessment, transparent fee disclosures, "
-                "and asset allocation aligned with investor horizon and risk tolerance. All transactions require mandatory PAN KYC."
+                "SEBI regulations require all market participants to complete mandatory PAN-based KYC, maintain disciplined risk profiling, "
+                "and ensure investments match their financial horizon and risk tolerance. All advisers and brokers operate under statutory oversight."
             )

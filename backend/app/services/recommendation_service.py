@@ -114,10 +114,14 @@ class RecommendationService:
 
         goal = (request.primary_goal or "wealth_creation").lower()
 
-        # 4. Filter & Rank Stocks based on User's Demographics, Goal & ML Metrics
+        # 4. Filter & Rank Stocks based on User's Demographics, Goal, Capital, and ML Metrics
         scored_stocks = []
-        is_high_risk = risk_capacity_level in ("Aggressive", "Moderate-Aggressive")
-        is_conservative = risk_capacity_level in ("Conservative", "Moderate-Conservative")
+        is_young = age <= 35
+        is_senior = age >= 52
+        is_starter_capital = capital <= 500000.0  # e.g., 2 Lakh
+        is_large_capital = capital >= 3000000.0   # e.g., 67 Lakh
+        is_high_risk = risk_capacity_level in ("Aggressive", "Moderate-Aggressive") or is_young
+        is_conservative = risk_capacity_level in ("Conservative", "Moderate-Conservative") or is_senior
 
         # Dynamically ensure catalog has latest stocks
         current_catalog = []
@@ -149,65 +153,71 @@ class RecommendationService:
             beta = stock["beta"]
             def_score = stock["defensive_score"]
             gro_score = stock["growth_score"]
+            mcap = stock["market_cap_category"]
+            sec_lower = stock["sector"].lower()
 
-            # Base profile fit calculation
-            if is_conservative:
-                profile_fit = (def_score * 0.7) + ((1.5 - min(beta, 1.5)) * 25.0)
-            elif is_high_risk:
-                profile_fit = (gro_score * 0.7) + (min(proj_ret, 25.0) * 2.5) + (max(0.0, beta - 0.8) * 10.0)
+            # Dynamic Demographic & Capital-Calibrated Scoring
+            if is_senior or is_conservative:
+                # Senior (e.g., 58yo, 67L): Capital preservation, low beta (<0.85), high dividend yield, defensive moats
+                fit_score = (def_score * 0.75) + ((1.25 - min(beta, 1.5)) * 32.0) + (proj_ret * 0.6)
+                if beta > 1.05:
+                    fit_score -= 35.0  # Heavy penalty for high-beta volatility near retirement
+                if stock["volatility_risk"] == "High":
+                    fit_score -= 30.0
+                if mcap in ("Mega Cap", "Large Cap"):
+                    fit_score += 15.0
+                if any(w in sec_lower for w in ("fmcg", "power", "utility", "pharma", "energy")):
+                    fit_score += 15.0
+                if gro_score >= 90 and def_score < 75:
+                    fit_score -= 25.0  # Suppress speculative growth for seniors
+
+            elif is_young or is_high_risk:
+                # Young Accumulator (e.g., 28yo, 2L): High-growth compounders, high ROE, beta 1.05-1.35, capex tailwinds
+                fit_score = (gro_score * 0.70) + (proj_ret * 2.5) + ((beta - 0.85) * 16.0)
+                if gro_score >= 88:
+                    fit_score += 18.0
+                if def_score >= 92 and gro_score <= 70:
+                    fit_score -= 30.0  # Suppress slow-growth low-beta utilities for young growth profiles
+                if any(w in sec_lower for w in ("defence", "capital goods", "consumer", "tech", "automotive", "telecom")):
+                    fit_score += 14.0
+                if is_starter_capital and gro_score >= 85:
+                    fit_score += 12.0  # High velocity capital growth for 2 Lakh corpus
+
             else:
-                profile_fit = (def_score * 0.45) + (gro_score * 0.45) + ((1.2 - abs(beta - 1.0)) * 10.0)
+                # Balanced Mid-Career: Harmonious blend of defensive foundation and capital growth
+                fit_score = (def_score * 0.45) + (gro_score * 0.45) + ((1.15 - abs(beta - 1.0)) * 14.0) + (proj_ret * 1.2)
+                if def_score >= 80 and gro_score >= 80:
+                    fit_score += 12.0
 
-            # Goal-based strategic alignment adjustments
-            goal_bonus = 0.0
-            if "capital_preservation" in goal or "preservation" in goal:
-                if def_score >= 85 and beta <= 0.90:
-                    goal_bonus += 20.0
-                if stock["volatility_risk"] == "Low":
-                    goal_bonus += 10.0
-                if beta > 1.2:
-                    goal_bonus -= 20.0
+            # Capital Size Sizing Adjustments
+            if is_large_capital:
+                if mcap == "Mega Cap":
+                    fit_score += 12.0
+                elif mcap == "Mid Cap":
+                    fit_score -= 10.0
+            elif is_starter_capital:
+                if stock["current_price"] <= 4000.0:
+                    fit_score += 6.0  # Better position granularity for starter portfolios
+
+            # Goal-based alignment
+            if "preservation" in goal or "capital" in goal:
+                if def_score >= 85 and beta <= 0.85:
+                    fit_score += 18.0
             elif "dividend" in goal or "income" in goal:
-                # Value and cash-flow compounders
-                if any(w in stock["sector"].lower() for w in ("energy", "banking", "information technology", "fmcg")):
-                    goal_bonus += 15.0
-                if def_score >= 80:
-                    goal_bonus += 10.0
-            elif "wealth_creation" in goal or "aggressive" in goal:
-                if gro_score >= 88 or proj_ret >= 14.0:
-                    goal_bonus += 20.0
-                if any(w in stock["sector"].lower() for w in ("consumer", "defense", "automotive", "capital markets", "technology")):
-                    goal_bonus += 10.0
-            else:
-                # Balanced Growth
-                goal_bonus += 5.0 if def_score >= 75 and gro_score >= 75 else 0.0
+                if any(w in sec_lower for w in ("energy", "power", "banking", "fmcg")):
+                    fit_score += 16.0
+            elif "wealth" in goal or "growth" in goal:
+                if gro_score >= 88:
+                    fit_score += 15.0
 
-            # Horizon-based alignment adjustments
-            horizon_adjustment = 0.0
-            if horizon <= 2:
-                # Short horizon: heavily penalize high beta and high volatility
-                if stock["volatility_risk"] == "High" or beta > 1.25:
-                    horizon_adjustment -= 25.0
-                elif def_score >= 85:
-                    horizon_adjustment += 15.0
-            elif horizon >= 7:
-                # Long runway: reward secular high-growth compounders
-                if gro_score >= 85:
-                    horizon_adjustment += 15.0
-
-            # Age-based life cycle calibration
-            age_adjustment = 0.0
-            if age >= 55:
-                if def_score >= 85 and stock["volatility_risk"] in ("Low", "Moderate"):
-                    age_adjustment += 12.0
-                elif beta > 1.2:
-                    age_adjustment -= 15.0
-            elif age <= 30:
-                if gro_score >= 85:
-                    age_adjustment += 10.0
+            # Investment Horizon alignment
+            if horizon >= 7:
+                fit_score += 10.0 if gro_score >= 85 else 0.0
+            elif horizon <= 2:
+                fit_score -= 20.0 if (beta > 1.2 or stock["volatility_risk"] == "High") else 0.0
 
             suitability_score = round(
-                min(99.0, max(40.0, (ml_conf * 30.0) + (profile_fit * 0.35) + (proj_ret * 1.2) + goal_bonus + horizon_adjustment + age_adjustment)),
+                min(99.0, max(42.0, (ml_conf * 25.0) + (fit_score * 0.45) + (proj_ret * 0.8))),
                 1
             )
 
@@ -218,14 +228,34 @@ class RecommendationService:
             else:
                 tier = "Moderate Fit"
 
-            # Contextualized rationale tailored to age, income, capital, horizon, and goal
-            goal_label = goal.replace("_", " ").title()
-            rationale = (
-                f"Tailored for your {goal_label} objective with a {horizon}-year runway at age {age}: "
-                f"{stock['symbol']} delivers a {ml_conf * 100:.0f}% ML model confidence with "
-                f"a {stock['volatility_risk'].lower()} volatility profile (beta {beta:.2f}). "
-                f"Key driver: {stock['key_shap_drivers'][0]}."
-            )
+            # Dynamic, Data-Grounded XAI Rationale (NO boilerplate words)
+            goal_title = goal.replace("_", " ").title()
+            exchange_tag = stock.get("exchange", "NSE")
+            cap_lakhs = capital / 100000.0
+            primary_driver = stock["key_shap_drivers"][0] if stock["key_shap_drivers"] else "Sector leadership"
+            secondary_driver = stock["key_shap_drivers"][1] if len(stock["key_shap_drivers"]) > 1 else "Institutional inflows"
+
+            if is_senior or is_conservative:
+                rationale = (
+                    f"Tailored for your age-{age} capital preservation strategy safeguarding ₹{cap_lakhs:,.1f} Lakh: "
+                    f"{stock['symbol']} ({exchange_tag}) acts as an ultra-defensive anchor with a low beta of {beta:.2f} "
+                    f"and {def_score}/100 defensive score. At live price ₹{stock['current_price']:,.2f}, it safeguards principal "
+                    f"against drawdown shocks while generating steady returns ({proj_ret:.1f}% target). Key driver: {primary_driver}."
+                )
+            elif is_young or is_high_risk:
+                rationale = (
+                    f"Calibrated for your age-{age} high-velocity wealth creation runway with ₹{cap_lakhs:,.1f} Lakh capital: "
+                    f"{stock['symbol']} ({exchange_tag}) offers an aggressive compounding profile with a {gro_score}/100 growth score, "
+                    f"{beta:.2f} beta, and {proj_ret:.1f}% projected return at live price ₹{stock['current_price']:,.2f}. "
+                    f"Key catalyst: {primary_driver}, supported by {secondary_driver}."
+                )
+            else:
+                rationale = (
+                    f"Calibrated for your {goal_title} objective with a {horizon}-year horizon at age {age}: "
+                    f"{stock['symbol']} ({exchange_tag}) balances stability (defensive {def_score}) with capital appreciation "
+                    f"(growth {gro_score}, {proj_ret:.1f}% return) at live price ₹{stock['current_price']:,.2f} with {ml_conf * 100:.0f}% confidence. "
+                    f"Core driver: {primary_driver}."
+                )
 
             scored_stocks.append({
                 **stock,
@@ -234,19 +264,30 @@ class RecommendationService:
                 "personalized_rationale": rationale,
             })
 
-        # Sort by suitability descending and take top 5 with sector diversification
+        # Sort by suitability descending and take top 5 with strict sector and company diversification
         scored_stocks.sort(key=lambda s: s["suitability_score"], reverse=True)
         seen_sector_counts: Dict[str, int] = {}
+        seen_companies: set = set()
         top_picks = []
+
         for s in scored_stocks:
+            base_sym = s["symbol"].split(".")[0]
             sec = s.get("sector", "Other")
-            if seen_sector_counts.get(sec, 0) < 2:
+            if base_sym not in seen_companies and seen_sector_counts.get(sec, 0) < 2:
                 top_picks.append(s)
+                seen_companies.add(base_sym)
                 seen_sector_counts[sec] = seen_sector_counts.get(sec, 0) + 1
             if len(top_picks) >= 5:
                 break
+
         if len(top_picks) < 5:
-            top_picks = scored_stocks[:5]
+            for s in scored_stocks:
+                base_sym = s["symbol"].split(".")[0]
+                if base_sym not in seen_companies:
+                    top_picks.append(s)
+                    seen_companies.add(base_sym)
+                if len(top_picks) >= 5:
+                    break
 
         # 5. Position Sizing & Allocation Weights across Equity Capital with Real-Time Prices
         from app.integrations.market_data.market_service import MarketDataService

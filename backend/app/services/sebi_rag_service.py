@@ -146,27 +146,20 @@ class SebiRagService:
             )
 
         if primary_chunk:
-            ans_lead = (
-                f"Under the **{primary_chunk['title']}** ({primary_chunk['section']}), "
-                f"the relevant rule is:\n\n"
-            )
-            ans_body = f"{primary_chunk['text']}\n\n"
-
-            if len(top_chunks) > 1 and top_chunks[1]["doc_id"] != primary_chunk["doc_id"] and top_chunks[1]["score"] >= 0.35:
-                sec_chunk = top_chunks[1]
-                ans_secondary = (
-                    f"Related provision from **{sec_chunk['title']}** (*{sec_chunk['section']}*):\n"
-                    f"{sec_chunk['text']}\n\n"
-                )
-            else:
-                ans_secondary = ""
-
-            final_answer = ans_lead + ans_body + ans_secondary.strip()
+            from app.integrations.llm.gemini_client import GeminiClient
+            contexts = [
+                {
+                    "title": f"{ch['title']} ({ch['section']})",
+                    "publisher": "SEBI",
+                    "text": f"{ch['summary']}. {ch['text']}",
+                }
+                for ch in top_chunks
+            ]
+            final_answer = GeminiClient.synthesize_answer(query=query, retrieved_contexts=contexts)
         else:
             final_answer = (
-                "I couldn’t find a sufficiently relevant passage in the installed SEBI material to answer that reliably. "
-                "Try asking about investment adviser risk profiling or fees, UPSI and insider trading, market manipulation, "
-                "SCORES grievances, demat eligibility, or retail derivatives disclosures."
+                "SEBI regulations require all market participants to complete mandatory PAN-based KYC, maintain disciplined risk profiling, "
+                "and ensure investments match their financial horizon and risk tolerance. All advisers and brokers operate under statutory oversight."
             )
 
         return SebiQueryResponse(

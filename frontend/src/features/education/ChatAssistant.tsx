@@ -6,9 +6,11 @@ import type { ChatMessage, SourceCitation } from '@/types/education'
 
 const STARTER_PROMPTS = [
   'What is the minimum age to invest in stock?',
+  'What is the maximum fee an Investment Adviser can charge?',
+  'What is Unpublished Price Sensitive Information (UPSI)?',
   'What is Max Drawdown and how does it protect investors?',
-  'How does inflation affect Bank Fixed Deposits?',
-  'What is the difference between LTCG and STCG tax?',
+  'What is the timeline to resolve complaints on SEBI SCORES 2.0?',
+  'What are the LTCG and STCG tax rates in Budget 2024?',
 ]
 
 const INITIAL_MESSAGES: ChatMessage[] = [
@@ -73,26 +75,27 @@ export function ChatAssistant() {
       console.warn('Backend education RAG unreachable, using grounded fallback knowledge:', err)
     }
 
-    // Graceful offline fallback
+    // Graceful grounded knowledge synthesizer (runs if backend is unreachable or on static deployment)
     setTimeout(() => {
       let reply = ''
       let citations: SourceCitation[] = []
       const lower = question.toLowerCase()
 
+      // 1. Minimum age and Demat eligibility
       if (
         lower.includes('age') ||
         lower.includes('minor') ||
         lower.includes('invest in stock') ||
         lower.includes('minimum age') ||
-        lower.includes('demat') ||
+        lower.includes('how old') ||
+        lower.includes('18') ||
         lower.includes('eligib')
       ) {
         reply =
-          'Under the **Indian Contract Act, 1872** and **SEBI / Depository (NSDL & CDSL) regulations**:\n\n' +
-          '- **Statutory Minimum Age:** The legal minimum age to independently open a Demat & Trading account and trade in the Indian stock market is **18 years** (age of majority).\n' +
-          '- **Minor Demat Accounts (<18 years):** Minors can hold a Demat account opened on their behalf by a natural or legal guardian for holding equities or mutual funds, but minors cannot independently trade or access derivatives (F&O).\n' +
-          '- **Mandatory Documentation:** Valid PAN, Aadhaar identity/address proof, an active bank account, and In-Person Verification (IPV) are required.\n' +
-          '- **Upon Turning 18:** The minor account is closed or converted to a standard individual adult account after submitting fresh adult KYC documentation.'
+          'The legal minimum age to open an independent Demat and Trading account in India is **18 years** ' +
+          '(Indian Contract Act & SEBI Master Circular). Minors under 18 can hold a Demat account managed ' +
+          'by a parent or legal guardian, but cannot execute intraday trades or derivatives (F&O). ' +
+          'Upon turning 18, the account transitions to adult status via fresh KYC.'
         citations = [
           {
             id: 'c-age-01',
@@ -107,56 +110,360 @@ export function ChatAssistant() {
             url: 'https://www.nsdl.co.in',
           },
         ]
-      } else if (question.toLowerCase().includes('drawdown')) {
+      }
+      // 2. Investment Adviser rules & fee caps
+      else if (
+        lower.includes('adviser') ||
+        lower.includes('advisor') ||
+        lower.includes('fee limit') ||
+        lower.includes('fee cap') ||
+        lower.includes('advisory fee') ||
+        lower.includes('charge client') ||
+        lower.includes('aua')
+      ) {
         reply =
-          '**Maximum Drawdown (MDD)** measures the largest observed loss from a historical peak to a subsequent trough before a new peak is attained.\n\n- It reveals the psychological *pain threshold* an investor must endure.\n- While CAGR shows what you made, Max Drawdown shows what you had to survive to get there.'
+          'Under SEBI (Investment Advisers) Regulations, 2013, advisers act in a fiduciary capacity and must ' +
+          'conduct written risk profiling before advising. Advisory fees are legally capped at **2.5% of AUA per year** ' +
+          'under the assets model, or a maximum **₹1,25,000 per family per year** under the fixed fee model. ' +
+          'Advisers cannot earn product distribution commissions.'
         citations = [
           {
-            id: 'c1',
-            title: 'Modern Portfolio Theory & Downside Risk Measures',
-            publisher: 'CFA Institute Research',
+            id: 'c-ia-01',
+            title: 'SEBI (Investment Advisers) Regulations, 2013 & Fee Circular',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
           },
+        ]
+      }
+      // 3. Insider Trading & UPSI
+      else if (
+        lower.includes('insider') ||
+        lower.includes('upsi') ||
+        lower.includes('unpublished price') ||
+        lower.includes('insider trading')
+      ) {
+        reply =
+          'Under SEBI PIT Regulations, 2015, Unpublished Price Sensitive Information (UPSI) covers non-public financials, ' +
+          'dividends, mergers, demergers, and capital structure changes. Communicating or trading while possessing UPSI is strictly ' +
+          'illegal and subject to severe civil penalties, disgorgement of profits, and trading bans. Companies must maintain a ' +
+          'tamper-proof Structured Digital Database (SDD).'
+        citations = [
           {
-            id: 'c2',
-            title: 'NIFTY 50 Historical Crash Analysis (2000-2024)',
-            publisher: 'NSE India Research',
+            id: 'c-pit-01',
+            title: 'SEBI (Prohibition of Insider Trading) Regulations, 2015',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 4. Market Manipulation, Pump & Dump, Front-Running & Social Media Tips
+      else if (
+        lower.includes('pump') ||
+        lower.includes('dump') ||
+        lower.includes('front running') ||
+        lower.includes('front-running') ||
+        lower.includes('manipulat') ||
+        lower.includes('pfutp') ||
+        lower.includes('fake tip') ||
+        lower.includes('telegram') ||
+        lower.includes('whatsapp') ||
+        lower.includes('fraud')
+      ) {
+        reply =
+          'SEBI PFUTP Regulations, 2003 prohibit fraudulent practices like circular trading, spoofing order books, ' +
+          'front-running client trades, and circulating unregistered stock tips on social media (Telegram, WhatsApp, YouTube) ' +
+          'to artificially pump stock prices. Violators face fines up to ₹25 Crore or three times the profits earned under Section 15HA.'
+        citations = [
+          {
+            id: 'c-pfutp-01',
+            title: 'SEBI (Prohibition of Fraudulent and Unfair Trade Practices) Regulations, 2003',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 5. IPO, ASBA & Retail Allotment Quotas
+      else if (
+        lower.includes('ipo') ||
+        lower.includes('asba') ||
+        lower.includes('allotment') ||
+        lower.includes('anchor') ||
+        lower.includes('book building') ||
+        lower.includes('retail quota')
+      ) {
+        reply =
+          'Under SEBI ICDR Regulations, 2018, all retail IPO bids must use **ASBA (Application Supported by Blocked Amount)** ' +
+          'via UPI or bank branch, ensuring money stays in your account until allotment. In mainboard IPOs, at least **35% of the offer** ' +
+          'is reserved for retail individual investors (applications up to ₹2,00,000).'
+        citations = [
+          {
+            id: 'c-icdr-01',
+            title: 'SEBI (Issue of Capital and Disclosure Requirements) Regulations, 2018',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 6. Corporate Governance & LODR Event Disclosures
+      else if (
+        lower.includes('lodr') ||
+        lower.includes('disclosure') ||
+        lower.includes('board meeting') ||
+        lower.includes('30 minute') ||
+        lower.includes('independent director') ||
+        lower.includes('related party')
+      ) {
+        reply =
+          'Under SEBI LODR Regulations, 2015, listed companies must disclose board meeting outcomes (financial results, dividends, ' +
+          'buybacks) within **30 minutes** of meeting closure. At least 50% of the board must be independent directors if the chairman ' +
+          'is executive, and all Related Party Transactions require prior Audit Committee approval.'
+        citations = [
+          {
+            id: 'c-lodr-01',
+            title: 'SEBI (Listing Obligations and Disclosure Requirements) Regulations, 2015',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 7. Mutual Fund Categorization & Expense Ratios
+      else if (
+        lower.includes('mutual fund') ||
+        lower.includes('large cap fund') ||
+        lower.includes('mid cap fund') ||
+        lower.includes('small cap fund') ||
+        lower.includes('expense ratio') ||
+        lower.includes('ter') ||
+        lower.includes('risk-o-meter')
+      ) {
+        reply =
+          'SEBI mandates true-to-label mutual funds: Large Cap funds invest min. 80% in top 100 stocks, Mid Cap min. 65% in ' +
+          '101st-250th stocks, and Small Cap min. 65% in 251st+ stocks. Total Expense Ratio (TER) is capped between 1.05% and 2.25% ' +
+          'based on AUM. Schemes must display a monthly Risk-o-meter showing risk from Low to Very High.'
+        citations = [
+          {
+            id: 'c-mf-01',
+            title: 'SEBI (Mutual Funds) Regulations, 1996 & Categorization Circular',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 8. Research Analyst (RA) Regulations
+      else if (
+        lower.includes('research analyst') ||
+        lower.includes('target price') ||
+        lower.includes('stock rating') ||
+        lower.includes('nism')
+      ) {
+        reply =
+          'Under SEBI (Research Analysts) Regulations, 2014, any individual or firm publishing stock price targets or research reports ' +
+          'must be SEBI-registered and NISM Series XV certified. Analysts cannot trade in recommended stocks 30 days before and 5 days ' +
+          'after report publication, and must prominently disclose all financial interests and conflicts.'
+        citations = [
+          {
+            id: 'c-ra-01',
+            title: 'SEBI (Research Analysts) Regulations, 2014',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 9. Grievance Redressal (SCORES 2.0 & SMART ODR)
+      else if (
+        lower.includes('score') ||
+        lower.includes('complaint') ||
+        lower.includes('grievance') ||
+        lower.includes('dispute') ||
+        lower.includes('smart odr') ||
+        lower.includes('redressal')
+      ) {
+        reply =
+          'Investors can register formal complaints against brokers, listed firms, or advisers on **SEBI SCORES 2.0** (scores.sebi.gov.in). ' +
+          'Entities must resolve grievances within **21 calendar days**. If unsatisfied, the investor can escalate to SEBI or initiate ' +
+          'independent online mediation and arbitration through the **SMART ODR portal**.'
+        citations = [
+          {
+            id: 'c-scores-01',
+            title: 'SEBI SCORES 2.0 & SMART ODR Dispute Redressal Master Circular',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://scores.sebi.gov.in',
+          },
+        ]
+      }
+      // 10. F&O Retail Loss Warning & Curbs
+      else if (
+        lower.includes('f&o') ||
+        lower.includes('derivative') ||
+        lower.includes('option') ||
+        lower.includes('futures') ||
+        lower.includes('margin')
+      ) {
+        reply =
+          'SEBI\'s official research found that **93% of individual retail traders lose money in F&O**, with average losses exceeding ₹1.1 Lakh. ' +
+          'To curb speculative over-leverage, SEBI raised minimum contract sizes to ₹15-20 Lakh, limited weekly index expiries to one per ' +
+          'exchange, and requires brokers to collect 100% upfront margins before order execution.'
+        citations = [
+          {
+            id: 'c-fo-01',
+            title: 'SEBI Study on Retail Trader Performance & Derivative Risk Mandates',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 11. KYC Requirements & Documents
+      else if (
+        lower.includes('kyc') ||
+        lower.includes('document') ||
+        lower.includes('pan card') ||
+        lower.includes('aadhaar') ||
+        lower.includes('kra')
+      ) {
+        reply =
+          'Under SEBI KYC norms, opening a Demat and Trading account requires: 1) Permanent Account Number (PAN Card), which is statutory; ' +
+          '2) Proof of Identity and Address (Aadhaar with e-Sign, Passport, Voter ID); 3) Bank account proof (cancelled cheque); ' +
+          'and 4) In-Person Verification (IPV via webcam). A single KRA/CKYC registration is valid across all brokers.'
+        citations = [
+          {
+            id: 'c-kyc-01',
+            title: 'SEBI Master Circular on Know Your Client (KYC) Norms',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 12. Trading Hours & T+1 Settlement
+      else if (
+        lower.includes('timing') ||
+        lower.includes('market hour') ||
+        lower.includes('open time') ||
+        lower.includes('close time') ||
+        lower.includes('settlement') ||
+        lower.includes('t+1')
+      ) {
+        reply =
+          'Indian exchanges (NSE & BSE) trade Monday through Friday: Pre-open price discovery from 09:00 AM to 09:15 AM IST, ' +
+          'and continuous regular trading from 09:15 AM to 03:30 PM IST. All Indian cash equities settle on a **T+1 rolling settlement cycle**, ' +
+          'meaning shares and funds are delivered within 24 hours of the trade date.'
+        citations = [
+          {
+            id: 'c-trading-01',
+            title: 'NSE & BSE Trading Hours & T+1 Settlement Guidelines',
+            publisher: 'NSE India / SEBI',
             url: 'https://www.nseindia.com',
           },
         ]
-      } else if (question.toLowerCase().includes('inflation') || question.toLowerCase().includes('fd')) {
+      }
+      // 13. Circuit Breakers & Price Bands
+      else if (
+        lower.includes('circuit') ||
+        lower.includes('halt') ||
+        lower.includes('price band')
+      ) {
         reply =
-          '**Fixed Deposits** guarantee nominal capital safety, but they carry **Purchasing Power Risk**.\n\nIf your FD earns **7.1% p.a.** and CPI inflation is **6.0%**, your pre-tax real return is only ~1.1%. After 30% slab rate tax deduction, your real return can actually turn *negative*.'
+          'SEBI triggers index circuit breakers at **10%, 15%, and 20%** moves in NIFTY 50 or SENSEX to halt trading nationwide during panics. ' +
+          'A 10% breach before 1:00 PM halts trading for 45 minutes followed by a 15-minute pre-open call auction. ' +
+          'Individual non-F&O stocks operate within daily price bands of 2%, 5%, 10%, or 20%.'
         citations = [
           {
-            id: 'c3',
-            title: 'RBI Bulletin: Real Interest Rates & Household Savings',
-            publisher: 'Reserve Bank of India',
-            url: 'https://www.rbi.org.in',
+            id: 'c-circuit-01',
+            title: 'SEBI Market-Wide Circuit Breakers & Price Band Guidelines',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
           },
         ]
-      } else if (question.toLowerCase().includes('tax') || question.toLowerCase().includes('ltcg') || question.toLowerCase().includes('stcg')) {
+      }
+      // 14. Taxation: LTCG & STCG (Budget 2024)
+      else if (
+        lower.includes('tax') ||
+        lower.includes('ltcg') ||
+        lower.includes('stcg') ||
+        lower.includes('capital gain')
+      ) {
         reply =
-          'Under the **Indian Income Tax Act, 1961 (Section 111A & Section 112A)**:\n\n' +
-          '- **Long Term Capital Gains (LTCG):** Listed equity shares and equity mutual funds held for more than 12 months are taxed at **12.5%** on gains exceeding ₹1.25 Lakh per financial year (without indexation).\n' +
-          '- **Short Term Capital Gains (STCG):** Listed equity assets held for 12 months or less are taxed at a flat rate of **20%** plus applicable surcharge and cess.'
+          'Under Budget 2024 (Section 112A), Long-Term Capital Gains (LTCG) on equities held over 12 months are taxed at **12.5%** ' +
+          'on gains above the ₹1.25 Lakh annual exemption. Short-Term Capital Gains (STCG) on holdings up to 12 months are taxed at **20%** ' +
+          'under Section 111A. Bank Fixed Deposit interest is taxed at your regular income slab rate.'
         citations = [
           {
-            id: 'c-tax',
-            title: 'Section 112A & 111A Capital Gains Taxation',
+            id: 'c-tax-01',
+            title: 'Section 112A & 111A Capital Gains Taxation (Finance Act 2024)',
             publisher: 'Income Tax Department of India',
             url: 'https://incometaxindia.gov.in',
           },
         ]
-      } else {
+      }
+      // 15. Drawdown & Risk Reality
+      else if (
+        lower.includes('drawdown') ||
+        lower.includes('mdd') ||
+        lower.includes('risk reality')
+      ) {
         reply =
-          `According to the **SEBI Investor Education Framework** regarding "${question}":\n\n` +
-          'All equity investments in Indian capital markets are subject to systematic market volatility and risk profiling. ' +
-          'Investors should verify statutory regulations, maintain emergency liquidity, diversify across uncorrelated assets, and never invest on ungrounded speculative tips.'
+          '**Maximum Drawdown (MDD)** measures the largest observed loss from a historical peak to a subsequent trough before a new peak is attained. ' +
+          'In StockIQ\'s Risk Reality Check, MDD contrasts what you believe you can endure with how your portfolio actually suffered during ' +
+          'historical stress periods (such as -38.4% in COVID-19 or -52% in the 2008 GFC).'
         citations = [
           {
-            id: 'c-sebi',
-            title: 'SEBI Investor Education & Risk Mitigation Framework',
-            publisher: 'SEBI India',
+            id: 'c-dd-01',
+            title: 'Modern Portfolio Theory & Downside Risk Measures',
+            publisher: 'CFA Institute / SEBI Portfolio Guidelines',
+          },
+        ]
+      }
+      // 16. AI/ML Algorithmic Trading Rules
+      else if (
+        lower.includes('algo') ||
+        lower.includes('ai') ||
+        lower.includes('artificial intelligence') ||
+        lower.includes('xai')
+      ) {
+        reply =
+          'SEBI guidelines mandate that automated AI and quantitative algorithms must provide transparent explainability, pre-trade ' +
+          'risk controls, order rate throttles, and emergency kill switches. Models cannot operate as opaque black boxes, and intermediaries ' +
+          'must retain auditable logs of feature weights and training iterations.'
+        citations = [
+          {
+            id: 'c-aiml-01',
+            title: 'SEBI Guidelines on AI/ML and Algorithmic Trading Systems',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
+            url: 'https://www.sebi.gov.in',
+          },
+        ]
+      }
+      // 17. Fixed Deposits, Gold & Inflation Hedging
+      else if (
+        lower.includes('inflation') ||
+        lower.includes('fixed deposit') ||
+        lower.includes('fd') ||
+        lower.includes('gold')
+      ) {
+        reply =
+          'Fixed Deposits offer nominal capital certainty (7.1% APY) but risk negative real returns after inflation (6.0%) and slab-rate taxes. ' +
+          'Sovereign / Physical Gold (11.2% historical 10-year INR CAGR) serves as an uncorrelated buffer that cushions drawdown during ' +
+          'equity market shocks, preserving purchasing power.'
+        citations = [
+          {
+            id: 'c-fd-01',
+            title: 'RBI Bulletin & AMFI Multi-Asset Hedging Guidelines',
+            publisher: 'Reserve Bank of India & AMFI',
+            url: 'https://www.rbi.org.in',
+          },
+        ]
+      }
+      // 18. Default grounded response
+      else {
+        reply =
+          `Under **SEBI statutory guidelines** regarding ${question.slice(0, 30)}...: ` +
+          'All Indian market investments require PAN KYC, suitability evaluation aligned with age and time horizon, ' +
+          'and transparent risk disclosure. Transactions on NSE and BSE settle on a T+1 basis with strict investor grievance ' +
+          'redressal within 21 days via SEBI SCORES 2.0.'
+        citations = [
+          {
+            id: 'c-sebi-default',
+            title: 'SEBI Investor Education & Regulatory Framework',
+            publisher: 'Securities and Exchange Board of India (SEBI)',
             url: 'https://investor.sebi.gov.in',
           },
         ]
@@ -172,7 +479,7 @@ export function ChatAssistant() {
 
       setMessages((prev) => [...prev, botMsg])
       setIsTyping(false)
-    }, 400)
+    }, 350)
   }
 
   return (
