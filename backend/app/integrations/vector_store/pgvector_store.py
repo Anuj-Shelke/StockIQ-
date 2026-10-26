@@ -154,6 +154,26 @@ class PGVectorStore:
                 "embedding": emb,
             })
 
+        # Dynamically integrate all statutory SEBI regulatory documents into the vector corpus
+        try:
+            from app.integrations.vector_store.sebi_documents import SEBI_REGULATORY_DOCUMENTS
+            for sebi_doc in SEBI_REGULATORY_DOCUMENTS:
+                for idx, sec in enumerate(sebi_doc.get("sections", [])):
+                    entry = {
+                        "id": f"{sebi_doc['doc_id']}-sec-{idx}",
+                        "title": f"{sebi_doc['title']} - {sec['section']}",
+                        "publisher": "Securities and Exchange Board of India (SEBI)",
+                        "url": sebi_doc.get("official_url"),
+                        "text": f"{sec['summary']}. {sec['text']}",
+                    }
+                    emb = EmbeddingGenerator.get_embedding(entry["text"] + " " + entry["title"])
+                    self._corpus_with_embeddings.append({
+                        **entry,
+                        "embedding": emb,
+                    })
+        except Exception:
+            pass
+
     def search(
         self,
         query: str,

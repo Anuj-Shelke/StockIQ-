@@ -195,5 +195,159 @@ SEBI_REGULATORY_DOCUMENTS: List[Dict[str, Any]] = [
             },
         ],
     },
+    {
+        "doc_id": "SEBI-ICDR-2018",
+        "title": "SEBI (Issue of Capital and Disclosure Requirements) Regulations, 2018",
+        "category": "Primary Markets & IPO Guidelines",
+        "circular_no": "SEBI/LAD-NRO/GN/2018/31",
+        "official_url": "https://www.sebi.gov.in/legal/regulations/sep-2018/securities-and-exchange-board-of-india-issue-of-capital-and-disclosure-requirements-regulations-2018_40328.html",
+        "sections": [
+            {
+                "section": "Regulation 32 & 49 - ASBA Mandate & Retail IPO Quotas",
+                "summary": "Mandatory ASBA mechanism via UPI/bank, minimum 35% retail allocation quota, and anchor investor lock-ins.",
+                "text": (
+                    "Under SEBI ICDR regulations, all retail investors applying for Initial Public Offerings (IPOs) must use "
+                    "Application Supported by Blocked Amount (ASBA) or UPI block mechanism, ensuring funds remain in the investor's bank "
+                    "account until final share allotment. In mainboard book-built IPOs, a minimum of 35% of the net offer is strictly reserved "
+                    "for Retail Individual Investors (maximum application value ₹2,00,000). Anchor investors are subject to a 30-day lock-in "
+                    "for 50% of allocated shares and a 90-day lock-in for the remaining 50%."
+                ),
+            },
+            {
+                "section": "Regulation 38 - Minimum Public Shareholding (MPS) 25%",
+                "summary": "Listed companies must maintain a continuous minimum public float of 25% to prevent price manipulation.",
+                "text": (
+                    "Every listed entity must maintain at least 25% public shareholding at all times. Companies listing with less than 25% "
+                    "must achieve compliance within three years from listing date. Failure attracts trading freezes, promoter share freezing, "
+                    "and penal proceedings to protect public liquidity."
+                ),
+            },
+        ],
+    },
+    {
+        "doc_id": "SEBI-LODR-2015",
+        "title": "SEBI (Listing Obligations and Disclosure Requirements) Regulations, 2015",
+        "category": "Corporate Governance & Continuous Disclosures",
+        "circular_no": "SEBI/LAD-NRO/GN/2015-16/013",
+        "official_url": "https://www.sebi.gov.in/legal/regulations/sep-2015/securities-and-exchange-board-of-india-listing-obligations-and-disclosure-requirements-regulations-2015_30620.html",
+        "sections": [
+            {
+                "section": "Regulation 30 - Material Events Disclosure within 30 Minutes",
+                "summary": "Immediate disclosure of price-sensitive corporate events, earnings, dividends, acquisitions, and board outcomes.",
+                "text": (
+                    "Regulation 30 mandates listed entities to disclose all material events to stock exchanges immediately and no later than "
+                    "30 minutes from closure of the board meeting for financial results, dividends, buybacks, or fund raising. "
+                    "Unscheduled material developments such as fires, fraud, regulatory actions, or cyber breaches must be reported within 12 hours "
+                    "to maintain complete transparency for market participants."
+                ),
+            },
+            {
+                "section": "Regulation 17 & 23 - Board Independence & Related Party Transactions (RPT)",
+                "summary": "Mandatory 50% independent directors if chairman is executive, and prior audit committee approval for all RPTs.",
+                "text": (
+                    "The board of directors must comprise an optimum combination of executive and non-executive directors with at least one "
+                    "independent woman director. If the chairperson is an executive director, at least half the board must be independent. "
+                    "All Related Party Transactions (RPTs) require prior review and approval by the Audit Committee, and material RPTs require "
+                    "prior approval by ordinary resolution of non-related public shareholders."
+                ),
+            },
+        ],
+    },
+    {
+        "doc_id": "SEBI-MF-1996",
+        "title": "SEBI (Mutual Funds) Regulations, 1996 & Scheme Categorization Standards",
+        "category": "Mutual Funds & Asset Management Standards",
+        "circular_no": "SEBI/HO/IMD/DF3/CIR/P/2017/114",
+        "official_url": "https://www.sebi.gov.in/legal/circulars/oct-2017/categorization-and-rationalization-of-mutual-fund-schemes_36199.html",
+        "sections": [
+            {
+                "section": "Categorization Circular - Large, Mid, Small Cap Definitions",
+                "summary": "Strict market-cap definitions: Large Cap (Top 100 stocks), Mid Cap (101-250), Small Cap (251st onwards).",
+                "text": (
+                    "To ensure true-to-label investing, SEBI standardized equity mutual fund categories: "
+                    "1) Large Cap Funds must invest minimum 80% in top 100 companies by full market capitalization; "
+                    "2) Mid Cap Funds must invest minimum 65% in 101st to 250th companies; "
+                    "3) Small Cap Funds must invest minimum 65% in 251st company onwards; "
+                    "4) Flexi Cap Funds must maintain at least 65% across market caps without fixed allocation limits. "
+                    "Every scheme must display a monthly Risk-o-meter indicating risk levels from Low to Very High."
+                ),
+            },
+            {
+                "section": "Regulation 52 - Total Expense Ratio (TER) Caps",
+                "summary": "Statutory caps on AMC management fees and operational costs scaled by Assets Under Management (AUM).",
+                "text": (
+                    "SEBI enforces tiered Total Expense Ratio (TER) limits for equity mutual funds: maximum 2.25% on the first ₹500 Crore of AUM, "
+                    "decreasing systematically down to 1.05% for AUM exceeding ₹50,000 Crore. Direct plans must be offered with lower expense ratios "
+                    "excluding distributor commission, ensuring higher net returns for self-directed retail investors."
+                ),
+            },
+        ],
+    },
+    {
+        "doc_id": "SEBI-RA-2014",
+        "title": "SEBI (Research Analysts) Regulations, 2014",
+        "category": "Research Analysis & Stock Recommendations",
+        "circular_no": "SEBI/LAD-NRO/GN/2014-15/07/1414",
+        "official_url": "https://www.sebi.gov.in/legal/regulations/sep-2014/securities-and-exchange-board-of-india-research-analysts-regulations-2014_27909.html",
+        "sections": [
+            {
+                "section": "Regulation 16 & 19 - Trading Restrictions & Conflict Disclosures",
+                "summary": "Mandatory NISM certification, 30-day pre/5-day post trading blackouts, and disclosure of financial interest in recommendations.",
+                "text": (
+                    "Individuals or entities publishing research reports, stock ratings, or price targets must obtain SEBI registration as a Research Analyst (RA). "
+                    "Research analysts and their associates cannot trade securities in the subject company 30 days before and 5 days after publishing a research report. "
+                    "Every recommendation must disclose: 1) whether the analyst owns shares in the company; 2) receipt of compensation or investment banking fees; "
+                    "and 3) any material conflict of interest that could bias objective analysis."
+                ),
+            },
+        ],
+    },
+    {
+        "doc_id": "SEBI-TRADING-SETTLEMENT-2024",
+        "title": "NSE & BSE Trading Hours, Circuit Breakers and T+1 Rolling Settlement Framework",
+        "category": "Secondary Market Mechanics & Risk Controls",
+        "circular_no": "SEBI/HO/MRD2/DCAP/P/CIR/2021/624",
+        "official_url": "https://www.sebi.gov.in/legal/master-circulars/oct-2023/master-circular-for-stock-exchanges-and-clearing-corporations_78129.html",
+        "sections": [
+            {
+                "section": "Clause 1.2 - Market Hours & T+1 Settlement",
+                "summary": "NSE/BSE operate 09:00 - 15:30 IST with mandatory T+1 trade-date-plus-one-day settlement for all cash equities.",
+                "text": (
+                    "Trading sessions run Monday through Friday: Pre-open price discovery from 09:00 AM to 09:15 AM IST; "
+                    "continuous order matching from 09:15 AM to 03:30 PM IST; post-closing from 03:40 PM to 04:00 PM IST. "
+                    "Indian secondary markets follow the T+1 settlement cycle, wherein securities are credited to the buyer's Demat and funds "
+                    "paid out to the seller within 24 hours of trade execution."
+                ),
+            },
+            {
+                "section": "Clause 2.4 - Market-Wide Circuit Breakers & Price Bands",
+                "summary": "Index circuit triggers at 10%, 15%, and 20% on NIFTY/SENSEX halt trading nationwide to prevent flash panics.",
+                "text": (
+                    "A 10% breach in NIFTY 50 or SENSEX before 1:00 PM IST halts trading nationwide for 45 minutes followed by a 15-minute call auction. "
+                    "A 15% breach triggers a longer suspension, and a 20% movement halts trading for the rest of the day. "
+                    "Non-derivative individual equities operate within daily dynamic price bands of 2%, 5%, 10%, or 20%."
+                ),
+            },
+        ],
+    },
+    {
+        "doc_id": "SEBI-TAX-CAPITAL-GAINS-2024",
+        "title": "Statutory Indian Capital Gains & Securities Taxation Framework (Budget 2024)",
+        "category": "Securities Taxation & Investor Returns",
+        "circular_no": "Finance (No. 2) Act 2024 / Sec 112A & 111A",
+        "official_url": "https://incometaxindia.gov.in/",
+        "sections": [
+            {
+                "section": "Section 112A & 111A - LTCG and STCG Tax Rates on Listed Equities",
+                "summary": "Long-Term Capital Gains (>12 months) taxed at 12.5% beyond ₹1.25 Lakh exemption; Short-Term Capital Gains (<=12 months) taxed at 20%.",
+                "text": (
+                    "Under Finance (No. 2) Act 2024 amendments to Section 112A of the Income Tax Act, Long Term Capital Gains (LTCG) "
+                    "on listed equities and equity-oriented mutual funds held for more than 12 months are taxed at 12.5% on aggregate capital gains "
+                    "exceeding ₹1,25,000 per financial year. Short Term Capital Gains (STCG) on shares held for 12 months or less are taxed at 20% "
+                    "under Section 111A. Securities Transaction Tax (STT) applies on both buy and sell delivery transactions (0.1%) and F&O sales."
+                ),
+            },
+        ],
+    },
 ]
 
