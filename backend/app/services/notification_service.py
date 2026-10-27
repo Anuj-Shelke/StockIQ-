@@ -21,9 +21,24 @@ class NotificationService:
     """Dispatches in-app alerts and transactional emails via Resend."""
 
     @classmethod
+    def send_welcome_email(cls, recipient: str, name: Optional[str]) -> None:
+        display_name = escape(name or "there")
+        result = ResendClient.send_email(
+            to_email=recipient,
+            subject="Welcome to StockIQ",
+            html_content=(
+                f"<h2>Welcome to StockIQ, {display_name}!</h2>"
+                "<p>Your account is ready. Explore market insights, track your portfolio, "
+                "and make more informed investment decisions with StockIQ.</p>"
+                "<p>We’re glad you’re here.</p><p>— The StockIQ Team</p>"
+            ),
+        )
+        logger.info("Welcome email status=%s", result.get("status", "failed"))
+
+    @classmethod
     def notify_admin_review_request(cls, review: ReviewRequestItem) -> None:
         """Best-effort admin notification invoked after a review row has committed."""
-        recipient = settings.ADMIN_NOTIFY_EMAIL
+        recipient = settings.ADMIN_NOTIFY_EMAIL or settings.ADMIN_EMAIL
         if not recipient:
             logger.info("Review notification email status=mock_skipped review_id=%s", review.id)
             return
@@ -42,6 +57,23 @@ class NotificationService:
             logger.info("Review notification email status=%s review_id=%s", result.get("status", "failed"), review.id)
         except Exception as exc:
             logger.warning("Review notification email status=failed review_id=%s error=%s", review.id, type(exc).__name__)
+
+    @classmethod
+    def notify_review_satisfied(cls, review: ReviewRequestItem) -> None:
+        """Tell the requester when an administrator resolves their review."""
+        try:
+            result = ResendClient.send_email(
+                to_email=review.user_email,
+                subject=f"StockIQ review completed: {review.symbol}",
+                html_content=(
+                    f"<h2>Your StockIQ review is complete</h2><p>Request: {escape(review.id)}</p>"
+                    f"<p>Our team reviewed your request about {escape(review.symbol)}.</p>"
+                    f"<p>Resolution: {escape(review.resolution_notes or 'Your request has been reviewed.')}</p>"
+                ),
+            )
+            logger.info("Review completion email status=%s review_id=%s", result.get("status", "failed"), review.id)
+        except Exception as exc:
+            logger.warning("Review completion email status=failed review_id=%s error=%s", review.id, type(exc).__name__)
 
     @classmethod
     def dispatch_notification(

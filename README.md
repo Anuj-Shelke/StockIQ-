@@ -335,6 +335,14 @@ Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and optionally `ADMIN_NAME` in the gitignor
 The backend API will be running at `http://localhost:8000`.
 Interactive API documentation will be available at `http://localhost:8000/docs`.
 
+### Authentication fallback and email configuration
+
+The backend mirrors successfully authenticated accounts into `backend/.stockiq_auth.db`. If PostgreSQL becomes unavailable, password login, token refresh, and authenticated identity lookup use this local SQLite store. New registrations can also be created there during an outage. Set `AUTH_FALLBACK_DB` to a persistent writable path when deploying; an ephemeral container filesystem will lose fallback accounts after a restart. Configure `ADMIN_EMAIL` and `ADMIN_PASSWORD` so the admin can be provisioned into the fallback store when needed. Database-backed portfolio, review, and analysis operations still require the primary database.
+
+Registration sends a welcome email, review submissions notify `ADMIN_NOTIFY_EMAIL` (or `ADMIN_EMAIL`), and resolved reviews notify the requester. Set `RESEND_API_KEY` and `FROM_EMAIL` in the backend environment. Resend's `onboarding@resend.dev` sender can deliver only to the Resend account owner's email; to deliver these messages to arbitrary users, verify a sender domain in Resend and set `FROM_EMAIL` to an address on that domain. Use the same settings in the deployed backend environment.
+
+The backend's primary database connection is `DATABASE_URL`; the current app does not make Supabase REST API calls. A Supabase API key alone does not configure the SQLAlchemy database connection. To use Supabase as the primary database, set `DATABASE_URL` to the project's PostgreSQL connection string. For a separate Supabase REST integration, configure both `SUPABASE_URL` and its API key and add the relevant client code.
+
 ---
 
 ## 🚀 Project Status

@@ -24,10 +24,10 @@ export function SnapshotDrawer() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-display">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary font-display">
             Snapshot History & PDF Research Reports
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-text-secondary">
             Immutable archive of past portfolio analyses, stress simulations, and one-click exportable client reports.
           </p>
         </div>
@@ -55,7 +55,7 @@ export function SnapshotDrawer() {
         {snapshots.map((snp) => (
           <div
             key={snp.id}
-            className="rounded-xl border border-white/10 bg-ink-950/60 p-5 backdrop-blur-sm flex flex-col justify-between space-y-4"
+            className="theme-dark-surface flex flex-col justify-between space-y-4 rounded-xl border border-white/10 p-5 backdrop-blur-sm"
           >
             <div>
               <div className="flex items-center justify-between text-xs">

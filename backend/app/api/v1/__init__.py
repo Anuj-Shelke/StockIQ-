@@ -25,6 +25,8 @@ from app.api.v1 import (
     recommendations,
     opening_predictions,
     sebi_rag,
+    tax,
+    investment_planner,
 )
 
 api_router = APIRouter()
@@ -64,3 +66,5 @@ api_router.include_router(opening_predictions.router, prefix="/opening-predictio
 api_router.include_router(sebi_rag.router, prefix="/sebi", tags=["SEBI Regulations RAG"])
 api_router.include_router(sebi_rag.router, prefix="/sebi_rag", tags=["SEBI Regulations RAG"])
 api_router.include_router(sebi_rag.router, prefix="/sebi-rag", tags=["SEBI Regulations RAG"])
+api_router.include_router(tax.router, prefix="/tax", tags=["Tax Intelligence & XAI"])
+api_router.include_router(investment_planner.router, prefix="/investment-planner", tags=["AI Personal Investment Planner"])

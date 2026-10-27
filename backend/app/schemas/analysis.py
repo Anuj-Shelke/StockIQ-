@@ -72,6 +72,16 @@ class StressTestRequest(APIBaseModel):
     initial_capital: Optional[float] = Field(default=None, gt=0)
 
 
+class RiskExplainabilityFactor(APIBaseModel):
+    """XAI factor attribution for historical drawdown and risk reality."""
+    factor_name: str
+    category: str = "Market Risk"
+    impact_pct: float
+    direction: Literal["risk_driver", "resilience_buffer"]
+    description: str
+    recommendation: str
+
+
 class RiskRealityCheckResponse(APIBaseModel):
     """Complete Risk Reality Check assessment package."""
     portfolio_id: Optional[str] = None
@@ -83,4 +93,6 @@ class RiskRealityCheckResponse(APIBaseModel):
     active_scenario_id: str
     drawdown_series: List[DrawdownDataPoint]
     asset_contributions: List[AssetDrawdownContribution]
+    explainability_factors: Optional[List[RiskExplainabilityFactor]] = None
+    actionable_mitigation_insights: Optional[List[str]] = None
     analyzed_at: datetime

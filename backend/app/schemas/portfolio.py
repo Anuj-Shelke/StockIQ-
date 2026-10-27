@@ -7,7 +7,8 @@ from app.schemas.common import APIBaseModel
 class HoldingCreate(APIBaseModel):
     """Payload to add a holding to a portfolio."""
     symbol: str
-    asset_type: str = Field(default="stock", pattern="^(stock|gold|fd)$")
+    name: Optional[str] = Field(default=None, max_length=255)
+    asset_type: str = Field(default="stock", pattern="^(stock|gold|fd|other)$")
     quantity: float = Field(gt=0)
     buy_price: float = Field(ge=0)
     current_price: Optional[float] = None
@@ -15,6 +16,7 @@ class HoldingCreate(APIBaseModel):
 
 class HoldingUpdate(APIBaseModel):
     """Payload to update an existing holding."""
+    name: Optional[str] = Field(default=None, max_length=255)
     quantity: Optional[float] = Field(default=None, gt=0)
     buy_price: Optional[float] = Field(default=None, ge=0)
     current_price: Optional[float] = Field(default=None, ge=0)
@@ -25,6 +27,7 @@ class HoldingResponse(APIBaseModel):
     id: str
     portfolio_id: str
     symbol: str
+    name: Optional[str] = None
     asset_type: str
     quantity: float
     buy_price: float

@@ -1,5 +1,6 @@
 import json
 from typing import Any, List, Optional, Union
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -83,6 +84,7 @@ class Settings(BaseSettings):
     # Supabase (Optional)
     SUPABASE_URL: str = ""
     SUPABASE_ANON_KEY: str = ""
+    SUPABASE_KEY: Optional[str] = None
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     @model_validator(mode="before")
@@ -97,8 +99,17 @@ class Settings(BaseSettings):
 
             if not values.get("DATABASE_URL"):
                 values["DATABASE_URL"] = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
+            elif values["DATABASE_URL"].startswith(("postgresql://", "postgres://", "postgresql+psycopg://")):
+                # Supabase pooler URLs may append pgbouncer=true for drivers
+                # that support it. psycopg treats it as an unknown libpq option.
+                parsed = urlsplit(values["DATABASE_URL"])
+                query = [(key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+                         if key.lower() != "pgbouncer"]
+                values["DATABASE_URL"] = urlunsplit(parsed._replace(query=urlencode(query)))
             if not values.get("ASYNC_DATABASE_URL"):
                 values["ASYNC_DATABASE_URL"] = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+            if not values.get("SUPABASE_ANON_KEY") and values.get("SUPABASE_KEY"):
+                values["SUPABASE_ANON_KEY"] = values["SUPABASE_KEY"]
         return values
 
     model_config = SettingsConfigDict(

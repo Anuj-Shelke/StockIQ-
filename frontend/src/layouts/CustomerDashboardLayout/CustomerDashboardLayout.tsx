@@ -1,64 +1,100 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut, Menu, X, User } from 'lucide-react'
-import { BackendStatus } from '@/components/ui/BackendStatus'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { ChevronDown, CircleUserRound, LogOut, Menu, X } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Disclaimer } from '@/components/landing/Disclaimer'
-import { NAV_ITEMS } from '@/features/customer-dashboard/navItems'
+import { ACCOUNT_NAV_ITEM, NAV_GROUPS, PRIMARY_NAV_ITEMS, type NavItem } from '@/features/customer-dashboard/navItems'
 import { useAuth } from '@/hooks/useAuth'
 
 export function CustomerDashboardLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
+  const [expandedGroup, setExpandedGroup] = useState<string | null | undefined>(undefined)
+  const activeGroup = NAV_GROUPS.find((group) => group.items.some((item) => item.to === pathname))
+  const visibleExpandedGroup = expandedGroup === undefined ? activeGroup?.id ?? null : expandedGroup
 
   const signOut = () => {
     logout()
     navigate('/login', { replace: true })
   }
 
+  const navLink = ({ to, label, icon: Icon, end }: NavItem) => (
+    <NavLink
+      key={to}
+      to={to}
+      end={end}
+      onClick={() => {
+        setOpen(false)
+        setExpandedGroup(undefined)
+      }}
+      className={({ isActive }) =>
+        `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+          isActive
+            ? 'nav-active border-l-2 border-gold bg-gold/10 text-gold pl-2.5 font-bold'
+            : 'text-text-secondary hover:bg-white/5 hover:text-text-primary border-l-2 border-transparent'
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon
+            className={`h-4 w-4 shrink-0 transition-colors ${
+              isActive ? 'text-gold' : 'text-text-muted group-hover:text-text-primary'
+            }`}
+          />
+          <span className="truncate">{label}</span>
+        </>
+      )}
+    </NavLink>
+  )
+
   const nav = (
-    <nav aria-label="Dashboard" className="flex flex-col gap-1">
-      {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={end}
-          onClick={() => setOpen(false)}
-          className={({ isActive }) =>
-            `group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-semibold tracking-wide transition-all duration-150 ${
-              isActive
-                ? 'border-l-2 border-gold bg-gold/10 text-gold pl-2.5 font-bold'
-                : 'text-text-secondary hover:bg-white/5 hover:text-text-primary border-l-2 border-transparent'
-            }`
-          }
-        >
-          {({ isActive }) => (
-            <>
-              <Icon
-                className={`h-4 w-4 shrink-0 transition-colors ${
-                  isActive ? 'text-gold' : 'text-text-muted group-hover:text-text-primary'
-                }`}
-              />
-              <span className="truncate">{label}</span>
-            </>
-          )}
-        </NavLink>
-      ))}
+    <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 overflow-y-auto">
+      {PRIMARY_NAV_ITEMS.map((entry) => <div key={entry.to}>{navLink(entry)}</div>)}
+
+      <div className="my-3 border-t border-theme-subtle" />
+
+      {NAV_GROUPS.map((group) => {
+        const expanded = visibleExpandedGroup === group.id
+        const containsCurrentPage = group.items.some((item) => item.to === pathname)
+        return (
+          <section key={group.id} className="space-y-1">
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={`nav-group-${group.id}`}
+              onClick={() => setExpandedGroup(expanded ? null : group.id)}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm font-medium transition hover:bg-[var(--bg-hover)] ${
+                containsCurrentPage ? 'text-text-primary' : 'text-text-secondary'
+              }`}
+            >
+              <span className="truncate">{group.label}</span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-text-muted transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            </button>
+            {expanded && (
+              <div id={`nav-group-${group.id}`} className="ml-2 space-y-0.5 border-l border-theme-subtle pl-2">
+                {group.items.map((entry) => <div key={entry.to}>{navLink(entry)}</div>)}
+              </div>
+            )}
+          </section>
+        )
+      })}
     </nav>
   )
 
   return (
-    <div className="min-h-screen bg-canvas text-text-primary md:grid md:grid-cols-[16rem_1fr] transition-colors duration-200">
-      {/* Sidebar (Desktop) / Drawer (Mobile) */}
+    <div className="min-h-screen bg-canvas text-text-primary transition-colors duration-200">
+      {/* Sidebar (Desktop) / Drawer (Mobile) - Fixed at one place */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform border-r border-theme-subtle bg-surface p-4 transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 h-screen flex-col border-r border-theme-subtle bg-surface p-4 transition-transform duration-200 md:translate-x-0 ${
           open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         <div className="mb-6 flex items-center justify-between border-b border-theme-subtle pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg border border-gold/30 bg-gold/10 font-display text-lg text-gold font-bold">
+            <span className="logo-mark grid h-8 w-8 place-items-center rounded-lg border border-gold/30 bg-gold/10 font-display text-lg text-gold font-bold">
               ₹
             </span>
             <div>
@@ -76,6 +112,9 @@ export function CustomerDashboardLayout() {
         </div>
 
         {nav}
+        <div className="mt-3 border-t border-theme-subtle pt-3">
+          {navLink(ACCOUNT_NAV_ITEM)}
+        </div>
       </aside>
 
       {open && (
@@ -87,7 +126,7 @@ export function CustomerDashboardLayout() {
       )}
 
       {/* Main Workspace Shell */}
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col md:pl-64">
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-theme-subtle bg-surface/90 px-4 py-3 backdrop-blur-md md:px-8">
           <button
@@ -100,12 +139,14 @@ export function CustomerDashboardLayout() {
 
           <div className="ml-auto flex items-center gap-3.5">
             <ThemeToggle showLabel={false} />
-            <BackendStatus />
-
-            <div className="hidden items-center gap-2 rounded-full border border-theme-default bg-canvas px-3 py-1 text-xs text-text-secondary sm:flex">
-              <User className="h-3.5 w-3.5 text-gold" />
-              <span className="max-w-[10rem] truncate">{user?.email}</span>
-            </div>
+            <NavLink
+              to="/dashboard/account"
+              aria-label={user?.full_name ? `Account for ${user.full_name}` : 'Account'}
+              className="inline-flex items-center gap-2 rounded-lg border border-theme-default bg-canvas px-3 py-2 text-xs font-medium text-text-secondary transition hover:border-[var(--border-focus)] hover:text-text-primary"
+            >
+              <CircleUserRound className="h-4 w-4 text-gold" />
+              <span className="hidden sm:inline">Account</span>
+            </NavLink>
 
             <button
               onClick={signOut}

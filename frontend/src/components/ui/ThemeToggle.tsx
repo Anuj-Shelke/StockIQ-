@@ -22,7 +22,7 @@ export function ThemeToggle({ className = '', showLabel = false }: ThemeTogglePr
         <span
           className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ${
             isDark
-              ? 'bg-[var(--gold-primary)] text-[#070B14] shadow-sm'
+              ? 'bg-[var(--gold-primary)] text-[var(--accent-contrast)] shadow-sm'
               : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
           }`}
           title="Dark Theme"
@@ -32,7 +32,7 @@ export function ThemeToggle({ className = '', showLabel = false }: ThemeTogglePr
         <span
           className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ${
             !isDark
-              ? 'bg-[var(--gold-primary)] text-[#070B14] shadow-sm'
+              ? 'bg-[var(--gold-primary)] text-[var(--accent-contrast)] shadow-sm'
               : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
           }`}
           title="Light Theme"
@@ -43,7 +43,7 @@ export function ThemeToggle({ className = '', showLabel = false }: ThemeTogglePr
 
       {showLabel && (
         <span className="pr-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition">
-          {isDark ? 'Midnight' : 'Ivory'}
+          {isDark ? 'Market dark' : 'Market light'}
         </span>
       )}
     </button>

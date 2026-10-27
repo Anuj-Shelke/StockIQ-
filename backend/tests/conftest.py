@@ -59,6 +59,8 @@ def override_get_db():
     """Override get_db dependency for tests with isolated SQLite session."""
     Base.metadata.create_all(bind=test_engine_instance)
     db = TestingSessionLocal()
+    from app.db.session import seed_default_data
+    seed_default_data(db)
     try:
         yield db
     finally:

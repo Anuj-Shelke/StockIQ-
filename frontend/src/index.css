@@ -10,33 +10,130 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* Surfaces & Backgrounds */
+  /* Groww-inspired market dark: near-black surfaces and a crisp market green. */
+  --bg-canvas: #0B0D0C;
+  --bg-surface: #121614;
+  --bg-elevated: #1A201D;
+  --bg-hover: #242C28;
+  --bg-card-black: #080A09;
+
+  /* Borders & Hairlines */
+  --border-subtle: #202723;
+  --border-default: #303A35;
+  --border-focus: #00D09C;
+  --hairline-gold: rgba(0, 208, 156, 0.42);
+  --hairline-blue: rgba(96, 165, 250, 0.42);
+
+  /* Typography */
+  --text-primary: #F3F6F5;
+  --text-secondary: #B8C3C1;
+  --text-muted: #899592;
+  --text-on-dark: #F3F6F5;
+  --text-on-dark-secondary: #B8C3C1;
+  --text-on-dark-muted: #A0AAA7;
+  --accent-on-dark: #00D09C;
+  --accent-on-dark-hover: #00E0A8;
+  --accent-on-dark-soft: rgba(0, 208, 156, 0.16);
+  --accent-contrast-on-dark: #031810;
+
+  /* Accent & Intelligence Colors */
+  --gold-primary: #00D09C;
+  --gold-hover: #00E0A8;
+  --gold-soft: rgba(0, 208, 156, 0.15);
+  --accent-contrast: #031810;
+  --blue-primary: #60A5FA;
+  --blue-soft: rgba(96, 165, 250, 0.15);
+
+  /* Semantic Feedback */
+  --color-success: #00D09C;
+  --color-success-soft: rgba(0, 208, 156, 0.15);
+  --color-warning: #F1B84B;
+  --color-warning-soft: rgba(241, 184, 75, 0.15);
+  --color-danger: #F06A66;
+  --color-danger-soft: rgba(240, 106, 102, 0.15);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 12px 36px -4px rgba(0, 0, 0, 0.55);
+  --shadow-card-black: 0 8px 32px -8px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(0, 208, 156, 0.25);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Upstox-inspired light: clean white space with a more decisive violet accent. */
+  --bg-canvas: #F7F8FC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #F0ECFA;
+  --bg-card-black: #111726;
+
+  /* Borders & Hairlines */
+  --border-subtle: #E5E9F0;
+  --border-default: #CDD5E2;
+  --border-focus: #5A2989;
+  --hairline-gold: rgba(90, 41, 137, 0.34);
+  --hairline-blue: rgba(37, 99, 235, 0.34);
+
+  /* Typography */
+  --text-primary: #151B28;
+  --text-secondary: #39465B;
+  --text-muted: #5C687A;
+  --text-on-dark: #F4F6FA;
+  --text-on-dark-secondary: #D3D9E4;
+  --text-on-dark-muted: #AEB8C8;
+  --accent-on-dark: #D6BAFF;
+  --accent-on-dark-hover: #E5D5FF;
+  --accent-on-dark-soft: rgba(214, 186, 255, 0.18);
+  --accent-contrast-on-dark: #21152F;
+
+  /* Accent & Intelligence Colors */
+  --gold-primary: #5A2989;
+  --gold-hover: #48216F;
+  --gold-soft: rgba(90, 41, 137, 0.10);
+  --accent-contrast: #FFFFFF;
+  --blue-primary: #315FEA;
+  --blue-soft: rgba(49, 95, 234, 0.10);
+
+  /* Semantic Feedback */
+  --color-success: #087A55;
+  --color-success-soft: rgba(8, 122, 85, 0.10);
+  --color-warning: #975600;
+  --color-warning-soft: rgba(151, 86, 0, 0.10);
+  --color-danger: #B4232F;
+  --color-danger-soft: rgba(180, 35, 47, 0.10);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 3px 0 rgba(22, 34, 54, 0.06);
+  --shadow-md: 0 4px 16px -2px rgba(22, 34, 54, 0.09);
+  --shadow-lg: 0 12px 32px -4px rgba(22, 34, 54, 0.13);
+  --shadow-card-black: 0 8px 32px -8px rgba(17, 23, 38, 0.28), inset 0 1px 0 rgba(90, 41, 137, 0.35);
+}
+
+/* Restore the opening page's original StockIQ palette without changing the
+   market-inspired palette used by the rest of the application. */
+.landing-original-palette {
   --bg-canvas: #070B14;
   --bg-surface: #0D1424;
   --bg-elevated: #131C30;
   --bg-hover: #18233B;
   --bg-card-black: #060912;
-
-  /* Borders & Hairlines */
   --border-subtle: #151E33;
   --border-default: #1F2A44;
   --border-focus: #D4A84B;
-  --hairline-gold: rgba(212, 168, 75, 0.45);
-  --hairline-blue: rgba(91, 141, 239, 0.4);
-
-  /* Typography */
   --text-primary: #E8ECF4;
   --text-secondary: #A8B2C7;
   --text-muted: #6F7A93;
-
-  /* Accent & Intelligence Colors */
+  --text-on-dark: #E8ECF4;
+  --text-on-dark-secondary: #A8B2C7;
+  --text-on-dark-muted: #6F7A93;
+  --accent-contrast: #070B14;
   --gold-primary: #D4A84B;
   --gold-hover: #E4C366;
   --gold-soft: rgba(212, 168, 75, 0.14);
   --blue-primary: #5B8DEF;
   --blue-soft: rgba(91, 141, 239, 0.14);
-
-  /* Semantic Feedback */
   --color-success: #34B58A;
   --color-success-soft: rgba(52, 181, 138, 0.14);
   --color-warning: #E3A23B;
@@ -44,60 +141,63 @@
   --color-danger: #E5584F;
   --color-danger-soft: rgba(229, 88, 79, 0.14);
 
-  /* Shadows & Depth */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 36px -4px rgba(0, 0, 0, 0.65);
-  --shadow-card-black: 0 8px 32px -8px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(212, 168, 75, 0.25);
+  /* Tailwind theme aliases resolve at their declaration scope, so restore
+     those aliases here as well as the underlying tokens. */
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-hover: var(--bg-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border: var(--border-default);
+  --color-border-focus: var(--border-focus);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-gold: var(--gold-primary);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-300: var(--gold-primary);
+  --color-gold-400: var(--gold-primary);
+  --color-gold-500: var(--gold-primary);
+  --color-gold-600: var(--gold-hover);
+  --color-ink-950: var(--bg-canvas);
+  --color-ink-900: var(--bg-surface);
+  --color-ink-800: var(--bg-elevated);
+  --color-ink-700: var(--border-default);
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-
-  /* Surfaces & Backgrounds: Warm Editorial Ivory */
+[data-theme="light"] .landing-original-palette {
   --bg-canvas: #F7F3EA;
   --bg-surface: #FCFBF8;
   --bg-elevated: #FFFFFF;
   --bg-hover: #F1ECE0;
   --bg-card-black: #111726;
-
-  /* Borders & Hairlines */
   --border-subtle: #EEE8DA;
   --border-default: #E4DDCC;
   --border-focus: #A87B1F;
-  --hairline-gold: rgba(168, 123, 31, 0.45);
-  --hairline-blue: rgba(47, 95, 196, 0.35);
-
-  /* Typography */
   --text-primary: #101828;
   --text-secondary: #3B4660;
   --text-muted: #6B7488;
-
-  /* Accent & Intelligence Colors */
+  --text-on-dark: #101828;
+  --text-on-dark-secondary: #3B4660;
+  --text-on-dark-muted: #6B7488;
+  --accent-contrast: #FFFFFF;
   --gold-primary: #A87B1F;
   --gold-hover: #8F6715;
   --gold-soft: rgba(168, 123, 31, 0.12);
   --blue-primary: #2F5FC4;
   --blue-soft: rgba(47, 95, 196, 0.12);
-
-  /* Semantic Feedback */
   --color-success: #0F8A63;
   --color-success-soft: rgba(15, 138, 99, 0.12);
   --color-warning: #B5730F;
   --color-warning-soft: rgba(181, 115, 15, 0.12);
   --color-danger: #C23B33;
   --color-danger-soft: rgba(194, 59, 51, 0.12);
-
-  /* Shadows & Depth */
-  --shadow-sm: 0 1px 3px 0 rgba(30, 20, 10, 0.06);
-  --shadow-md: 0 4px 16px -2px rgba(30, 20, 10, 0.08);
-  --shadow-lg: 0 12px 32px -4px rgba(30, 20, 10, 0.12);
-  --shadow-card-black: 0 8px 32px -8px rgba(17, 23, 38, 0.25), inset 0 1px 0 rgba(212, 168, 75, 0.35);
 }
 
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-display: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
   --color-canvas: var(--bg-canvas);
   --color-surface: var(--bg-surface);
@@ -121,6 +221,7 @@
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
+  --color-accent-contrast: var(--accent-contrast);
 
   /* Preserving backward compatible ink utilities dynamically */
   --color-ink-950: var(--bg-canvas);
@@ -131,6 +232,66 @@
   --color-gold-400: var(--gold-primary);
   --color-gold-500: var(--gold-primary);
   --color-gold-600: var(--gold-hover);
+
+}
+
+/* The planner still uses Tailwind slate/indigo utility names internally.
+   Resolve those names through StockIQ tokens so the whole feature follows the
+   selected market palette instead of staying dark in light mode. */
+.investment-planner {
+  --color-slate-50: var(--text-primary);
+  --color-slate-100: var(--text-primary);
+  --color-slate-200: var(--text-secondary);
+  --color-slate-300: var(--text-secondary);
+  --color-slate-400: var(--text-muted);
+  --color-slate-500: var(--text-muted);
+  --color-slate-600: var(--text-secondary);
+  --color-slate-700: var(--text-primary);
+  --color-slate-800: var(--bg-elevated);
+  --color-slate-900: var(--bg-surface);
+  --color-slate-950: var(--bg-canvas);
+  --color-indigo-300: var(--gold-primary);
+  --color-indigo-400: var(--gold-primary);
+  --color-indigo-500: var(--gold-primary);
+  --color-indigo-600: var(--gold-hover);
+  --color-indigo-700: var(--gold-hover);
+  --color-purple-300: var(--gold-primary);
+  --color-purple-400: var(--gold-primary);
+  --color-purple-500: var(--gold-primary);
+  --color-purple-600: var(--gold-hover);
+  --color-purple-700: var(--gold-hover);
+  --color-emerald-300: var(--color-success);
+  --color-emerald-400: var(--color-success);
+  --color-emerald-500: var(--color-success);
+  --color-emerald-600: var(--color-success);
+  --color-green-400: var(--color-success);
+  --color-green-500: var(--color-success);
+  --color-rose-300: var(--color-danger);
+  --color-rose-400: var(--color-danger);
+  --color-rose-500: var(--color-danger);
+  --color-rose-600: var(--color-danger);
+  --color-red-400: var(--color-danger);
+  --color-red-500: var(--color-danger);
+  --color-red-600: var(--color-danger);
+  --color-amber-200: var(--color-warning);
+  --color-amber-300: var(--color-warning);
+  --color-amber-400: var(--color-warning);
+  --color-amber-500: var(--color-warning);
+  --color-amber-600: var(--color-warning);
+  --color-cyan-300: var(--blue-primary);
+  --color-cyan-400: var(--blue-primary);
+  --color-cyan-500: var(--blue-primary);
+}
+
+/* Pale Indigo/Violet Tailwind shades were still being used as text against the
+   planner's light surfaces. Keep the same violet family, but use readable text
+   and a soft tint wherever the old UI used a deep Indigo panel. */
+[data-theme="light"] .investment-planner {
+  --color-indigo-200: #4B2675;
+  --color-indigo-950: #EEE7F7;
+  --color-purple-950: #EEE7F7;
+  --color-violet-400: #5A2989;
+  --color-violet-500: var(--gold-primary);
 }
 
 @layer base {
@@ -138,14 +299,19 @@
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     transition: background-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
                 color 280ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   ::selection {
-    background: rgba(212, 168, 75, 0.3);
+    background: var(--gold-soft);
     color: var(--text-primary);
   }
 
@@ -162,6 +328,58 @@
    ==================================================================== */
 
 @layer components {
+  /* Keep text/accent tokens legible when a theme-aware page uses a dark panel. */
+  .card-black,
+  .theme-dark-surface {
+    --text-primary: var(--text-on-dark);
+    --text-secondary: var(--text-on-dark-secondary);
+    --text-muted: var(--text-on-dark-muted);
+    --gold-primary: var(--accent-on-dark);
+    --gold-hover: var(--accent-on-dark-hover);
+    --gold-soft: var(--accent-on-dark-soft);
+    --accent-contrast: var(--accent-contrast-on-dark);
+  }
+
+  .theme-dark-surface {
+    color: var(--text-on-dark);
+    background: var(--bg-card-black);
+    border-color: var(--border-default);
+  }
+
+  /* A light inset inside a dark card returns to the normal light-theme palette. */
+  [data-theme="light"] .card-black .card-surface {
+    --text-primary: #151B28;
+    --text-secondary: #39465B;
+    --text-muted: #5C687A;
+    --gold-primary: #5A2989;
+    --gold-hover: #48216F;
+    --gold-soft: rgba(90, 41, 137, 0.10);
+    --accent-contrast: #FFFFFF;
+  }
+
+  .dashboard-action {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  .dashboard-action::after {
+    position: absolute;
+    inset-inline: 12px;
+    bottom: 0;
+    height: 1px;
+    background: var(--gold-primary);
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 240ms ease-out;
+  }
+
+  .dashboard-action:hover::after,
+  .dashboard-action:focus-visible::after {
+    transform: scaleX(1);
+  }
+
   /* 1. The Black Financial Card */
   .card-black {
     background: var(--bg-card-black);
@@ -281,16 +499,16 @@
     font-size: 13px;
     font-weight: 600;
     background: linear-gradient(180deg, var(--gold-primary), var(--gold-hover));
-    color: #070B14;
+    color: var(--accent-contrast);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 8px rgba(212, 168, 75, 0.25);
+    box-shadow: 0 2px 8px var(--gold-soft);
     cursor: pointer;
     transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
   }
   .btn-gold:hover:not(:disabled) {
     transform: translateY(-1px);
     filter: brightness(1.06);
-    box-shadow: 0 4px 14px rgba(212, 168, 75, 0.35);
+    box-shadow: 0 4px 14px var(--gold-soft);
   }
   .btn-gold:active:not(:disabled) {
     transform: translateY(1px);
@@ -337,6 +555,66 @@
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--gold-soft);
   }
+
+  /* Shared form control styling. Previously `input-default` had no definition,
+     leaving fields to browser defaults that disappeared against dark surfaces. */
+  .input-default {
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    padding: 14px 18px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+  }
+
+  .input-default::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+    font-size: 15px;
+  }
+
+  .input-default:focus-visible,
+  .input-default:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+
+  .input-default[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+
+  /* Spacious, luxury writing surface for credentials inputs in AuthPanel */
+  .auth-panel .input-default {
+    border: 1px solid rgba(212, 168, 75, 0.35);
+    background: rgba(13, 20, 36, 0.85);
+    color: #F8FAFC;
+    caret-color: #D4A84B;
+    min-height: 54px;
+    padding: 14px 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 14px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  }
+
+  .auth-panel .input-default::placeholder {
+    color: #8A96AC;
+    font-size: 15px;
+  }
+
+  .auth-panel .input-default:focus-visible,
+  .auth-panel .input-default:focus {
+    border-color: #D4A84B;
+    background: rgba(19, 28, 48, 0.95);
+    box-shadow: 0 0 0 3px rgba(212, 168, 75, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -348,4 +626,159 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+
+/* ====================================================================
+   StockIQ Elegant Motion — Subtle, mature, purposeful animations
+   ==================================================================== */
+
+/* --- Keyframes --- */
+
+/* Logo: slow breathing glow */
+@keyframes logo-breathe {
+  0%, 100% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 0px var(--gold-primary));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--gold-primary));
+  }
+}
+
+/* Shimmer streak — one pass every 4s */
+@keyframes logo-shimmer {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(250%) skewX(-12deg); }
+}
+
+/* Gentle idle float */
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-2px); }
+}
+
+/* Soft pulse ring for primary CTA — radiates and fades */
+@keyframes btn-ring-pulse {
+  0%   { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 0 var(--gold-soft); }
+  60%  { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 7px transparent; }
+  100% { box-shadow: 0 2px 8px var(--gold-soft), 0 0 0 0 transparent; }
+}
+
+/* NavLink active: slow left-border breathe */
+@keyframes nav-active-breathe {
+  0%, 100% { border-left-color: var(--gold-primary); }
+  50%       { border-left-color: var(--gold-hover); }
+}
+
+/* Page entrance */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hairline sweep */
+@keyframes hairline-sweep {
+  0%   { background-position: -100% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Value tick on data change */
+@keyframes value-tick {
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(-3px); }
+  70%  { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+
+/* Badge idle */
+@keyframes badge-idle {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.025); }
+}
+
+/* ---- Applied classes ---- */
+
+/* Logo ₹ icon: breathes + floats */
+.logo-mark {
+  position: relative;
+  overflow: hidden;
+  animation:
+    logo-breathe 3.6s ease-in-out infinite,
+    logo-float   5s   ease-in-out infinite;
+}
+
+/* Shimmer streak on logo */
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 80%
+  );
+  animation: logo-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Primary CTA: idle ring pulse every 3s */
+.btn-gold {
+  animation: btn-ring-pulse 3s ease-out infinite;
+}
+.btn-gold:hover:not(:disabled),
+.btn-gold:focus-visible:not(:disabled) {
+  animation: none;
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 4px 18px var(--gold-soft);
+}
+
+/* Active nav item: left-border breathe */
+.nav-active {
+  animation: nav-active-breathe 2.8s ease-in-out infinite;
+}
+
+/* card-surface hover lift + accent halo */
+.card-surface {
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+.card-surface:hover {
+  border-color: var(--border-focus);
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--gold-soft);
+  transform: translateY(-1px);
+}
+
+/* Page entrance helper */
+.page-enter {
+  animation: fade-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Intelligence hairline: animated sweep */
+.line-intelligence-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gold-primary) 40%,
+    var(--gold-hover) 50%,
+    var(--gold-primary) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: hairline-sweep 3s linear infinite;
+}
+
+/* Data value tick (add via JS on update) */
+.value-updated {
+  animation: value-tick 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Badges: very subtle idle scale */
+.badge-tier-interpretation,
+.badge-tier-verified {
+  animation: badge-idle 4s ease-in-out infinite;
 }

@@ -1,4 +1,4 @@
-import { Briefcase, Calculator, CircleUserRound, ClipboardCheck, Compass, GraduationCap, LayoutDashboard, Scale, ShieldAlert, ShieldCheck, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
+import { Briefcase, Calculator, CircleUserRound, ClipboardCheck, Compass, GraduationCap, LayoutDashboard, Scale, ShieldAlert, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   to: string
@@ -18,7 +18,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard/risk-check', label: 'Risk Reality Check', icon: ShieldAlert, blurb: 'Stress-test a portfolio against historical scenarios and see what could hurt.' },
   { to: '/dashboard/compare', label: 'Compare Assets', icon: Scale, blurb: 'Put stocks, gold and fixed deposits side by side on the same footing.' },
   { to: '/dashboard/education', label: 'Financial Education', icon: GraduationCap, blurb: 'Plain-language, source-backed explanations of financial concepts and RAG assistant.' },
-  { to: '/dashboard/review-request', label: 'Human Verification', icon: ShieldCheck, blurb: 'Request human expert audit & oversight for AI predictions.' },
   { to: '/dashboard/reviews', label: 'My Reviews', icon: ClipboardCheck, blurb: 'Track expert-review requests and responses.' },
   { to: '/dashboard/account', label: 'Account', icon: CircleUserRound, blurb: 'View your profile and account details.' },
 ]
@@ -39,7 +38,7 @@ export const NAV_GROUPS = [
   {
     id: 'insights',
     label: 'Research & learning',
-    items: [item('/dashboard/recommendations'), item('/dashboard/education'), item('/dashboard/review-request'), item('/dashboard/reviews')],
+    items: [item('/dashboard/recommendations'), item('/dashboard/education'), item('/dashboard/reviews')],
   },
 ] as const
 

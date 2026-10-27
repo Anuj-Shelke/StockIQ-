@@ -41,28 +41,56 @@ class PortfolioService:
         if asset_type.lower() == "fd":
             return fallback_price
 
-        if asset_type.lower() == "gold":
-            # Physical gold domestic benchmark (approx 10g 24K price / 10 = per gram)
-            return 7540.0 if fallback_price <= 0 else fallback_price
+        if asset_type.lower() in {"gold", "fd", "other"}:
+            # Non-equity holdings use the user's reference value; never invent a quote.
+            return fallback_price
 
         # Stock / Equity price resolution
+        # 1. Try MarketDataService real-time quote first
         try:
-            # 1. Try DB stock catalog
+            live_pr = MarketDataService.get_realtime_price(clean_symbol, fallback_default=0.0)
+            if live_pr > 0:
+                return float(live_pr)
+        except Exception:
+            pass
+
+        # 2. Try DB stock catalog
+        try:
             stock = db.query(Stock).filter(Stock.symbol.ilike(clean_symbol)).first()
-            if stock and stock.current_price:
+            if stock and stock.current_price and float(stock.current_price) > 0:
                 return float(stock.current_price)
         except Exception:
             pass
 
-        # 2. Try MarketDataService live quote
-        try:
-            quote = MarketDataService.get_quote(clean_symbol)
-            if quote and quote.current_price > 0:
-                return float(quote.current_price)
-        except Exception:
-            pass
+        # 3. Try stock universe catalog fallback
+        from app.db.stock_universe_data import get_stock_by_symbol
+        stock_meta = get_stock_by_symbol(clean_symbol)
+        if stock_meta and stock_meta.get("current_price"):
+            return float(stock_meta["current_price"])
 
-        return fallback_price if fallback_price > 0 else 100.0
+        return fallback_price
+
+    @staticmethod
+    def _ensure_asset_reference(db: Session, symbol: str, name: Optional[str], asset_type: str) -> None:
+        """Keep the legacy stock-symbol FK satisfied without publishing manual assets as quotes."""
+        clean_symbol = symbol.strip().upper()
+        try:
+            if db.query(Stock).filter(Stock.symbol == clean_symbol).first():
+                return
+            is_equity = asset_type.lower() == "stock"
+            db.add(Stock(
+                symbol=clean_symbol,
+                name=(name or clean_symbol).strip(),
+                exchange=("BSE" if clean_symbol.endswith(".BO") else "NSE") if is_equity else "MANUAL",
+                sector=None,
+                current_price=0,
+                currency="INR",
+                is_active=is_equity,
+            ))
+            db.flush()
+        except Exception:
+            # The surrounding persistence path handles rollback/fallback consistently.
+            raise
 
     @classmethod
     def _build_portfolio_response(cls, db: Session, portfolio: Portfolio) -> PortfolioResponse:
@@ -90,6 +118,13 @@ class PortfolioService:
             # Resolve live price if current_price not set or zero
             raw_curr = float(h.current_price) if getattr(h, "current_price", None) else 0.0
             resolved_pr = raw_curr if raw_curr > 0 else cls._resolve_asset_price(db, symbol, asset_type, buy_pr)
+            asset_name = getattr(getattr(h, "stock", None), "name", None)
+            if not asset_name:
+                try:
+                    reference = db.query(Stock).filter(Stock.symbol == symbol).first()
+                    asset_name = reference.name if reference else None
+                except Exception:
+                    asset_name = None
 
             invested = round(qty * buy_pr, 2)
             cur_val = round(qty * resolved_pr, 2)
@@ -103,6 +138,7 @@ class PortfolioService:
                 "id": h_id,
                 "portfolio_id": p_id,
                 "symbol": symbol,
+                "name": asset_name,
                 "asset_type": asset_type,
                 "quantity": qty,
                 "buy_price": buy_pr,
@@ -215,6 +251,7 @@ class PortfolioService:
         for h_req in request.holdings:
             clean_sym = h_req.symbol.strip().upper()
             curr_pr = h_req.current_price if h_req.current_price is not None else h_req.buy_price
+            cls._ensure_asset_reference(db, clean_sym, h_req.name, h_req.asset_type.lower())
             holding_obj = Holding(
                 id=str(uuid.uuid4()),
                 portfolio_id=portfolio_id,
@@ -311,6 +348,8 @@ class PortfolioService:
         """Add a new asset holding to a portfolio."""
         clean_pid = str(portfolio_id).strip()
         clean_sym = request.symbol.strip().upper()
+        if request.asset_type.lower() == "stock" and not clean_sym.endswith((".NS", ".BO")):
+            clean_sym = f"{clean_sym}.NS"
 
         # Verify portfolio ownership
         cls.get_portfolio(db, clean_pid, user_id)
@@ -330,6 +369,20 @@ class PortfolioService:
 
         curr_pr = request.current_price if request.current_price is not None else request.buy_price
         curr_pr = cls._resolve_asset_price(db, clean_sym, request.asset_type, curr_pr)
+
+        # Let investors add any NSE ticker, even when it is not in the starter catalog.
+        # The entered price is a user-provided reference value; it is not treated as a live quote.
+        try:
+            cls._ensure_asset_reference(
+                db,
+                clean_sym,
+                request.name or clean_sym.removesuffix(".NS"),
+                request.asset_type.lower(),
+            )
+        except Exception as exc:
+            logger.warning("portfolio_asset_reference_failed", symbol=clean_sym, error=str(exc))
+            db.rollback()
+            raise
 
         holding = Holding(
             id=str(uuid.uuid4()),
@@ -368,6 +421,7 @@ class PortfolioService:
             id=str(holding.id),
             portfolio_id=clean_pid,
             symbol=clean_sym,
+            name=request.name,
             asset_type=request.asset_type.lower(),
             quantity=request.quantity,
             buy_price=request.buy_price,
@@ -409,6 +463,10 @@ class PortfolioService:
 
         if request.quantity is not None:
             holding.quantity = request.quantity
+        if request.name is not None:
+            reference = db.query(Stock).filter(Stock.symbol == holding.symbol).first()
+            if reference:
+                reference.name = request.name.strip()
         if request.buy_price is not None:
             holding.avg_buy_price = request.buy_price
         if request.current_price is not None:
