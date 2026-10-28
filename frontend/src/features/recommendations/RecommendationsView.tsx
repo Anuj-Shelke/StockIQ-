@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '@/services/api'
 import {
@@ -188,7 +188,7 @@ const STOCK_UNIVERSE: StockRecommendation[] = [
     beta: 1.10,
     volatilityRisk: 'Moderate',
     mlConfidence: 0.91,
-    keyShapDrivers: ['Record â‚¹5 lakh crore consolidated order backlog', 'Middle East clean energy contracts', 'Domestic capex surge'],
+    keyShapDrivers: ['Record ₹5 lakh crore consolidated order backlog', 'Middle East clean energy contracts', 'Domestic capex surge'],
     defensiveScore: 78,
     growthScore: 92,
   },
@@ -396,7 +396,7 @@ const STOCK_UNIVERSE: StockRecommendation[] = [
     beta: 1.15,
     volatilityRisk: 'Moderate',
     mlConfidence: 0.92,
-    keyShapDrivers: ['â‚¹76,000 Crore sovereign defence order book', '28% Return on Equity (ROE)', 'Indigenization capex tailwinds'],
+    keyShapDrivers: ['₹76,000 Crore sovereign defence order book', '28% Return on Equity (ROE)', 'Indigenization capex tailwinds'],
     defensiveScore: 78,
     growthScore: 96,
   },
@@ -645,11 +645,11 @@ export function RecommendationsView() {
 
         let rationale = ''
         if (isSenior || isConservative) {
-          rationale = `Tailored for your age-${age} capital preservation strategy safeguarding â‚¹${capLakhs} Lakh: ${stock.symbol} (${exchangeTag}) acts as an ultra-defensive anchor with low volatility (beta ${beta.toFixed(2)}) and ${defScore}/100 defensive score. At live price â‚¹${livePrice.toLocaleString('en-IN')}, it safeguards retirement capital against drawdown shocks while providing stable compounding (${projRet.toFixed(1)}% target). Key catalyst: ${primaryDriver}.`
+          rationale = `Tailored for your age-${age} capital preservation strategy safeguarding ₹${capLakhs} Lakh: ${stock.symbol} (${exchangeTag}) acts as an ultra-defensive anchor with low volatility (beta ${beta.toFixed(2)}) and ${defScore}/100 defensive score. At live price ₹${livePrice.toLocaleString('en-IN')}, it safeguards retirement capital against drawdown shocks while providing stable compounding (${projRet.toFixed(1)}% target). Key catalyst: ${primaryDriver}.`
         } else if (isYoung || isAggressive) {
-          rationale = `Calibrated for your age-${age} high-velocity wealth creation runway with â‚¹${capLakhs} Lakh capital: ${stock.symbol} (${exchangeTag}) offers an aggressive compounding profile with ${groScore}/100 growth score, ${beta.toFixed(2)} beta, and ${projRet.toFixed(1)}% projected return at live price â‚¹${livePrice.toLocaleString('en-IN')}. Key catalyst: ${primaryDriver}, supported by ${secondaryDriver}.`
+          rationale = `Calibrated for your age-${age} high-velocity wealth creation runway with ₹${capLakhs} Lakh capital: ${stock.symbol} (${exchangeTag}) offers an aggressive compounding profile with ${groScore}/100 growth score, ${beta.toFixed(2)} beta, and ${projRet.toFixed(1)}% projected return at live price ₹${livePrice.toLocaleString('en-IN')}. Key catalyst: ${primaryDriver}, supported by ${secondaryDriver}.`
         } else {
-          rationale = `Calibrated for your ${primaryGoal.replace(/_/g, ' ')} goal with a ${horizonYears}-year horizon at age ${age}: ${stock.symbol} (${exchangeTag}) balances capital stability (defensive score ${defScore}) with solid growth (${groScore}, ${projRet.toFixed(1)}% return) at live price â‚¹${livePrice.toLocaleString('en-IN')} with ${Math.round(stock.mlConfidence * 100)}% model confidence. Core driver: ${primaryDriver}.`
+          rationale = `Calibrated for your ${primaryGoal.replace(/_/g, ' ')} goal with a ${horizonYears}-year horizon at age ${age}: ${stock.symbol} (${exchangeTag}) balances capital stability (defensive score ${defScore}) with solid growth (${groScore}, ${projRet.toFixed(1)}% return) at live price ₹${livePrice.toLocaleString('en-IN')} with ${Math.round(stock.mlConfidence * 100)}% model confidence. Core driver: ${primaryDriver}.`
         }
 
         return {
@@ -852,7 +852,7 @@ export function RecommendationsView() {
                 : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
             }`}
           >
-            28y Accumulator (â‚¹2 Lakh)
+            28y Accumulator (₹2 Lakh)
           </button>
           <button
             type="button"
@@ -870,7 +870,7 @@ export function RecommendationsView() {
                 : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
             }`}
           >
-            58y Preservation (â‚¹67 Lakh)
+            58y Preservation (₹67 Lakh)
           </button>
           <button
             type="button"
@@ -888,7 +888,7 @@ export function RecommendationsView() {
                 : 'border border-theme-subtle bg-surface-raised text-text-secondary hover:text-gold'
             }`}
           >
-            38y Balanced (â‚¹15 Lakh)
+            38y Balanced (₹15 Lakh)
           </button>
         </div>
 
@@ -919,7 +919,7 @@ export function RecommendationsView() {
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
               <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Annual Income</span>
-              <span className="font-mono text-gold font-bold">â‚¹{annualIncome.toLocaleString('en-IN')}</span>
+              <span className="font-mono text-gold font-bold">₹{annualIncome.toLocaleString('en-IN')}</span>
             </div>
             <input
               type="range"
@@ -931,9 +931,9 @@ export function RecommendationsView() {
               className="w-full accent-gold cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-text-muted font-mono">
-              <span>â‚¹3 Lakh</span>
-              <span>â‚¹50 Lakh</span>
-              <span>â‚¹1 Crore</span>
+              <span>₹3 Lakh</span>
+              <span>₹50 Lakh</span>
+              <span>₹1 Crore</span>
             </div>
           </div>
 
@@ -941,7 +941,7 @@ export function RecommendationsView() {
           <div className="space-y-2">
             <div className="flex justify-between font-medium">
               <span className="text-text-secondary uppercase tracking-wider font-mono text-[11px]">Investment Capital</span>
-              <span className="font-mono text-gold font-bold">â‚¹{investmentAmount.toLocaleString('en-IN')}</span>
+              <span className="font-mono text-gold font-bold">₹{investmentAmount.toLocaleString('en-IN')}</span>
             </div>
             <input
               type="range"
@@ -953,9 +953,9 @@ export function RecommendationsView() {
               className="w-full accent-gold cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-text-muted font-mono">
-              <span>â‚¹25K</span>
-              <span>â‚¹50 Lakh</span>
-              <span>â‚¹1 Crore</span>
+              <span>₹25K</span>
+              <span>₹50 Lakh</span>
+              <span>₹1 Crore</span>
             </div>
           </div>
 
@@ -1086,7 +1086,7 @@ export function RecommendationsView() {
             <PieIcon className="h-4 w-4 text-gold" />
             Recommended Macro Allocation Split
           </span>
-          <span className="text-text-muted font-mono">Total Capital: â‚¹{investmentAmount.toLocaleString('en-IN')}</span>
+          <span className="text-text-muted font-mono">Total Capital: ₹{investmentAmount.toLocaleString('en-IN')}</span>
         </div>
 
         <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-surface-hover">
@@ -1117,24 +1117,24 @@ export function RecommendationsView() {
             <span className="h-2.5 w-2.5 rounded-full bg-gold" />
             <span className="text-text-primary font-medium">Equities ({recommendationData.allocations.equityPct}%)</span>
             <span className="text-text-muted">
-              â‚¹{Math.round(investmentAmount * (recommendationData.allocations.equityPct / 100)).toLocaleString('en-IN')}
+              ₹{Math.round(investmentAmount * (recommendationData.allocations.equityPct / 100)).toLocaleString('en-IN')}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-blue" />
             <span className="text-text-primary font-medium">Fixed Deposits ({recommendationData.allocations.fdPct}%)</span>
-            <span className="text-text-muted">â‚¹{recommendationData.hedges.fdAmount.toLocaleString('en-IN')}</span>
+            <span className="text-text-muted">₹{recommendationData.hedges.fdAmount.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-warning" />
             <span className="text-text-primary font-medium">Physical Gold ({recommendationData.allocations.goldPct}%)</span>
-            <span className="text-text-muted">â‚¹{recommendationData.hedges.goldAmount.toLocaleString('en-IN')}</span>
+            <span className="text-text-muted">₹{recommendationData.hedges.goldAmount.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-text-muted" />
             <span className="text-text-primary font-medium">Cash Buffer (5%)</span>
             <span className="text-text-muted">
-              â‚¹{Math.round(investmentAmount * 0.05).toLocaleString('en-IN')}
+              ₹{Math.round(investmentAmount * 0.05).toLocaleString('en-IN')}
             </span>
           </div>
         </div>
@@ -1207,14 +1207,14 @@ export function RecommendationsView() {
                   <div>
                     <span className="block text-[10px] uppercase text-text-muted font-mono">Real-Time Price</span>
                     <span className="font-mono text-sm font-semibold text-text-secondary">
-                      â‚¹{stock.currentPrice.toLocaleString('en-IN')}
+                      ₹{stock.currentPrice.toLocaleString('en-IN')}
                     </span>
                   </div>
 
                   <div>
                     <span className="block text-[10px] uppercase text-text-muted font-mono">ML Target (30d)</span>
                     <span className="font-mono text-sm font-bold text-gold">
-                      â‚¹{stock.mlPredictedTarget.toLocaleString('en-IN')}
+                      ₹{stock.mlPredictedTarget.toLocaleString('en-IN')}
                     </span>
                   </div>
 
@@ -1239,7 +1239,7 @@ export function RecommendationsView() {
                       {stock.allocationPct}% Allocation
                     </span>
                     <span className="text-text-muted">
-                      â‰ˆ â‚¹{stock.allocatedAmount.toLocaleString('en-IN')} ({stock.shares} shares)
+                      ≈ ₹{stock.allocatedAmount.toLocaleString('en-IN')} ({stock.shares} shares)
                     </span>
                   </div>
                 </div>
