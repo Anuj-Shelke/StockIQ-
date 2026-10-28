@@ -12,6 +12,7 @@ __pycache__/
 env/
 venv/
 .venv/
+.check-deps/
 ENV/
 build/
 develop-eggs/
@@ -44,6 +45,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+*.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
