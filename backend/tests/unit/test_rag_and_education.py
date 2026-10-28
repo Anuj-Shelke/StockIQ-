@@ -110,3 +110,17 @@ def test_education_chat_unauthenticated_minimum_age(client):
     assert body["sender"] == "assistant"
     assert "18" in body["content"]
     assert len(body["sources"]) > 0
+
+
+def test_out_of_domain_query_rejection(client):
+    """Verify that non-financial queries like 'how to make a coffee' are politely rejected without hallucination."""
+    res = client.post(
+        "/api/v1/education/chat",
+        json={"query": "how to make a coffee"},
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["sender"] == "assistant"
+    assert "outside the scope" in body["content"].lower() or "outside of this financial domain" in body["content"].lower()
+
+
