@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { apiFetch } from '@/services/api'
 import {
   Sparkles,
-  UserCheck,
   ShieldCheck,
   Sliders,
   PieChart as PieIcon,
@@ -1183,7 +1182,28 @@ export function RecommendationsView() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-right">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/dashboard/review-request"
+                    state={{
+                      analysis: {
+                        symbol: stock.symbol,
+                        forecastHorizon: '30-Day Model Outlook',
+                        targetPrice: stock.mlPredictedTarget,
+                        currentPrice: stock.currentPrice,
+                        predictedChangePercent: stock.projectedReturnPercent,
+                        predictedChange: Math.round(stock.mlPredictedTarget - stock.currentPrice),
+                        modelConfidence: stock.mlConfidence,
+                        drivers: stock.keyShapDrivers,
+                      },
+                      analysis_snapshot_id: stock.symbol + '-REC-' + Date.now(),
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-gold/50 bg-gold/15 px-3 py-1.5 text-xs font-semibold text-gold transition hover:bg-gold hover:text-black shadow-xs"
+                    title="Mark this stock pick for Human Review & Auditor Verification"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>Mark for Human Review</span>
+                  </Link>
                   <div>
                     <span className="block text-[10px] uppercase text-text-muted font-mono">Real-Time Price</span>
                     <span className="font-mono text-sm font-semibold text-text-secondary">
@@ -1203,27 +1223,6 @@ export function RecommendationsView() {
                     <span className="font-mono text-sm font-bold text-gain">
                       +{stock.projectedReturnPercent}%
                     </span>
-                  <Link
-                    to="/dashboard/review-request"
-                    state={{
-                      analysis: {
-                        symbol: stock.symbol,
-                        forecastHorizon: '30-Day Model Outlook',
-                        targetPrice: stock.mlPredictedTarget,
-                        currentPrice: stock.currentPrice,
-                        predictedChangePercent: stock.projectedReturnPercent,
-                        predictedChange: Math.round(stock.mlPredictedTarget - stock.currentPrice),
-                        modelConfidence: stock.mlConfidence,
-                        drivers: stock.keyShapDrivers,
-                      },
-                      analysis_snapshot_id: stock.symbol + '-REC-' + Date.now(),
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold transition hover:bg-gold/20 hover:border-gold hover:text-text-primary"
-                    title="Submit this recommendation for SEBI-certified analyst audit & verification"
-                  >
-                    <UserCheck className="h-3.5 w-3.5" />
-                    <span>Human Verification</span>
-                  </Link>
                   </div>
                 </div>
               </div>
