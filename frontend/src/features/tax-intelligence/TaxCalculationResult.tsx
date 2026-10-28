@@ -90,62 +90,62 @@ export function TaxCalculationResult({ result }: TaxCalculationResultProps) {
       {activeTab === 'breakdown' && (
         <div className="space-y-6">
           {/* Key Metric Highlights */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 sm:p-3.5 min-w-0 flex flex-col justify-between">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Net Capital Gain">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-theme-subtle bg-surface-elevated/50 p-5 min-w-0 flex flex-col justify-between shadow-xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-muted block">
                 Net Capital Gain
               </span>
               <p
                 title={formatINR(m.net_capital_gain_before_tax)}
-                className={`mt-1 font-mono text-sm sm:text-base font-bold whitespace-nowrap tabular-nums ${
+                className={`mt-2 font-mono text-xl sm:text-2xl font-bold whitespace-nowrap tabular-nums ${
                   isLoss ? 'text-rose-400' : 'text-emerald-400'
                 }`}
               >
                 {formatINR(m.net_capital_gain_before_tax)}
               </p>
-              <span className="mt-1 block text-[10px] text-[var(--text-muted)] truncate font-mono" title={`Gross: ${formatINR(m.gross_capital_gain)}`}>
+              <span className="mt-2 block text-xs text-text-muted truncate font-mono">
                 Gross: {formatINR(m.gross_capital_gain)}
               </span>
             </div>
 
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 sm:p-3.5 min-w-0 flex flex-col justify-between">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] line-clamp-1 block" title="Applicable Tax Rate">
+            <div className="rounded-2xl border border-theme-subtle bg-surface-elevated/50 p-5 min-w-0 flex flex-col justify-between shadow-xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-muted block">
                 Applicable Tax Rate
               </span>
-              <p className="mt-1 font-mono text-sm sm:text-base font-bold text-amber-400 whitespace-nowrap tabular-nums">
+              <p className="mt-2 font-mono text-xl sm:text-2xl font-bold text-amber-400 whitespace-nowrap tabular-nums">
                 {(m.applicable_tax_rate * 100).toFixed(1)}%
               </p>
-              <span className="mt-1 block text-[10px] text-[var(--text-muted)] truncate font-mono">
+              <span className="mt-2 block text-xs text-text-muted truncate font-mono">
                 +4% Health &amp; Ed Cess
               </span>
             </div>
 
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 sm:p-3.5 min-w-0 flex flex-col justify-between">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-300 line-clamp-1 block" title="Estimated Total Tax">
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 min-w-0 flex flex-col justify-between shadow-xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-300 block">
                 Estimated Total Tax
               </span>
               <p
                 title={formatINR(m.estimated_total_tax)}
-                className="mt-1 font-mono text-sm sm:text-base font-bold text-rose-400 whitespace-nowrap tabular-nums"
+                className="mt-2 font-mono text-xl sm:text-2xl font-bold text-rose-400 whitespace-nowrap tabular-nums"
               >
                 {formatINR(m.estimated_total_tax)}
               </p>
-              <span className="mt-1 block text-[10px] text-rose-300/70 truncate font-mono">
+              <span className="mt-2 block text-xs text-rose-300/80 truncate font-mono">
                 Sec 288B Rounded
               </span>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-3.5 min-w-0 flex flex-col justify-between">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-300 line-clamp-1 block" title="Net In-Hand Profit">
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 min-w-0 flex flex-col justify-between shadow-xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 block">
                 Net In-Hand Profit
               </span>
               <p
                 title={formatINR(m.estimated_after_tax_profit)}
-                className="mt-1 font-mono text-sm sm:text-base font-bold text-emerald-400 whitespace-nowrap tabular-nums"
+                className="mt-2 font-mono text-xl sm:text-2xl font-bold text-emerald-400 whitespace-nowrap tabular-nums"
               >
                 {formatINR(m.estimated_after_tax_profit)}
               </p>
-              <span className="mt-1 block text-[10px] text-emerald-300/70 truncate font-mono">
+              <span className="mt-2 block text-xs text-emerald-300/80 truncate font-mono">
                 After Tax Realization
               </span>
             </div>

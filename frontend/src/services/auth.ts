@@ -78,3 +78,17 @@ export function validatePassword(password: string, { strict = false } = {}): str
   if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return 'Include at least one letter and one number.'
   return null
 }
+
+/**
+ * Validates Indian mobile numbers per TRAI standards:
+ * 10 digits starting with 6, 7, 8, or 9, with optional +91, 91, or 0 country prefix.
+ */
+export function validateIndianMobile(phone: string): string | null {
+  if (!phone || !phone.trim()) return null
+  const clean = phone.replace(/[\s\-()]/g, '')
+  const indianMobileRegex = /^(?:\+91|91|0)?[6-9]\d{9}$/
+  if (!indianMobileRegex.test(clean)) {
+    return 'Enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9 (e.g. +91 98765 43210).'
+  }
+  return null
+}

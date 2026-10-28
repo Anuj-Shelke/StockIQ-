@@ -176,254 +176,325 @@ export function TaxCalculatorCard({ onCalculate, isLoading = false }: TaxCalcula
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Basic Transaction Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-              Symbol (NSE / BSE)
-            </label>
-            <input
-              type="text"
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value)}
-              required
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-              placeholder="e.g. RELIANCE.NS"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-              Quantity Sold
-            </label>
-            <input
-              type="number"
-              min="1"
-              step="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-              required
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-              Sale Price per Share (₹)
-            </label>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={salePrice}
-              onChange={(e) => setSalePrice(parseFloat(e.target.value) || 0)}
-              required
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-              Sale Date
-            </label>
-            <input
-              type="date"
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
-              required
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-            />
-          </div>
+      {/* Live Computation Quick Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl border border-theme-subtle bg-surface-elevated/30">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-text-muted block">Gross Proceeds</span>
+          <span className="font-mono text-sm sm:text-base font-bold text-text-primary">
+            ₹{(Math.round(quantity * salePrice)).toLocaleString('en-IN')}
+          </span>
         </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-text-muted block">Est. Acquisition Cost</span>
+          <span className="font-mono text-sm sm:text-base font-bold text-text-primary">
+            ₹{useLots 
+              ? lots.reduce((acc, l) => acc + (l.quantity * l.purchase_price), 0).toLocaleString('en-IN')
+              : (Math.round(quantity * purchasePrice)).toLocaleString('en-IN')}
+          </span>
+        </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-text-muted block">Estimated Holding</span>
+          <span className="font-mono text-sm sm:text-base font-bold text-gold">
+            {!useLots && saleDate && purchaseDate ? (
+              (() => {
+                const diffDays = Math.round((new Date(saleDate).getTime() - new Date(purchaseDate).getTime()) / (1000 * 3600 * 24))
+                if (diffDays >= 365) return `${(diffDays / 365).toFixed(1)} Yrs (LTCG)`
+                return `${Math.max(1, Math.round(diffDays / 30))} Mos (STCG)`
+              })()
+            ) : 'Multi-Lot FIFO'}
+          </span>
+        </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-text-muted block">Budget 2024 Regime</span>
+          <span className="font-mono text-xs sm:text-sm font-semibold text-emerald-400">
+            {new Date(saleDate) >= new Date('2024-07-23') ? 'New Post-Budget Rates' : 'Pre-Budget 2024'}
+          </span>
+        </div>
+      </div>
 
-        {/* Acquisition Mode Switch */}
-        <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Sale & Disposal Transaction Details */}
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[var(--text-secondary)]">Cost of Acquisition Basis:</span>
-            <span className="text-[11px] text-[var(--text-muted)]">
-              {useLots ? 'Multi-lot FIFO matching' : 'Single acquisition lot'}
-            </span>
+            <span className="h-2 w-2 rounded-full bg-gold" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+              1. Sale / Disposal Details
+            </h3>
           </div>
-          <button
-            type="button"
-            onClick={() => setUseLots(!useLots)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--gold-primary)] hover:underline"
-          >
-            <Layers className="h-3.5 w-3.5" />
-            {useLots ? 'Switch to Single Lot' : 'Switch to Multiple FIFO Lots'}
-          </button>
-        </div>
 
-        {/* Single Lot Inputs */}
-        {!useLots && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-                Purchase Price per Share (₹)
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Asset Symbol
+              </label>
+              <input
+                type="text"
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value)}
+                required
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary uppercase font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+                placeholder="e.g. RELIANCE.NS"
+              />
+              <span className="text-[10px] text-text-muted block">NSE / BSE Ticker</span>
+            </div>
+
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Units Sold
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
+                required
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+              />
+              <span className="text-[10px] text-text-muted block">Total shares disposed</span>
+            </div>
+
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Sale Price / Unit (₹)
               </label>
               <input
                 type="number"
                 min="0.01"
                 step="0.01"
-                value={purchasePrice}
-                onChange={(e) => setPurchasePrice(parseFloat(e.target.value) || 0)}
+                value={salePrice}
+                onChange={(e) => setSalePrice(parseFloat(e.target.value) || 0)}
                 required
-                className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
               />
+              <span className="text-[10px] text-text-muted block">Realized market price</span>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-                Purchase Date
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Sale Date
               </label>
               <input
                 type="date"
-                value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
+                value={saleDate}
+                onChange={(e) => setSaleDate(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
               />
+              <span className="text-[10px] text-text-muted block">Determines Budget 2024 regime</span>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Multi-Lot FIFO Inputs */}
-        {useLots && (
-          <div className="space-y-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-                Acquisition Lots (Allocated First-In First-Out)
-              </span>
-              <button
-                type="button"
-                onClick={addLot}
-                className="flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-white/5 px-2.5 py-1 text-xs font-semibold text-[var(--gold-primary)] hover:bg-white/10"
-              >
-                <Plus className="h-3 w-3" />
-                Add Lot
-              </button>
+        {/* Acquisition Mode & Purchase Details */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-gold" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                2. Cost of Acquisition (Purchase)
+              </h3>
             </div>
+            <button
+              type="button"
+              onClick={() => setUseLots(!useLots)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gold hover:underline"
+            >
+              <Layers className="h-4 w-4" />
+              {useLots ? 'Switch to Single Acquisition Lot' : 'Switch to Multiple FIFO Lots'}
+            </button>
+          </div>
 
-            <div className="space-y-2">
-              {lots.map((lot, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-12 gap-2 items-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2.5 text-xs"
-                >
-                  <div className="col-span-3">
-                    <span className="block text-[10px] text-[var(--text-muted)]">Lot ID / Ref</span>
-                    <input
-                      type="text"
-                      value={lot.lot_id}
-                      onChange={(e) => handleLotChange(idx, 'lot_id', e.target.value)}
-                      className="w-full rounded bg-transparent px-2 py-1 font-medium text-[var(--text-primary)] border border-transparent focus:border-[var(--gold-primary)] focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <span className="block text-[10px] text-[var(--text-muted)]">Date</span>
-                    <input
-                      type="date"
-                      value={lot.purchase_date}
-                      onChange={(e) => handleLotChange(idx, 'purchase_date', e.target.value)}
-                      className="w-full rounded bg-transparent px-2 py-1 font-medium text-[var(--text-primary)] border border-transparent focus:border-[var(--gold-primary)] focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <span className="block text-[10px] text-[var(--text-muted)]">Qty</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={lot.quantity}
-                      onChange={(e) =>
-                        handleLotChange(idx, 'quantity', parseInt(e.target.value) || 0)
-                      }
-                      className="w-full rounded bg-transparent px-2 py-1 font-medium text-[var(--text-primary)] border border-transparent focus:border-[var(--gold-primary)] focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <span className="block text-[10px] text-[var(--text-muted)]">Buy Price (₹)</span>
-                    <input
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      value={lot.purchase_price}
-                      onChange={(e) =>
-                        handleLotChange(idx, 'purchase_price', parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full rounded bg-transparent px-2 py-1 font-medium text-[var(--text-primary)] border border-transparent focus:border-[var(--gold-primary)] focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="col-span-1 text-right">
-                    {lots.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeLot(idx)}
-                        className="p-1 text-rose-400 hover:text-rose-300"
-                        title="Remove lot"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
+          {/* Single Lot Inputs */}
+          {!useLots && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Purchase Price per Share (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(parseFloat(e.target.value) || 0)}
+                  required
+                  className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+                />
+                <span className="text-[10px] text-text-muted block">
+                  Original cost of acquisition
+                </span>
+              </div>
+
+              <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Acquisition / Purchase Date
+                </label>
+                <input
+                  type="date"
+                  value={purchaseDate}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+                />
+                <span className="text-[10px] text-text-muted block">
+                  Used to evaluate &gt; 12-month holding for Section 112A
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Multi-Lot FIFO Inputs */}
+          {useLots && (
+            <div className="space-y-3 rounded-2xl border border-theme-subtle bg-surface-elevated/30 p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                    Acquisition Lots (Allocated First-In First-Out)
+                  </span>
+                  <p className="text-[11px] text-text-muted mt-0.5">
+                    Lots are depleted in chronological order per Section 45(2A) depository rules.
+                  </p>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  onClick={addLot}
+                  className="flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold hover:bg-gold/20 transition"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Acquisition Lot
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {lots.map((lot, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-12 gap-3 items-center rounded-xl border border-theme-subtle bg-surface-elevated/60 p-3 text-xs"
+                  >
+                    <div className="col-span-3">
+                      <span className="block text-[10px] font-semibold text-text-muted uppercase mb-1">Lot Ref</span>
+                      <input
+                        type="text"
+                        value={lot.lot_id}
+                        onChange={(e) => handleLotChange(idx, 'lot_id', e.target.value)}
+                        className="w-full rounded-lg bg-surface-elevated px-3 py-2 text-xs font-semibold text-text-primary border border-theme-subtle focus:border-gold focus:outline-hidden"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <span className="block text-[10px] font-semibold text-text-muted uppercase mb-1">Purchase Date</span>
+                      <input
+                        type="date"
+                        value={lot.purchase_date}
+                        onChange={(e) => handleLotChange(idx, 'purchase_date', e.target.value)}
+                        className="w-full rounded-lg bg-surface-elevated px-3 py-2 text-xs font-semibold text-text-primary border border-theme-subtle focus:border-gold focus:outline-hidden"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <span className="block text-[10px] font-semibold text-text-muted uppercase mb-1">Lot Qty</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={lot.quantity}
+                        onChange={(e) =>
+                          handleLotChange(idx, 'quantity', parseInt(e.target.value) || 0)
+                        }
+                        className="w-full rounded-lg bg-surface-elevated px-3 py-2 text-xs font-semibold text-text-primary border border-theme-subtle focus:border-gold focus:outline-hidden font-mono"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <span className="block text-[10px] font-semibold text-text-muted uppercase mb-1">Price (₹)</span>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={lot.purchase_price}
+                        onChange={(e) =>
+                          handleLotChange(idx, 'purchase_price', parseFloat(e.target.value) || 0)
+                        }
+                        className="w-full rounded-lg bg-surface-elevated px-3 py-2 text-xs font-semibold text-text-primary border border-theme-subtle focus:border-gold focus:outline-hidden font-mono"
+                      />
+                    </div>
+                    <div className="col-span-1 text-center">
+                      {lots.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeLot(idx)}
+                          className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition"
+                          title="Remove lot"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Expenses & Exemption Adjustments */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-[var(--border-subtle)] pt-4">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                Eligible Transfer Expenses (₹)
-              </label>
-              <span
-                className="cursor-help text-[var(--text-muted)]"
-                title="Brokerage, stamp duty, exchange turnover fee. Note: Securities Transaction Tax (STT) is NOT deductible per Section 48."
-              >
-                <Info className="h-3.5 w-3.5" />
-              </span>
-            </div>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={eligibleExpenses}
-              onChange={(e) => setEligibleExpenses(parseFloat(e.target.value) || 0)}
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-              placeholder="0.00"
-            />
-            <span className="mt-1 block text-[10px] text-[var(--text-muted)]">
-              STT is non-deductible under Section 48 of the Income Tax Act.
-            </span>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-gold" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+              3. Deductions &amp; Statutory Thresholds
+            </h3>
           </div>
 
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                Prior LTCG Realized this Financial Year (₹)
-              </label>
-              <span
-                className="cursor-help text-[var(--text-muted)]"
-                title="Cumulative LTCG realized earlier in the year. The annual Section 112A threshold is ₹1,25,000 across all equity trades."
-              >
-                <Info className="h-3.5 w-3.5" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Eligible Transfer Expenses (₹)
+                </label>
+                <span
+                  className="cursor-help text-text-muted"
+                  title="Brokerage, stamp duty, exchange turnover fee. Note: Securities Transaction Tax (STT) is NOT deductible per Section 48."
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={eligibleExpenses}
+                onChange={(e) => setEligibleExpenses(parseFloat(e.target.value) || 0)}
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+                placeholder="0.00"
+              />
+              <span className="text-[10px] text-text-muted block">
+                Brokerage &amp; stamp duty allowed. STT non-deductible under Sec 48.
               </span>
             </div>
-            <input
-              type="number"
-              min="0"
-              step="1000"
-              value={priorLtcgInFy}
-              onChange={(e) => setPriorLtcgInFy(parseFloat(e.target.value) || 0)}
-              className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--gold-primary)] focus:outline-hidden"
-              placeholder="e.g. 25000"
-            />
-            <span className="mt-1 block text-[10px] text-[var(--text-muted)]">
-              Deducted from the ₹1,25,000 statutory annual Section 112A threshold.
-            </span>
+
+            <div className="card-surface p-4 border border-theme-subtle rounded-xl space-y-1.5 focus-within:border-gold/60 transition">
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  Prior LTCG Realized this FY (₹)
+                </label>
+                <span
+                  className="cursor-help text-text-muted"
+                  title="Cumulative LTCG realized earlier in the year. The annual Section 112A threshold is ₹1,25,000 across all equity trades."
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                value={priorLtcgInFy}
+                onChange={(e) => setPriorLtcgInFy(parseFloat(e.target.value) || 0)}
+                className="w-full rounded-xl border border-theme-subtle bg-surface-elevated/70 px-4 py-3 text-sm font-semibold text-text-primary font-mono focus:border-gold focus:outline-hidden focus:ring-1 focus:ring-gold/30"
+                placeholder="e.g. 25000"
+              />
+              <span className="text-[10px] text-text-muted block">
+                Subtracted from ₹1,25,000 Section 112A annual exemption.
+              </span>
+            </div>
           </div>
         </div>
 
@@ -432,7 +503,7 @@ export function TaxCalculatorCard({ onCalculate, isLoading = false }: TaxCalcula
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-gold flex w-full items-center justify-center gap-2 py-3 text-sm font-bold shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+            className="btn-gold flex w-full items-center justify-center gap-2 py-3.5 text-sm font-bold shadow-lg transition-all hover:scale-[1.005] active:scale-[0.995] disabled:opacity-50 cursor-pointer"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -442,7 +513,7 @@ export function TaxCalculatorCard({ onCalculate, isLoading = false }: TaxCalcula
             ) : (
               <span className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                Calculate Capital Gains & XAI Explanation
+                Calculate Capital Gains &amp; XAI Explanation
               </span>
             )}
           </button>
