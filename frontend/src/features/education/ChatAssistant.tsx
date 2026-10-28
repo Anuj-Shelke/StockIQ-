@@ -1,17 +1,40 @@
-import { useState } from 'react'
-import { Send, Bot, User, Sparkles, HelpCircle } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Send, Bot, User, Sparkles, Maximize2, Minimize2 } from 'lucide-react'
 import { SourceBadge } from './SourceBadge'
 import { apiFetch } from '@/services/api'
 import type { ChatMessage, SourceCitation } from '@/types/education'
 
-const STARTER_PROMPTS = [
-  'What is the minimum age to invest in stock?',
-  'What is the maximum fee an Investment Adviser can charge?',
-  'What is Unpublished Price Sensitive Information (UPSI)?',
-  'What is Max Drawdown and how does it protect investors?',
-  'What is the timeline to resolve complaints on SEBI SCORES 2.0?',
-  'What are the LTCG and STCG tax rates in Budget 2024?',
+const FINANCIAL_KEYWORDS = [
+  'stock', 'stocks', 'share', 'shares', 'equity', 'equities', 'nse', 'bse', 'nifty', 'sensex',
+  'market', 'markets', 'index', 'indices', 'demat', 'trading', 'trade', 'trades', 'broker',
+  'brokerage', 'depository', 'nsdl', 'cdsl', 'portfolio', 'portfolios', 'mutual fund', 'mutual funds',
+  'mf', 'etf', 'sip', 'fd', 'fixed deposit', 'gold', 'sgb', 'bond', 'bonds', 'debenture',
+  'derivative', 'derivatives', 'f&o', 'futures', 'options', 'intraday', 'delivery', 't+1',
+  'settlement', 'circuit', 'circuit breaker', 'ipo', 'asba', 'allotment', 'listing', 'delisting',
+  'buyback', 'dividend', 'dividends', 'sebi', 'regulation', 'regulations', 'regulatory', 'circular',
+  'guideline', 'guidelines', 'compliance', 'scores', 'grievance', 'grievances', 'complaint',
+  'complaints', 'kyc', 'pan', 'insider', 'upsi', 'pit', 'pfutp', 'manipulation', 'fraud', 'scam',
+  'pump and dump', 'front running', 'front-running', 'adviser', 'advisers', 'advisor', 'advisors',
+  'ria', 'pms', 'portfolio manager', 'research analyst', 'lodr', 'disclosure', 'fiduciary',
+  'suitability', 'cagr', 'drawdown', 'drawdowns', 'mdd', 'beta', 'alpha', 'sharpe', 'volatility',
+  'var', 'risk', 'return', 'returns', 'gain', 'gains', 'loss', 'losses', 'profit', 'capital',
+  'yield', 'inflation', 'interest rate', 'liquidity', 'valuation', 'pe ratio', 'pb ratio', 'roe',
+  'roce', 'tax', 'taxes', 'taxation', 'ltcg', 'stcg', 'capital gains', 'section 112a', 'section 111a',
+  'income tax', 'budget', 'cess', 'exemption', 'slab', 'stockiq', 'invest', 'investing', 'investor',
+  'investment', 'investments', 'money', 'finance', 'financial', 'wealth', 'debt', 'rupee', 'inr'
 ]
+
+const OUT_OF_DOMAIN_KEYWORDS = [
+  'coffee', 'tea', 'cook', 'cooking', 'recipe', 'bake', 'baking', 'cake', 'food', 'dinner',
+  'lunch', 'breakfast', 'movie', 'movies', 'song', 'songs', 'lyrics', 'poem', 'poetry', 'joke',
+  'jokes', 'weather', 'rain', 'temperature', 'cricket', 'football', 'soccer', 'tennis', 'game',
+  'games', 'match', 'doctor', 'medicine', 'medicines', 'pill', 'pills', 'disease', 'hospital',
+  'flight', 'hotel', 'travel', 'vacation', 'car', 'cars', 'bike', 'bikes', 'mechanic', 'repair',
+  'driving', 'love', 'dating', 'relationship', 'astrology', 'horoscope', 'zodiac', 'bollywood',
+  'hollywood', 'actor', 'actress',
+]
+
+const GREETING_KEYWORDS = ['hi', 'hello', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening', 'help']
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
@@ -35,6 +58,16 @@ export function ChatAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES)
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, isTyping])
 
   const handleSend = async (textToSend?: string) => {
     const question = textToSend || input
@@ -474,7 +507,30 @@ export function ChatAssistant() {
           },
         ]
       }
-      // 18. Default grounded response
+      // Out-of-Domain Guard
+      const hasFin = FINANCIAL_KEYWORDS.some((k) => lower.includes(k))
+      const hasOut = OUT_OF_DOMAIN_KEYWORDS.some((k) => lower.includes(k))
+      const isGreeting = GREETING_KEYWORDS.some((g) => lower === g || lower.startsWith(g + ' ')) && lower.split(/\s+/).length <= 3
+
+      if (isGreeting) {
+        reply =
+          'Hello! I am StockIQ’s SEBI-compliant Financial Education Assistant. ' +
+          'You can ask me questions about SEBI statutory rules, Indian capital markets, portfolio risk metrics ' +
+          '(CAGR, Max Drawdown, Beta), mutual funds, or capital gains tax regulations. How can I help with your financial research today?'
+        citations = []
+      } else if ((hasOut && !hasFin) || (!hasFin && lower.split(/\s+/).length > 3)) {
+        reply =
+          '⚠️ **Question Outside Scope**\n\n' +
+          'This query is outside the scope of StockIQ’s SEBI & Financial Intelligence Assistant. ' +
+          'I am specifically calibrated to provide verified insights on:\n' +
+          '• **SEBI Guidelines & Circulars** (IA fee caps, PMS ₹5 Cr net worth, insider trading/UPSI, SCORES 2.0)\n' +
+          '• **Indian Stock Market Mechanics** (NSE/BSE, T+1 settlement, Demat account rules, IPO ASBA)\n' +
+          '• **Quantitative Risk Metrics** (CAGR, Value at Risk, Maximum Drawdown, Beta)\n' +
+          '• **Securities Taxation** (Section 112A 12.5% LTCG, Section 111A 20% STCG)\n\n' +
+          'Please ask an investing, regulatory, or market-related question.'
+        citations = []
+      }
+      // 18. Default grounded response for recognized broad financial terms
       else {
         reply =
           `Under **SEBI statutory guidelines** regarding ${question.slice(0, 30)}...: ` +
@@ -505,30 +561,26 @@ export function ChatAssistant() {
   }
 
   return (
-    <div className="card-surface p-5 flex flex-col h-[520px]">
+    <div className={`card-surface p-5 flex flex-col transition-all duration-300 ${isExpanded ? 'h-[750px] shadow-2xl border-gold/40' : 'h-[660px]'}`}>
       <div className="flex items-center justify-between border-b border-theme-subtle pb-3">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-gold" />
           <h3 className="font-semibold text-text-primary text-sm uppercase tracking-tight">Financial Intelligence Assistant</h3>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-text-muted font-mono">
-          <Sparkles className="h-3.5 w-3.5 text-gold" />
-          <span>RAG-Audited Knowledge</span>
-        </div>
-      </div>
-
-      {/* Suggested Starter Prompts */}
-      <div className="py-2.5 flex flex-wrap gap-2 border-b border-theme-subtle">
-        {STARTER_PROMPTS.map((prompt) => (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-text-muted font-mono">
+            <Sparkles className="h-3.5 w-3.5 text-gold" />
+            <span>RAG-Audited Knowledge</span>
+          </div>
           <button
-            key={prompt}
-            onClick={() => handleSend(prompt)}
-            className="flex items-center gap-1.5 rounded-full border border-theme-subtle bg-surface-elevated px-3 py-1 text-[11px] text-text-muted hover:border-gold hover:text-gold transition font-mono"
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            title={isExpanded ? 'Collapse View' : 'Expand View'}
+            className="rounded-lg border border-theme-subtle p-1.5 text-text-muted hover:border-gold hover:text-gold transition"
           >
-            <HelpCircle className="h-3 w-3 text-gold/80" />
-            {prompt}
+            {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
-        ))}
+        </div>
       </div>
 
       {/* Messages Scroll Area */}
@@ -591,6 +643,7 @@ export function ChatAssistant() {
             <span>Consulting financial knowledge base...</span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Form */}

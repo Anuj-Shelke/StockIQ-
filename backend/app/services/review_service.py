@@ -45,16 +45,20 @@ class ReviewService:
         db: Session,
     ) -> ReviewRequestItem:
         try:
-            active = db.query(ReviewRequest).filter(
+            q = db.query(ReviewRequest).filter(
                 ReviewRequest.user_id == user_id,
-                ReviewRequest.analysis_snapshot_id == request.analysis_snapshot_id,
                 ReviewRequest.status.in_(("PENDING", "IN_REVIEW")),
-            ).first()
+            )
+            if request.analysis_snapshot_id:
+                q = q.filter(ReviewRequest.analysis_snapshot_id == request.analysis_snapshot_id)
+            else:
+                q = q.filter(ReviewRequest.symbol == request.symbol.upper())
+            active = q.first()
         except Exception as exc:
             db.rollback()
             raise DatabaseUnavailableError() from exc
         if active:
-            raise ConflictError("A review request is already active for this analysis.")
+            raise ConflictError(f"A review request is already active for {request.symbol.upper()}.")
 
         row = ReviewRequest(
             id=f"REV-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:8].upper()}",

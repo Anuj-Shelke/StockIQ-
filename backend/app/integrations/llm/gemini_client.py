@@ -9,6 +9,38 @@ from app.core.config import settings
 class GeminiClient:
     """Client for generating grounded financial answers using Gemini models or fallback synthesis."""
 
+    FINANCIAL_KEYWORDS = {
+        "stock", "stocks", "share", "shares", "equity", "equities", "nse", "bse", "nifty", "sensex",
+        "market", "markets", "index", "indices", "demat", "trading", "trade", "trades", "broker",
+        "brokerage", "depository", "nsdl", "cdsl", "portfolio", "portfolios", "mutual fund", "mutual funds",
+        "mf", "etf", "sip", "fd", "fixed deposit", "gold", "sgb", "bond", "bonds", "debenture",
+        "derivative", "derivatives", "f&o", "futures", "options", "intraday", "delivery", "t+1",
+        "settlement", "circuit", "circuit breaker", "ipo", "asba", "allotment", "listing", "delisting",
+        "buyback", "dividend", "dividends", "sebi", "regulation", "regulations", "regulatory", "circular",
+        "guideline", "guidelines", "compliance", "scores", "grievance", "grievances", "complaint",
+        "complaints", "kyc", "pan", "insider", "upsi", "pit", "pfutp", "manipulation", "fraud", "scam",
+        "pump and dump", "front running", "front-running", "adviser", "advisers", "advisor", "advisors",
+        "ria", "pms", "portfolio manager", "research analyst", "lodr", "disclosure", "fiduciary",
+        "suitability", "cagr", "drawdown", "drawdowns", "mdd", "beta", "alpha", "sharpe", "volatility",
+        "var", "risk", "return", "returns", "gain", "gains", "loss", "losses", "profit", "capital",
+        "yield", "inflation", "interest rate", "liquidity", "valuation", "pe ratio", "pb ratio", "roe",
+        "roce", "tax", "taxes", "taxation", "ltcg", "stcg", "capital gains", "section 112a", "section 111a",
+        "income tax", "budget", "cess", "exemption", "slab", "stockiq", "invest", "investing", "investor",
+        "investment", "investments", "money", "finance", "financial", "wealth", "debt", "rupee", "inr"
+    }
+
+    OUT_OF_DOMAIN_KEYWORDS = {
+        "coffee", "tea", "cook", "cooking", "recipe", "bake", "baking", "cake", "food", "dinner",
+        "lunch", "breakfast", "movie", "movies", "song", "songs", "lyrics", "poem", "poetry", "joke",
+        "jokes", "weather", "rain", "temperature", "cricket", "football", "soccer", "tennis", "game",
+        "games", "match", "doctor", "medicine", "medicines", "pill", "pills", "disease", "hospital",
+        "flight", "hotel", "travel", "vacation", "car", "cars", "bike", "bikes", "mechanic", "repair",
+        "driving", "love", "dating", "relationship", "astrology", "horoscope", "zodiac", "bollywood",
+        "hollywood", "actor", "actress",
+    }
+
+    GREETING_KEYWORDS = {"hi", "hello", "hey", "greetings", "good morning", "good afternoon", "good evening", "help"}
+
     @classmethod
     def synthesize_answer(
         cls,
@@ -16,6 +48,34 @@ class GeminiClient:
         retrieved_contexts: List[Dict],
     ) -> str:
         """Generate response strictly grounded in retrieved regulatory sources."""
+        q_lower = query.lower().strip()
+        words = set(re.findall(r'\b[a-zA-Z0-9\+\&\-]+\b', q_lower))
+
+        # Check friendly greeting
+        if any(q_lower == g or q_lower.startswith(g + " ") for g in cls.GREETING_KEYWORDS) and len(words) <= 3:
+            return (
+                "Hello! I am StockIQ's SEBI-compliant Financial Education Assistant. "
+                "You can ask me questions about SEBI regulations, Indian capital markets, portfolio risk metrics "
+                "(CAGR, Max Drawdown, Beta), mutual funds, or capital gains tax rules. How can I assist your financial research today?"
+            )
+
+        # Check out of domain query
+        has_fin = any(k in q_lower for k in cls.FINANCIAL_KEYWORDS)
+        has_out = any(k in q_lower for k in cls.OUT_OF_DOMAIN_KEYWORDS)
+        if has_out and not has_fin:
+            return (
+                "This question is outside the scope of StockIQ's Financial Education Assistant. "
+                "I am specifically designed to answer queries regarding SEBI regulations, Indian capital markets, "
+                "equity investing, risk metrics (drawdown, CAGR, beta), mutual funds, taxation (LTCG/STCG Section 112A), "
+                "Demat rules, and investor grievance redressal (SCORES 2.0). Please ask a financial, market, or compliance-related question."
+            )
+        if not has_fin and len(words) > 3:
+            return (
+                "This question appears to be outside the scope of StockIQ's Financial Education Assistant. "
+                "I specialize in SEBI regulations, Indian stock market concepts, portfolio risk, and capital gains tax rules. "
+                "Please feel free to ask a market, regulatory, or investing question!"
+            )
+
         # Check if live GEMINI API key is available
         api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY")
         if api_key and (api_key.startswith("AIza") or len(api_key) > 20):

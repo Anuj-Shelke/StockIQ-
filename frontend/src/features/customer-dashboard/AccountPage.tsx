@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { apiFetch } from '@/services/api'
+import { validateEmail, validateIndianMobile } from '@/services/auth'
 
 function formatMemberSince(value: string | undefined) {
   if (!value) return 'Not available'
@@ -25,6 +26,7 @@ function formatMemberSince(value: string | undefined) {
 
 interface StoredPreferences {
   phone?: string
+  contactEmail?: string
   occupation?: string
   bio?: string
   experienceLevel?: string
@@ -37,21 +39,27 @@ export function AccountPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Editable fields
+  // Editable fields & validations
   const [fullName, setFullName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [occupation, setOccupation] = useState('')
   const [bio, setBio] = useState('')
   const [experienceLevel, setExperienceLevel] = useState('Intermediate')
 
+  const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [emailError, setEmailError] = useState<string | null>(null)
+
   useEffect(() => {
     if (user) {
       setFullName(user.full_name || '')
+      setContactEmail(user.email || '')
       try {
         const stored = localStorage.getItem(`stockiq_profile_prefs_${user.email}`)
         if (stored) {
           const parsed: StoredPreferences = JSON.parse(stored)
           setPhone(parsed.phone || '')
+          if (parsed.contactEmail) setContactEmail(parsed.contactEmail)
           setOccupation(parsed.occupation || '')
           setBio(parsed.bio || '')
           setExperienceLevel(parsed.experienceLevel || 'Intermediate')
@@ -79,10 +87,42 @@ export function AccountPage() {
   const displayName = fullName.trim() || user.full_name?.trim() || 'Name not provided'
   const accountType = user.role === 'admin' ? 'Administrator' : 'Investor'
 
+  const handlePhoneChange = (val: string) => {
+    setPhone(val)
+    if (val.trim()) {
+      setPhoneError(validateIndianMobile(val))
+    } else {
+      setPhoneError(null)
+    }
+  }
+
+  const handleEmailChange = (val: string) => {
+    setContactEmail(val)
+    if (val.trim()) {
+      setEmailError(validateEmail(val))
+    } else {
+      setEmailError('Email cannot be empty.')
+    }
+  }
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!fullName.trim()) {
       setErrorMessage('Full name cannot be empty.')
+      return
+    }
+
+    const mError = validateIndianMobile(phone)
+    if (mError) {
+      setPhoneError(mError)
+      setErrorMessage(mError)
+      return
+    }
+
+    const eError = validateEmail(contactEmail)
+    if (eError) {
+      setEmailError(eError)
+      setErrorMessage(eError)
       return
     }
 
@@ -101,6 +141,7 @@ export function AccountPage() {
       try {
         const prefs: StoredPreferences = {
           phone: phone.trim(),
+          contactEmail: contactEmail.trim(),
           occupation: occupation.trim(),
           bio: bio.trim(),
           experienceLevel,
@@ -112,7 +153,7 @@ export function AccountPage() {
 
       await reloadProfile()
       setIsEditing(false)
-      setSuccessMessage('Profile details updated successfully!')
+      setSuccessMessage('Profile details updated successfully with verified Indian contact details!')
       setTimeout(() => setSuccessMessage(null), 5000)
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to update profile. Please try again.')
@@ -123,11 +164,13 @@ export function AccountPage() {
 
   const handleCancel = () => {
     setFullName(user.full_name || '')
+    setContactEmail(user.email || '')
     try {
       const stored = localStorage.getItem(`stockiq_profile_prefs_${user.email}`)
       if (stored) {
         const parsed: StoredPreferences = JSON.parse(stored)
         setPhone(parsed.phone || '')
+        if (parsed.contactEmail) setContactEmail(parsed.contactEmail)
         setOccupation(parsed.occupation || '')
         setBio(parsed.bio || '')
         setExperienceLevel(parsed.experienceLevel || 'Intermediate')
@@ -136,6 +179,8 @@ export function AccountPage() {
       // Ignore
     }
     setErrorMessage(null)
+    setPhoneError(null)
+    setEmailError(null)
     setIsEditing(false)
   }
 
@@ -227,39 +272,75 @@ export function AccountPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary mb-1.5">
-                  Email Address (Primary Identity)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                    Contact Email Address <span className="text-gold">*</span>
+                  </label>
+                  {!emailError && contactEmail && (
+                    <span className="text-[10px] text-gain font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> Valid Email
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
                     <Mail className="h-4 w-4" />
                   </div>
                   <input
                     type="email"
-                    value={user.email}
-                    disabled
-                    className="input-default pl-10.5 opacity-65 cursor-not-allowed bg-canvas/40 font-mono text-xs"
+                    value={contactEmail}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    required
+                    placeholder="yourname@domain.com"
+                    className={`input-default pl-10.5 font-mono text-xs ${
+                      emailError ? 'border-loss focus:border-loss ring-1 ring-loss/30' : ''
+                    }`}
                   />
                 </div>
-                <p className="mt-1 text-[10px] text-text-muted">Registered authentication email cannot be altered directly.</p>
+                {emailError ? (
+                  <p className="mt-1 text-[11px] text-loss font-mono flex items-center gap-1">
+                    <X className="h-3 w-3 shrink-0" /> {emailError}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[10px] text-text-muted">Used for portfolio alerts and capital gains tax reports.</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary mb-1.5">
-                  Phone / WhatsApp (Optional)
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-muted">
-                    <Phone className="h-4 w-4" />
-                  </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider font-mono text-text-secondary">
+                    Indian Mobile Number (TRAI Validated)
+                  </label>
+                  {!phoneError && phone && (
+                    <span className="text-[10px] text-gain font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> Valid 🇮🇳 Mobile
+                    </span>
+                  )}
+                </div>
+                <div className="relative flex">
+                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-theme-subtle bg-surface-elevated text-xs font-mono font-bold text-text-primary gap-1">
+                    <span>🇮🇳</span> +91
+                  </span>
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="input-default pl-10.5 font-mono"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="98765 43210"
+                    maxLength={14}
+                    className={`input-default rounded-l-none font-mono text-sm ${
+                      phoneError ? 'border-loss focus:border-loss ring-1 ring-loss/30' : ''
+                    }`}
                   />
                 </div>
+                {phoneError ? (
+                  <p className="mt-1 text-[11px] text-loss font-mono flex items-center gap-1">
+                    <X className="h-3 w-3 shrink-0" /> {phoneError}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[10px] text-text-muted">
+                    Must be a 10-digit Indian number starting with 6, 7, 8, or 9 for SMS/WhatsApp verification.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -322,8 +403,8 @@ export function AccountPage() {
               </button>
               <button
                 type="submit"
-                disabled={saving}
-                className="btn-gold flex items-center gap-1.5"
+                disabled={saving || Boolean(phoneError) || Boolean(emailError)}
+                className="btn-gold flex items-center gap-1.5 disabled:opacity-50"
               >
                 <Check className="h-4 w-4" />
                 {saving ? 'Saving Changes...' : 'Save Profile Changes'}
@@ -344,7 +425,12 @@ export function AccountPage() {
               <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted">
                 <Mail className="h-4 w-4 text-gold" aria-hidden="true" /> Email Address
               </dt>
-              <dd className="mt-2 break-all text-sm font-mono text-text-primary">{user.email}</dd>
+              <dd className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-sm text-text-primary">{contactEmail || user.email}</span>
+                <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                  Verified Identity
+                </span>
+              </dd>
             </div>
 
             <div className="bg-surface p-5">
@@ -374,7 +460,14 @@ export function AccountPage() {
               <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted">
                 <Phone className="h-4 w-4 text-gold" aria-hidden="true" /> Contact Phone
               </dt>
-              <dd className="mt-2 text-sm font-mono text-text-primary">{phone || 'Not provided'}</dd>
+              <dd className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-sm font-mono text-text-primary">{phone || 'Not provided'}</span>
+                {phone && (
+                  <span className="rounded-full bg-gold/15 border border-gold/30 px-2 py-0.5 text-[10px] font-semibold text-gold">
+                    🇮🇳 +91 TRAI Compliant
+                  </span>
+                )}
+              </dd>
             </div>
           </dl>
         )}

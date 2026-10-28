@@ -1,5 +1,5 @@
 export interface StressScenario {
-  id: 'covid-19' | 'gfc-2008' | 'rate-shock-2022'
+  id: 'covid-19' | 'gfc-2008' | 'rate-shock-2022' | 'demonetization-2016' | 'taper-tantrum-2013' | 'election-flash-2024' | string
   name: string
   period: string
   description: string

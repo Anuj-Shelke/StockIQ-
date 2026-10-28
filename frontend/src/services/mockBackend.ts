@@ -45,6 +45,7 @@ const emailFrom = (refreshOrAccess: string) => {
 /** Names given at sign-up (in memory only; a page reload forgets them, like a fresh mock "server"). */
 const names = new Map<string, string | null>()
 const userRoles = new Map<string, 'investor' | 'admin'>()
+const mockReviewRequests: any[] = []
 
 const userIdFor = (email: string) => `mock-user-${enc(email).replace(/[^A-Za-z0-9]/g, '').slice(0, 12)}`
 
@@ -119,6 +120,34 @@ export function installMockBackend() {
         portfolios: [],
         recent_activity: [],
       })
+    }
+
+    if (path === '/review-requests') {
+      const email = bearerEmail(init)
+      if (!email) return fail(401, 'UNAUTHORIZED', 'Not authenticated')
+
+      if (init?.method === 'POST') {
+        const item = {
+          id: `REV-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+          userId: userIdFor(email),
+          userEmail: email,
+          symbol: (body.symbol || 'RELIANCE.NS').toUpperCase(),
+          analysisSnapshotId: body.analysis_snapshot_id || null,
+          reason: body.reason || 'Verification requested',
+          userNotes: body.user_notes || '',
+          status: 'PENDING',
+          severity: body.severity || 'MEDIUM',
+          createdAt: new Date().toISOString(),
+          updatedAt: null,
+          assignedReviewer: 'SEBI Compliance Auditor (Assigned)',
+          resolutionNotes: null,
+          snapshotData: body.snapshot_data || null,
+        }
+        mockReviewRequests.unshift(item)
+        return json(201, item)
+      }
+
+      return json(200, mockReviewRequests)
     }
 
     // For any endpoint outside auth/dashboard mock coverage, pass through to real backend
