@@ -36,7 +36,7 @@
 ---
 
 ## 4. Dashboard & Layout Architecture
-- **Shell:** `src/layouts/CustomerDashboardLayout/CustomerDashboardLayout.tsx` provides a 16rem sidebar + top header with backend status, theme toggle, and email.
+- **Shell:** `src/layouts/CustomerDashboardLayout.tsx` provides a 16rem sidebar + top header with backend status, theme toggle, and email.
 - **Routes Covered:**
   - `/dashboard` (Overview)
   - `/dashboard/next-day-open` (Next-Day Open Prediction)
