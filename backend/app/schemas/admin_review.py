@@ -13,17 +13,18 @@ ReviewSeverity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 class ReviewRequestCreate(APIBaseModel):
     """Payload submitted by user to report a prediction anomaly or disputed analysis."""
     symbol: str = Field(min_length=1, max_length=32)
-    analysis_snapshot_id: str = Field(min_length=1, max_length=128)
-    reason: str = Field(min_length=3, max_length=255)
-    user_notes: str = Field(min_length=5, max_length=2000)
+    analysis_snapshot_id: Optional[str] = Field(default=None, max_length=128)
+    reason: str = Field(min_length=2, max_length=255)
+    user_notes: str = Field(default="Direct human review request from customer portal", min_length=1, max_length=2000)
     severity: ReviewSeverity = "MEDIUM"
-    snapshot_data: Dict[str, Any]
+    snapshot_data: Optional[Dict[str, Any]] = Field(default=None)
 
     @field_validator("snapshot_data")
     @classmethod
-    def validate_snapshot_size(cls, value: Dict[str, Any]) -> Dict[str, Any]:
-        if len(json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode("utf-8")) > 16_384:
-            raise ValueError("Analysis snapshot must be 16 KB or smaller.")
+    def validate_snapshot_size(cls, value: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        if value:
+            if len(json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode("utf-8")) > 16_384:
+                raise ValueError("Analysis snapshot must be 16 KB or smaller.")
         return value
 
 

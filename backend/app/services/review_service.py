@@ -60,17 +60,20 @@ class ReviewService:
         if active:
             raise ConflictError(f"A review request is already active for {request.symbol.upper()}.")
 
+        snapshot_id = request.analysis_snapshot_id or f"{request.symbol.upper()}-DIRECT-{uuid.uuid4().hex[:6].upper()}"
+        snapshot_payload = request.snapshot_data or {"symbol": request.symbol.upper(), "type": "DIRECT_HUMAN_REVIEW"}
+
         row = ReviewRequest(
             id=f"REV-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:8].upper()}",
             user_id=user_id,
             user_email=user_email,
             symbol=request.symbol.upper(),
-            analysis_snapshot_id=request.analysis_snapshot_id,
+            analysis_snapshot_id=snapshot_id,
             reason=request.reason,
             user_notes=request.user_notes,
             status="PENDING",
             severity=request.severity,
-            snapshot_data=request.snapshot_data,
+            snapshot_data=snapshot_payload,
             created_at=datetime.now(timezone.utc),
         )
         try:

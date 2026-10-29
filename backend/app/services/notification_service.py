@@ -40,21 +40,41 @@ class NotificationService:
         """Best-effort admin notification invoked after a review row has committed."""
         recipient = settings.ADMIN_NOTIFY_EMAIL or settings.ADMIN_EMAIL
         if not recipient:
-            logger.info("Review notification email status=mock_skipped review_id=%s", review.id)
+            try:
+                from app.db.session import SessionLocal
+                from app.models.user import User
+                with SessionLocal() as db:
+                    admin = db.query(User).filter(
+                        (User.role.ilike("admin")) | (User.is_superuser == True)
+                    ).first()
+                    if admin and admin.email:
+                        recipient = admin.email
+            except Exception as exc:
+                logger.debug("Could not lookup admin email from DB: %s", exc)
+
+        if not recipient:
+            logger.info("Review notification email status=mock_skipped review_id=%s (no admin email configured)", review.id)
             return
+
         try:
             result = ResendClient.send_email(
                 to_email=recipient,
-                subject=f"StockIQ expert review requested: {review.symbol}",
+                subject=f"StockIQ Expert Review Requested: {review.symbol}",
                 html_content=(
-                    "<h2>Expert review requested</h2>"
-                    f"<p>Request: {escape(review.id)}</p>"
-                    f"<p>Analysis: {escape(review.analysis_snapshot_id or '')}</p>"
-                    f"<p>Symbol: {escape(review.symbol)}</p>"
-                    f"<p>Reason: {escape(review.reason)}</p>"
+                    "<h2>StockIQ Expert Review Requested</h2>"
+                    "<p>A user has raised a review request requiring human oversight.</p>"
+                    f"<p><strong>Ticket ID:</strong> {escape(review.id)}</p>"
+                    f"<p><strong>Asset Symbol:</strong> {escape(review.symbol)}</p>"
+                    f"<p><strong>Requester:</strong> {escape(review.user_email or 'Investor')}</p>"
+                    f"<p><strong>Severity:</strong> {escape(review.severity or 'MEDIUM')}</p>"
+                    f"<p><strong>Reason:</strong> {escape(review.reason)}</p>"
+                    f"<p><strong>User Notes:</strong> {escape(review.user_notes or 'No notes provided')}</p>"
+                    f"<p><strong>Submitted At:</strong> {review.created_at}</p>"
+                    "<hr style='border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;'/>"
+                    "<p style='font-size: 13px; color: #64748b;'>Please log in to the StockIQ Admin Portal to review and resolve this request.</p>"
                 ),
             )
-            logger.info("Review notification email status=%s review_id=%s", result.get("status", "failed"), review.id)
+            logger.info("Review notification email status=%s review_id=%s to=%s", result.get("status", "failed"), review.id, recipient)
         except Exception as exc:
             logger.warning("Review notification email status=failed review_id=%s error=%s", review.id, type(exc).__name__)
 
@@ -64,11 +84,11 @@ class NotificationService:
         try:
             result = ResendClient.send_email(
                 to_email=review.user_email,
-                subject=f"StockIQ review completed: {review.symbol}",
+                subject=f"StockIQ Review Completed: {review.symbol}",
                 html_content=(
                     f"<h2>Your StockIQ review is complete</h2><p>Request: {escape(review.id)}</p>"
                     f"<p>Our team reviewed your request about {escape(review.symbol)}.</p>"
-                    f"<p>Resolution: {escape(review.resolution_notes or 'Your request has been reviewed.')}</p>"
+                    f"<p><strong>Resolution:</strong> {escape(review.resolution_notes or 'Your request has been reviewed and verified.')}</p>"
                 ),
             )
             logger.info("Review completion email status=%s review_id=%s", result.get("status", "failed"), review.id)

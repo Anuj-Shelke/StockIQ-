@@ -50,6 +50,16 @@ def get_user_by_id(user_id: str):
     return _user(row) if row else None
 
 
+def delete_user(identifier: str) -> None:
+    """Delete user by ID or email from local auth fallback table."""
+    try:
+        with closing(_connect()) as db:
+            db.execute("DELETE FROM local_users WHERE id=? OR email=? COLLATE NOCASE", (identifier, identifier))
+            db.commit()
+    except Exception:
+        pass
+
+
 def _user(row):
     values = dict(row)
     values["is_active"] = bool(values["is_active"])

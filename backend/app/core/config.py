@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any, List, Optional, Union
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from pydantic import field_validator, model_validator
@@ -71,11 +72,12 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
 
-    # Email
+    # Email (Resend)
     EMAIL_PROVIDER: str = "resend"
     EMAIL_API_KEY: Optional[str] = ""
     FROM_EMAIL: str = "StockIQ Alerts <onboarding@resend.dev>"
     RESEND_API_KEY: Optional[str] = None
+    RESEND_KEY: Optional[str] = None
     ADMIN_NOTIFY_EMAIL: Optional[str] = None
     ADMIN_EMAIL: Optional[str] = None
     ADMIN_PASSWORD: Optional[str] = None
@@ -110,6 +112,20 @@ class Settings(BaseSettings):
                 values["ASYNC_DATABASE_URL"] = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
             if not values.get("SUPABASE_ANON_KEY") and values.get("SUPABASE_KEY"):
                 values["SUPABASE_ANON_KEY"] = values["SUPABASE_KEY"]
+
+            # Harmonize Resend / Email API key from any configured alias
+            resend_key = (
+                values.get("RESEND_API_KEY")
+                or values.get("EMAIL_API_KEY")
+                or values.get("RESEND_KEY")
+                or os.environ.get("RESEND_API_KEY")
+                or os.environ.get("EMAIL_API_KEY")
+                or os.environ.get("RESEND_KEY")
+            )
+            if resend_key:
+                cleaned_key = str(resend_key).strip().strip('"').strip("'")
+                values["RESEND_API_KEY"] = cleaned_key
+                values["EMAIL_API_KEY"] = cleaned_key
         return values
 
     model_config = SettingsConfigDict(

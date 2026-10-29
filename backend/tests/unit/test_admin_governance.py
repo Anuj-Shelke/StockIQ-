@@ -162,3 +162,48 @@ def test_review_service_db_persistence(db_session):
     row_updated = db_session.query(ReviewRequest).filter(ReviewRequest.id == ticket.id).first()
     assert row_updated.status == "IN_REVIEW"
     assert row_updated.resolution_notes == "Assigned auditor for deep dive."
+
+
+def test_admin_delete_user(client, admin_auth_headers, auth_headers):
+    """Verify admin can delete a user and cannot delete themselves."""
+    unique_email = f"delete_{uuid.uuid4().hex[:8]}@test.com"
+    res = client.post(
+        "/api/v1/auth/register",
+        json={"email": unique_email, "password": "Password123!", "full_name": "To Delete"},
+    )
+    assert res.status_code == 201
+    user_id = res.json()["user_id"]
+
+    # Non-admin cannot delete
+    forbidden = client.delete(f"/api/v1/admin/users/{user_id}", headers=auth_headers)
+    assert forbidden.status_code == 403
+
+    # Admin deletes user
+    del_res = client.delete(f"/api/v1/admin/users/{user_id}", headers=admin_auth_headers)
+    assert del_res.status_code == 200
+    assert del_res.json()["status"] == "success"
+
+    # Verify user is gone
+    users_list = client.get("/api/v1/admin/users", headers=admin_auth_headers).json()
+    assert not any(u["id"] == user_id for u in users_list["items"])
+
+
+def test_review_request_direct_creation_without_snapshot(client, auth_headers, admin_auth_headers):
+    """Verify customer can raise review request directly with just symbol and reason."""
+    res = client.post(
+        "/api/v1/review-requests",
+        json={
+            "symbol": "TATAMOTORS.NS",
+            "reason": "Direct human review request from Reviews tab",
+            "user_notes": "Please verify margin predictions.",
+        },
+        headers=auth_headers,
+    )
+    assert res.status_code == 201
+    ticket = res.json()
+    assert ticket["symbol"] == "TATAMOTORS.NS"
+    assert ticket["analysis_snapshot_id"].startswith("TATAMOTORS.NS-DIRECT-")
+
+    # Appears in admin review queue
+    admin_list = client.get("/api/v1/admin/reviews", headers=admin_auth_headers).json()
+    assert any(t["id"] == ticket["id"] for t in admin_list)
