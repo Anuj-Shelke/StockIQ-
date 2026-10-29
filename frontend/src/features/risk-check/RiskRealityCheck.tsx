@@ -269,6 +269,12 @@ export function RiskRealityCheck() {
   const [analysis, setAnalysis] = useState<RiskAnalysis | null>(null)
   const [empty, setEmpty] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [customCapital, setCustomCapital] = useState<number>(500000)
+
+  // Sync capital with loaded analysis total value
+  useEffect(() => {
+    if (analysis) setCustomCapital(analysis.total_value)
+  }, [analysis])
 
   useEffect(() => {
     let active = true
@@ -316,8 +322,6 @@ export function RiskRealityCheck() {
       </section>
     )
   }
-
-  const [customCapital, setCustomCapital] = useState<number>(analysis?.total_value || 500000)
 
   // Scale scenario impact based on user custom capital
   const capitalRatio = customCapital / (analysis?.total_value || 500000)
